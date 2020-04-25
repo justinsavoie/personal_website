@@ -2,7 +2,7 @@ let cubes = [];
 
 function setup() {
   createCanvas(windowWidth,windowHeight);
-  for (let i = 0; i < 10; i++){
+  for (let i = 0; i < 30; i++){
     cubes.push(new cube(random(width),random(height),random(width/5),random(height/3),[random(255),random(255),random(255)]))
   }
 
