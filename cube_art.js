@@ -14,6 +14,7 @@ function setup() {
 
 function draw() {
   background(0);
+  image(img, 0, 0);
   for (let i = 0; i < cubes.length; i++) {
     cubes[i].display();
   }
