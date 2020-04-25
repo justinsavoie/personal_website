@@ -9,7 +9,8 @@ function setup() {
   for (let i = 0; i < 30; i++){
     cubes.push(new cube(random(width),random(height),random(width/5),random(height/3),[random(255),random(255),random(255)]));
   }
-
+img_w = random(width);
+img_h = random(height);
 }
 
 function draw() {
@@ -17,7 +18,7 @@ function draw() {
   for (let i = 0; i < cubes.length; i++) {
     cubes[i].display();
   }
-  image(img, random(width), random(height));
+  image(img, img_w, img_h);
 }
 
 function windowResized() {
