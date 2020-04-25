@@ -7,8 +7,6 @@ function preload() {
   img = loadImage('assets/jjq2t5FV_400x400.jpg');
 }
 
-img.mouseClicked(window.open('http://lapresse.ca'));
-
 function setup() {
   createCanvas(windowWidth,windowHeight);
   for (let i = 0; i < 30; i++){
