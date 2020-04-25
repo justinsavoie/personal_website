@@ -1,8 +1,6 @@
 let cubes = [];
 img_w = width/3;
 img_h = height/2;
-img_w = width/7;
-img_h = height/4;
 function preload() {
   img = loadImage('assets/jjq2t5FV_400x400.jpg');
 }
