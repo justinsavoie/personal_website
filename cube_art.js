@@ -1,6 +1,5 @@
 let cubes = [];
-img_w = width/3;
-img_h = height/2;
+
 function preload() {
   img = loadImage('assets/jjq2t5FV_400x400.jpg');
 }
@@ -10,6 +9,8 @@ function setup() {
   for (let i = 0; i < 30; i++){
     cubes.push(new cube(random(width),random(height),random(width/5),random(height/3),[random(255),random(255),random(255)]));
   }
+  img_w = width/3;
+  img_h = height/2;
 }
 
 function draw() {
