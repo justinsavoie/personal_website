@@ -40,6 +40,6 @@ class cube {
 
   display() {
     fill(this.col[0],this.col[1],this.col[2]);
-    rect(this.x,this.y,this.w,this.w)
+    rect(this.x,this.y,this.w,this.w);
   }
 }
