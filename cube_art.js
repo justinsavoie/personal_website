@@ -24,8 +24,8 @@ function draw() {
     cubes[i].display();
   }
   fill(255, 255, 255);
-  textSize(60);
-  s = counter + ' / 400  \nSite web en construction...\nWebsite under construction...\n~ Justin Savoie\n(btw, there is nothing at 400/400, no need to wait!';
+  textSize(40);
+  s = counter + ' / 400  \nSite web en construction...\nWebsite under construction...\nRevenez !\nComeback!\n ~ Justin Savoie';
   text(s.substring(0, max([10,counter/2])), 10, 60);
 
 }
