@@ -23,6 +23,7 @@ function draw() {
   for (let i = 0; i < cubes.length; i++) {
     cubes[i].display();
   }
+  
   fill(255, 255, 255);
   textSize(30);
   s = 'Site web en construction...\nWebsite under construction...\nRevenez bientôt!\nComeback soon!';
@@ -46,6 +47,11 @@ class cube {
   display() {
     fill(this.col[0],this.col[1],this.col[2]);
     rect(this.x,this.y,this.w,this.w);
+  }
+  change_color() {
+    this.col[0] = random(255);
+    this.col[1] = random(255);
+    this.col[2] = random(255);
   }
 }
 class bouncing_ball {
@@ -81,4 +87,19 @@ class bouncing_ball {
       }
     }
   }
+}
+
+function mousePressed() {
+ temp = 0;
+  for (let i = 0; i < cubes.length; i++) {
+    if (mouseX > cubes[i].x && mouseX < cubes[i].x + cubes[i].w && mouseY > cubes[i].y && mouseY < cubes[i].y + cubes[i].w) {
+      cubes.splice(i,1);
+      temp = temp +1 ;
+    }
+  }
+    if (temp===0) {
+      cubes.push(new cube(mouseX,mouseY,width/10,[random(255),random(255),random(255)]));
+    } 
+ 
+ //cubes.push(new cube(mouseX,mouseY,width/10,[random(255),random(255),random(255)]));
 }
