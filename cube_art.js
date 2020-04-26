@@ -7,7 +7,7 @@ function setup() {
     cubes.push(new cube(random(width),random(height/2,height),width/10,[random(255),random(255),random(255)]));
   }
   for (let i = 0; i < 200; i++){
-    bouncing_balls.push(new bouncing_ball(random(20,width),random(26,50),random(-1,1),random(1,2),10,[random(255),random(255),random(255)]));
+    bouncing_balls.push(new bouncing_ball(random(20,width-20),random(26,50),random([-1,1])*random(0.5,1),random(1,2),10,[random(255),random(255),random(255)]));
   }
 }
 function draw() {
@@ -25,8 +25,8 @@ function draw() {
   }
   fill(255, 255, 255);
   textSize(30);
-  s = counter + ' / 200  \nSite web en construction...\nWebsite under construction...\nRevenez bientôt!\nComeback soon!\n ~ Justin Savoie';
-  text(s.substring(0, max([10,counter/1])), 10, 60);
+  s = 'Site web en construction...\nWebsite under construction...\nRevenez bientôt!\nComeback soon!';
+  text(s.substring(0, max([0,counter/1])), 10, 60);
 
 }
 function windowResized() {
