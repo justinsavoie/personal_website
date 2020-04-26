@@ -97,7 +97,7 @@ function mousePressed() {
       temp = temp +1 ;
     }
   }
-    if (temp===0) {
+    if (temp===0 & mouseY > 10) {
       cubes.push(new cube(mouseX,mouseY,width/10,[random(255),random(255),random(255)]));
     } 
  
