@@ -6,7 +6,7 @@ function setup() {
   for (let i = 0; i < 30; i++){
     cubes.push(new cube(random(width),random(height),random(width/5),random(height/3),[random(255),random(255),random(255)]));
   }
-  for (let i = 0; i < 100; i++){
+  for (let i = 0; i < 15; i++){
     bouncing_balls.push(new bouncing_ball(random(20,width-20),random(20,height-20),random(-4,4),random(-4,4),5,[255,255,255]));
   }
 }
