@@ -25,7 +25,7 @@ function draw() {
   }
   fill(255, 255, 255);
   textSize(40);
-  s = counter + ' / 400  \nSite web en construction...\nWebsite under construction...\nRevenez !\nComeback!\n ~ Justin Savoie';
+  s = counter + ' / 400  \nSite web en construction...\nWebsite under construction...\nRevenez bientôt!\nComeback soon!\n ~ Justin Savoie';
   text(s.substring(0, max([10,counter/2])), 10, 60);
 
 }
