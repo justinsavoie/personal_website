@@ -25,7 +25,7 @@ function draw() {
   }
   fill(255, 255, 255);
   textSize(60);
-  s = counter + ' / 400  \nSite web en construction...\nWebsite under construction...\n~ Justin Savoie';
+  s = counter + ' / 400  \nSite web en construction...\nWebsite under construction...\n~ Justin Savoie\n(btw, there is nothing at 400/400, no need to wait!';
   text(s.substring(0, max([10,counter/4])), 10, 60);
 
 }
