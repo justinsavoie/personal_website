@@ -27,7 +27,7 @@ function draw() {
   fill(255, 255, 255);
   textSize(30);
   s = 'Site web en construction...\nWebsite under construction...\nRevenez bientôt!\nComeback soon!';
-  text(s.substring(0, max([0,counter/1])), 10, 60);
+  // text(s.substring(0, max([0,counter/1])), 10, 60);
 
 }
 function windowResized() {
