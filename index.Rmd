@@ -1,3 +1,10 @@
 ---
-site: blogdown:::blogdown_site
+output: html_document
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Justin Savoie
+
