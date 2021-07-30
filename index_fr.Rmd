@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 </div>
 
-Je suis étudiante au doctorat en science politique à l'Université de Toronto. Auparavant, j'étais à l'Université Laval pour mon baccalauréat (économie et politique) et ma [maîtrise](https://corpus.ulaval.ca/jspui/bitstream/20.500.11794/33747/1/34864.pdf) (science politique).
+Je suis étudiant au doctorat en science politique à l'Université de Toronto. Auparavant, j'étais à l'Université Laval pour mon baccalauréat (économie et politique) et ma [maîtrise](https://corpus.ulaval.ca/jspui/bitstream/20.500.11794/33747/1/34864.pdf) (science politique).
 
 Mes travaux portent sur le design et l'analyse de sondages, les méthodes computationelles en science sociale et l'analyse textuelle automatisée. 
 
