@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Justin Savoie
 
-[Site web en français](index_fr.html)
+[English website](index.html)
 
 <div style= "float:right;position: relative; left: 30px;">
 
@@ -16,21 +16,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 </div>
 
-Welcome! I am a PhD student in Political Science at the University of Toronto. Previously, I was at Université Laval for my undergraduate degree (Economics and Politics) and [master's degree](https://corpus.ulaval.ca/jspui/bitstream/20.500.11794/33747/1/34864.pdf) (Political Science). 
+Je suis étudiante au doctorat en science politique à l'Université de Toronto. Auparavant, j'étais à l'Université Laval pour mon baccalauréat (économie et politique) et ma [maîtrise](https://corpus.ulaval.ca/jspui/bitstream/20.500.11794/33747/1/34864.pdf) (science politique).
 
-I am primarily interested in the design and analysis of large-scale surveys and applied computational methods in social science. Some of my work has appeared in the International Journal of Forecasting, PS: Political Science & Politics, the Canadian Journal of Political Science, French Politics, the Journal of Experimental Political Science and the Journal of European Public Policy.
+Mes travaux portent sur le design et l'analyse de sondages, les méthodes computationelles en science sociale et l'analyse textuelle automatisée. 
 
-My dissertation (expected 2022) uses word embeddings and other vector space models to study the evolution and changing meanings of key concepts in Canadian politics.
+Ma thèse (prévue pour 2022) utilise les "word embeddings" et autres modèles d'espace vectoriel pour étudier l'évolution et les changements de signification en politique canadienne.
 
-In addition to my academic work, I have been involved for four years in industry, first as Data Scientist and then as Lead Data Science with [Vox Pop Labs](voxpoplabs.com), a social enterprise that builds survey-based applications that organizes political and social data in meaningful ways.  Under my tenure, I lead all data science activities for projects such as [Vote Compass](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) and the [COVID-19 Monitor](https://covid19monitor.org/).
+En plus de mes travaux universitaires, j'ai travaillé pendant quatre ans dans l'industrie, d'abord en tant que scientifique des données, puis en tant que scientifique des données principal chez [Vox Pop Labs](voxpoplabs.com), une entreprise sociale qui crée des applications web basées sur des enquêtes pour organiser les données socio-politiques. Dans le cadre de mon mandat, je dirige toutes les activités de science des données pour des projets tels que la [Boussole électorale](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) et le [COVID-19 Monitor](https://covid19monitor.org/).
 
-My CV is available [here](cv_academic.pdf).
+Mon [CV](cv_academic.pdf) (version anglaise; version française disponible sous peu).
 
-My [Google Scholar page](https://scholar.google.ca/citations?user=U4l1gLYAAAAJ&hl=en)
+Mon profil [Google Scholar](https://scholar.google.ca/citations?user=U4l1gLYAAAAJ&hl=en)
 
-#### Research
+#### Recherche
 
-##### Peer-reviewed papers
+##### Articles évalués par les pairs
 
 Daoust, J-F., Nadeau, R., Dassonneville, R., Lachapelle, E., Bélanger, E. Savoie, J., van der Linden, C. 2020. [How to Survey Citizens' Compliance with COVID-19 Public Health Measures: Evidence from Three Survey Experiments](https://www.cambridge.org/core/journals/journal-of-experimental-political-science/article/how-to-survey-citizens-compliance-with-covid19-public-health-measures-evidence-from-three-survey-experiments/8567280BC5A88BE652C01CC11324940B) *Journal of Experimental Political Science*
 
@@ -44,13 +44,13 @@ Temporão, M., Dufresne, Y., Savoie, J., van der Linden, C. 2019. [Crowdsourcing
 
 Fréchet, N., Savoie, J., Dufresne, Y. 2019. [Analysis of Text-Analysis Syllabi: Building a Text-Analysis Syllabus Using Scaling](https://www.cambridge.org/core/journals/ps-political-science-and-politics/article/analysis-of-textanalysis-syllabi-building-a-textanalysis-syllabus-using-scaling/63FD1DC30AEDAF1D2DC10D4FEDA539A7) *PS: Political Science and Politics*.
 
-##### Book chapters 
+##### Chapitres de livres 
 
 Lees-Marshment, J., Elder, E., Chant L., Osborne, D., Savoie, J., van der Linden, C. 2018. *Vote Compass NZ 2017: Marketing Insights into Public Views on Policy and Leaders* in [Political Marketing and Management in the 2017 New Zealand Election](https://www.palgrave.com/gp/book/9783319942971). Palgrave Pivot
 
 Lees-Marshment, J., Elder, E., Chant L., Osborne, D., Savoie, J., van der Linden, C. 2018. *Political Parties and Their Customers: The Alignment of Party Policies with Supporter, Target and Undecided Market Preferences* in [Political Marketing and Management in the 2017 New Zealand Election](https://www.palgrave.com/gp/book/9783319942971). Palgrave Pivot
 
-#### Contact
+#### Pour me contacter
 
 [Twitter justinsavoie](https://twitter.com/justinsavoie)
 
@@ -58,4 +58,4 @@ Lees-Marshment, J., Elder, E., Chant L., Osborne, D., Savoie, J., van der Linden
 
 [Github justinsavoie](https://github.com/justinsavoie)
 
-Mail: justin.savoie@mail.utoronto.ca
+Courriel: justin.savoie@mail.utoronto.ca
