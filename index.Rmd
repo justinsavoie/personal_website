@@ -1,9 +1,11 @@
 ---
 output: html_document
+title: 'Justin Savoie'
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 #<div class="topnav">
 #  <a class="active" href="#about">About</a>
 #  <a class="active" href="#research">Research</a>
@@ -38,6 +40,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
+<style>
+  .title{
+    display: none;
+  }
+</style>
 
 ### Justin Savoie
 
