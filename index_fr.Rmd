@@ -22,7 +22,7 @@ Je suis étudiant au doctorat en science politique à l'Université de Toronto. 
 
 Mes travaux portent sur le design et l'analyse de sondages, les méthodes computationelles en science sociale et l'analyse textuelle automatisée. 
 
-Ma thèse (prévue pour 2022) utilise les "word embeddings" et autres modèles d'espace vectoriel pour étudier l'évolution et les changements de signification en politique canadienne.
+Ma thèse utilise les "word embeddings" et autres modèles d'espace vectoriel pour étudier l'évolution et les changements de signification en politique canadienne.
 
 En plus de mes travaux universitaires, j'ai travaillé pendant quatre ans dans l'industrie, d'abord en tant que scientifique des données, puis en tant que scientifique des données principal chez [Vox Pop Labs](voxpoplabs.com), une entreprise sociale qui crée des applications web basées sur des enquêtes pour organiser les données socio-politiques. Dans le cadre de mon mandat, je dirige toutes les activités de science des données pour des projets tels que la [Boussole électorale](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) et le [COVID-19 Monitor](https://covid19monitor.org/).
 
