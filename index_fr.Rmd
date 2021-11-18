@@ -24,7 +24,7 @@ Mes travaux portent sur le design et l'analyse de sondages, les méthodes comput
 
 Ma thèse utilise les "word embeddings" et autres modèles d'espace vectoriel pour étudier l'évolution et les changements de signification en politique canadienne.
 
-En plus de mes travaux universitaires, j'ai travaillé pendant quatre ans dans l'industrie, d'abord en tant que scientifique des données, puis en tant que scientifique des données principal chez [Vox Pop Labs](voxpoplabs.com), une entreprise sociale qui crée des applications web basées sur des enquêtes pour organiser les données socio-politiques. Dans le cadre de mon mandat, je dirige toutes les activités de science des données pour des projets tels que la [Boussole électorale](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) et le [COVID-19 Monitor](https://covid19monitor.org/).
+En plus de mes travaux universitaires, j'ai travaillé pendant quatre ans dans le secteur en science des données, d'abord en tant que scientifique des données, puis en tant que scientifique des données principal chez [Vox Pop Labs](voxpoplabs.com), une entreprise sociale qui crée des applications web basées sur des enquêtes pour organiser les données socio-politiques. Dans le cadre de mon mandat, je dirige toutes les activités de science des données pour des projets tels que la [Boussole électorale](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) et le [COVID-19 Monitor](https://covid19monitor.org/).
 
 Mon [CV](cv_academic.pdf) (version anglaise; version française disponible sous peu).
 
@@ -47,6 +47,10 @@ Temporão, M., Dufresne, Y., Savoie, J., van der Linden, C. 2019. [Crowdsourcing
 Fréchet, N., Savoie, J., Dufresne, Y. 2019. [Analysis of Text-Analysis Syllabi: Building a Text-Analysis Syllabus Using Scaling](https://www.cambridge.org/core/journals/ps-political-science-and-politics/article/analysis-of-textanalysis-syllabi-building-a-textanalysis-syllabus-using-scaling/63FD1DC30AEDAF1D2DC10D4FEDA539A7) *PS: Political Science and Politics*.
 
 ##### Chapitres de livres 
+
+Elder, E., Lees-Marshment, J., Chant L., Osborne, D., Savoie, J., van der Linden, C. 2021 *What the Market Wanted: Vote Compass 2020 and Public Views on Issues and Leadership* in [Political Marketing and Management in the 2020 New Zealand General Election](https://link.springer.com/book/10.1007/978-3-030-77333-5). Palgrave Pivot
+
+Elder, E., Lees-Marshment, J., Chant L., Osborne, D., Savoie, J., van der Linden, C. 2021 *Targeting Party Supporters, Key Demographics and Undecided Voters* in [Political Marketing and Management in the 2020 New Zealand General Election](https://link.springer.com/book/10.1007/978-3-030-77333-5). Palgrave Pivot
 
 Lees-Marshment, J., Elder, E., Chant L., Osborne, D., Savoie, J., van der Linden, C. 2018. *Vote Compass NZ 2017: Marketing Insights into Public Views on Policy and Leaders* in [Political Marketing and Management in the 2017 New Zealand Election](https://www.palgrave.com/gp/book/9783319942971). Palgrave Pivot
 
