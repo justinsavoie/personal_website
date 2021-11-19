@@ -22,9 +22,13 @@ model_data <- list(nt=nt,ng=ng,ht=ht,at=at,s1=s1,s2=s2)
 
 ### Dynamic hierarchical modeling in Stan for predicting sports games
 
-This post is about hierarchical modeling in Stan for predicting sports games. It's inspired by this excellent [Stan tutorial](https://www.youtube.com/playlist?list=PLCrWEzJgSUqwL85xIj1wubGdY15C5Gf7H) by Maggie Lieu on the same subject (github link [here](https://github.com/MaggieLieu/STAN_tutorials/tree/master/Hierarchical)).
+This post is about hierarchical modeling in Stan for predicting sports games. It's inspired by this excellent [Stan tutorial](https://www.youtube.com/playlist?list=PLCrWEzJgSUqwL85xIj1wubGdY15C5Gf7H) by Maggie Lieu on the same subject ([code here](https://github.com/MaggieLieu/STAN_tutorials/tree/master/Hierarchical)).
 
-The original model is relatively simple, each team has an "attack strength" and a "defense strength". The team playing at home has an "home advantage".
+The model assigns a two "strengths" (att. / def.) to each team. The number of goals scored by each teams is modeled as a Poisson of a parameter influenced by the relative strengths of the teams playing. This is a static model fitted once on all games. This post is about, first, explaining the model and it's Bradley-Terry ancestor, and second and more importantly, attemptic to fit it dynamically. During a season, some teams improve and some teams worsen. Can this be taken into account?
+
+The original model is inspired by the Bradley-Terry model for pairwise comparisons. In the Bradley-Terry model, each team has one strength. 
+
+Each team has an "attack strength" and a "defense strength". The team playing at home has an "home advantage".
 
 Then, all this is modeled for the entire season; each team gets an attack and a defense "strength".
 
