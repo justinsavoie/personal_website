@@ -64,7 +64,7 @@ I am primarily interested in the design and analysis of large-scale surveys and 
 
 My dissertation uses word embeddings and other vector space models to study the evolution and changing meanings of key concepts in Canadian politics.
 
-In addition to my academic work, I have been involved for four years in industry, first as Data Scientist and then as Lead Data Science with [Vox Pop Labs](voxpoplabs.com), a social enterprise that builds survey-based applications that organizes political and social data in meaningful ways.  Under my tenure, I lead all data science activities for projects such as [Vote Compass](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) and the [COVID-19 Monitor](https://covid19monitor.org/).
+In addition to my academic work, I have been involved for four years in industry, first as Data Scientist and then as Lead Data Science with [Vox Pop Labs](voxpoplabs.com), a social enterprise that builds survey-based applications that organizes political and social data in meaningful ways.  Under my tenure, I lead all data science activities for projects such as [Vote Compass](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) and the [COVID-19 Monitor](https://covid19monitor.org/). I also have experience as a consultant for projects involving the statistical analysis of survey data.
 
 My CV is available [here](cv_academic.pdf).
 
@@ -73,6 +73,8 @@ My Google Scholar page is available [here](https://scholar.google.ca/citations?u
 #### Research
 
 ##### Peer-reviewed papers
+
+Dufresne, Y., Jérôme, B. Lewis-Beck, M. Murr, A.,Savoie, J. 2022. [Citizen Forecasting: The 2022 French Presidential Elections.](https://www.cambridge.org/core/journals/ps-political-science-and-politics/article/citizen-forecasting-the-2022-french-presidential-elections/0FBB7FDC3FAF7F41A2E99C595D7753AF) *PS: Political Science & Politics.*
 
 Daoust, J-F., Nadeau, R., Dassonneville, R., Lachapelle, E., Bélanger, E. Savoie, J., van der Linden, C. 2020. [How to Survey Citizens' Compliance with COVID-19 Public Health Measures: Evidence from Three Survey Experiments](https://www.cambridge.org/core/journals/journal-of-experimental-political-science/article/how-to-survey-citizens-compliance-with-covid19-public-health-measures-evidence-from-three-survey-experiments/8567280BC5A88BE652C01CC11324940B) *Journal of Experimental Political Science*
 

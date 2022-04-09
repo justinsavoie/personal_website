@@ -24,7 +24,7 @@ Mes travaux portent sur le design et l'analyse de sondages, les méthodes comput
 
 Ma thèse utilise les "word embeddings" et autres modèles d'espace vectoriel pour étudier l'évolution et les changements de signification en politique canadienne.
 
-En plus de mes travaux universitaires, j'ai travaillé pendant quatre ans dans le secteur en science des données, d'abord en tant que scientifique des données, puis en tant que scientifique des données principal chez [Vox Pop Labs](voxpoplabs.com), une entreprise sociale qui crée des applications web basées sur des enquêtes pour organiser les données socio-politiques. Dans le cadre de mon mandat, je dirige toutes les activités de science des données pour des projets tels que la [Boussole électorale](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) et le [COVID-19 Monitor](https://covid19monitor.org/).
+En plus de mes travaux universitaires, j'ai travaillé pendant quatre ans dans le secteur en science des données, d'abord en tant que scientifique des données, puis en tant que scientifique des données principal chez [Vox Pop Labs](voxpoplabs.com), une entreprise sociale qui crée des applications web basées sur des enquêtes pour organiser les données socio-politiques. Dans le cadre de mon mandat, je dirige toutes les activités de science des données pour des projets tels que la [Boussole électorale](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) et le [COVID-19 Monitor](https://covid19monitor.org/). J'ai également de l'expérience en tant que consultant en analyse statistique de données d'enquête.
 
 Mon [CV](cv_academic.pdf) (version anglaise; version française disponible sous peu).
 
@@ -33,6 +33,8 @@ Mon profil [Google Scholar](https://scholar.google.ca/citations?user=U4l1gLYAAAA
 #### Recherche
 
 ##### Articles évalués par les pairs
+
+Dufresne, Y., Jérôme, B. Lewis-Beck, M. Murr, A.,Savoie, J. 2022. [Citizen Forecasting: The 2022 French Presidential Elections.](https://www.cambridge.org/core/journals/ps-political-science-and-politics/article/citizen-forecasting-the-2022-french-presidential-elections/0FBB7FDC3FAF7F41A2E99C595D7753AF) *PS: Political Science & Politics.*
 
 Daoust, J-F., Nadeau, R., Dassonneville, R., Lachapelle, E., Bélanger, E. Savoie, J., van der Linden, C. 2020. [How to Survey Citizens' Compliance with COVID-19 Public Health Measures: Evidence from Three Survey Experiments](https://www.cambridge.org/core/journals/journal-of-experimental-political-science/article/how-to-survey-citizens-compliance-with-covid19-public-health-measures-evidence-from-three-survey-experiments/8567280BC5A88BE652C01CC11324940B) *Journal of Experimental Political Science*
 
