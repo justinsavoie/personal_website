@@ -262,8 +262,8 @@ x
 ```{r echo=TRUE}
 4 %in% c(2,4,5) # 4 is in the vector
 !(4 %in% c(2,4,5)) # 4 is not in the vector
-(5 | 6)==6 # 5 or 6 is equal to 6
-(5 & 6) %in% c(5,6) # 5 and 6 is in vector
+(5==6|6==6) # 5 or 6 is equal to 6
+(5==5&6==7) # 
 is.na(c(2,3,NA)) # value is NA
 ```
 
