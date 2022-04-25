@@ -51,19 +51,22 @@ This presentation is available at https://www.justinsavoie.com/ssmw2022
   * working with text from SCC cases
 
 ]
+
 ---
+
 ## R and RStudio
 
 * R is a programming language for statistical computing and graphics
 * RStudio is an IDE (integrated development environment)
-  * A place to write
-    * Console
-    * R scripts
-    * R Markdown
-    * Code completion
-  * A place to:
-    * work with folders and paths
-    * visualize plots, data, files
+  
+* A place to write:
+  * Console
+  * R scripts
+  * R Markdown
+  * Code completion
+* A place to:
+  * work with folders and paths
+  * visualize plots, data, files
 
 ---
 
