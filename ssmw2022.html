@@ -4,9 +4,9 @@
     <title>Introduction to R, the tidyverse way</title>
     <meta charset="utf-8" />
     <meta name="author" content="Justin Savoie" />
-    <script src="prez_files/header-attrs-2.11/header-attrs.js"></script>
-    <link href="prez_files/remark-css-0.0.1/default.css" rel="stylesheet" />
-    <link href="prez_files/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+    <script src="ssmw2022_files/header-attrs-2.11/header-attrs.js"></script>
+    <link href="ssmw2022_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="ssmw2022_files/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
   </head>
   <body>
     <textarea id="source">
@@ -212,7 +212,7 @@ mean(random_vector)
 ```
 
 ```
-## [1] 0.0503724
+## [1] -0.03147286
 ```
 
 ```r
@@ -220,7 +220,7 @@ sd(random_vector)
 ```
 
 ```
-## [1] 0.9680378
+## [1] 0.912685
 ```
 
 ```r
@@ -228,7 +228,7 @@ IQR(random_vector)
 ```
 
 ```
-## [1] 1.30428
+## [1] 1.281383
 ```
 ---
 
@@ -237,8 +237,8 @@ summary(random_vector)
 ```
 
 ```
-##      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-## -2.389740 -0.553129  0.009244  0.050372  0.751151  2.713164
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+## -2.54109 -0.65825 -0.06998 -0.03147  0.62313  2.68016
 ```
 
 ```r
@@ -349,7 +349,7 @@ ifelse(c(3,3,6,8)&gt;5,1,0)
 plot(mtcars$mpg,mtcars$hp)
 ```
 
-&lt;img src="prez_files/figure-html/unnamed-chunk-22-1.png" width="40%" /&gt;
+&lt;img src="ssmw2022_files/figure-html/unnamed-chunk-22-1.png" width="40%" /&gt;
 ---
 ## indexing
 
@@ -2033,7 +2033,7 @@ ggplot(data=mtcars,aes(x=hp,y=mpg)) +
   geom_point() 
 ```
 
-&lt;img src="prez_files/figure-html/unnamed-chunk-101-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="ssmw2022_files/figure-html/unnamed-chunk-101-1.png" style="display: block; margin: auto;" /&gt;
 ---
 ## ggplot2
 
@@ -2043,7 +2043,7 @@ ggplot(data=mtcars,aes(x=hp,y=mpg,color=factor(cyl))) +
   geom_point() 
 ```
 
-&lt;img src="prez_files/figure-html/unnamed-chunk-102-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="ssmw2022_files/figure-html/unnamed-chunk-102-1.png" style="display: block; margin: auto;" /&gt;
 ---
 ## ggplot2
 
@@ -2062,7 +2062,7 @@ ggplot(data=mtcars,aes(x=hp,y=mpg,color=factor(cyl))) +
    scale_color_manual(values=c("grey","green","pink"))) + facet_wrap(~factor(am))
 ```
 
-&lt;img src="prez_files/figure-html/unnamed-chunk-103-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="ssmw2022_files/figure-html/unnamed-chunk-103-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## ggplot2
@@ -2199,7 +2199,7 @@ to_plot %&gt;%
   geom_bar(stat = "identity",position="dodge")
 ```
 
-![](prez_files/figure-html/unnamed-chunk-109-1.png)&lt;!-- --&gt;
+![](ssmw2022_files/figure-html/unnamed-chunk-109-1.png)&lt;!-- --&gt;
 ---
 
 ```r
@@ -2211,7 +2211,7 @@ to_plot %&gt;%
             position = position_dodge(width = .9),vjust=-0.25)
 ```
 
-![](prez_files/figure-html/unnamed-chunk-110-1.png)&lt;!-- --&gt;
+![](ssmw2022_files/figure-html/unnamed-chunk-110-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -2239,7 +2239,7 @@ to_plot %&gt;%
               position_dodge(width = .9),vjust=-0.25)
 ```
 
-![](prez_files/figure-html/unnamed-chunk-112-1.png)&lt;!-- --&gt;
+![](ssmw2022_files/figure-html/unnamed-chunk-112-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -2266,7 +2266,7 @@ to_plot %&gt;%
             position =position_dodge(width = .9),vjust=-0.25)
 ```
 
-![](prez_files/figure-html/unnamed-chunk-114-1.png)&lt;!-- --&gt;
+![](ssmw2022_files/figure-html/unnamed-chunk-114-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -2293,7 +2293,7 @@ to_plot %&gt;%
   facet_wrap(~q4_province_2) + scale_fill_manual(values=c("darkblue","red"))
 ```
 
-![](prez_files/figure-html/unnamed-chunk-116-1.png)&lt;!-- --&gt;
+![](ssmw2022_files/figure-html/unnamed-chunk-116-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -2324,7 +2324,7 @@ to_plot %&gt;%
   labs(title="Feeling about the economy by gender and province")
 ```
 
-&lt;img src="prez_files/figure-html/unnamed-chunk-118-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="ssmw2022_files/figure-html/unnamed-chunk-118-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -2444,7 +2444,7 @@ ggplot(to_model,aes(x=q14_feeling_liberal_party,y=prediction)) +
   labs(title=paste0("predictions and true values plotted: rmse=",myrmse))
 ```
 
-![](prez_files/figure-html/unnamed-chunk-124-1.png)&lt;!-- --&gt;
+![](ssmw2022_files/figure-html/unnamed-chunk-124-1.png)&lt;!-- --&gt;
 ---
 ## SCC cases
 
