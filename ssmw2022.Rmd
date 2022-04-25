@@ -58,7 +58,6 @@ This presentation is available at https://www.justinsavoie.com/ssmw2022
 
 * R is a programming language for statistical computing and graphics
 * RStudio is an IDE (integrated development environment)
-  
 * A place to write:
   * Console
   * R scripts
