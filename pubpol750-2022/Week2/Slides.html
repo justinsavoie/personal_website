@@ -131,7 +131,7 @@ class: inverse, middle, center
 ggplot(data = mpg)
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-7-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-7-1.png" width="40%" /&gt;
 
 ---
 
@@ -143,7 +143,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy))
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-8-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-8-1.png" width="40%" /&gt;
 
 ---
 ## General graph template
@@ -164,7 +164,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,color=class), size=3)
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-10-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-10-1.png" width="40%" /&gt;
 
 ---
 
@@ -180,7 +180,7 @@ ggplot(data = mpg) +
 ## Warning: Using size for a discrete variable is not advised.
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-11-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-11-1.png" width="40%" /&gt;
 ---
 
 ## Notice the difference
@@ -193,7 +193,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,size=class))
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-12-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-12-1.png" width="70%" /&gt;
 ]
 .pull-right[
 
@@ -202,7 +202,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy),size=3)
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-13-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-13-1.png" width="70%" /&gt;
 ]
 ---
 
@@ -215,7 +215,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy),size=12)
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-14-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-14-1.png" width="70%" /&gt;
 ]
 .pull-right[
 
@@ -224,7 +224,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,size=12))
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
 ]
 ---
 
@@ -237,7 +237,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,color='class'))
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-16-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-16-1.png" width="70%" /&gt;
 ]
 .pull-right[
 
@@ -246,7 +246,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,color=class))
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-17-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-17-1.png" width="70%" /&gt;
 ]
 
 ---
@@ -258,7 +258,7 @@ ggplot(data = mpg) +
   facet_wrap(~drv)
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-18-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-18-1.png" width="40%" /&gt;
 ---
 ## Facets
 
@@ -268,7 +268,7 @@ ggplot(data = mpg) +
   facet_grid(cols = vars(drv),rows = vars(class))
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-19-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-19-1.png" width="40%" /&gt;
 ---
 ## Transformations
 
@@ -278,7 +278,7 @@ ggplot(data = mpg) +
   geom_bar(mapping = aes(x = class))
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-20-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-20-1.png" width="40%" /&gt;
 ---
 ## Transformations
 .pull-left[
@@ -303,7 +303,7 @@ ggplot(data = demo) +
            stat = "identity")
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-22-1.png" width="60%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-22-1.png" width="60%" /&gt;
 ]
 ---
 
@@ -338,7 +338,7 @@ ggplot(data = demo) +
            stat = "identity")
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-24-1.png" width="60%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-24-1.png" width="60%" /&gt;
 ]
 ---
 
@@ -351,7 +351,7 @@ ggplot(data = demo) +
            stat = "identity")
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-25-1.png" width="60%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-25-1.png" width="60%" /&gt;
 ]
 .pull-right[
 
@@ -362,7 +362,7 @@ ggplot(data = demo) +
            stat = "identity")
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-26-1.png" width="60%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-26-1.png" width="60%" /&gt;
 ]
 ---
 
@@ -400,7 +400,7 @@ ggplot(data = mpg, mapping =
   geom_point()
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-30-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-30-1.png" width="70%" /&gt;
 ]
 .pull-right[
 
@@ -410,7 +410,7 @@ ggplot(data = mpg, mapping =
   geom_point() + coord_fixed()
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-31-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-31-1.png" width="70%" /&gt;
 ]
 
 ---
@@ -1964,7 +1964,7 @@ ggplot(demo) +
   coord_flip() + theme(legend.position = "none")
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-35-1.png" width="50%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-35-1.png" width="50%" /&gt;
 ---
 
 ```r
@@ -2098,7 +2098,7 @@ ggplot(demo) +
   theme(legend.position = "none")
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-37-1.png" width="80%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-37-1.png" width="80%" /&gt;
 ]
 .pull-right[
 
@@ -2110,7 +2110,7 @@ ggplot(demo_count) +
   theme(legend.position = "none")
 ```
 
-&lt;img src="Week2_files/figure-html/unnamed-chunk-38-1.png" width="80%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-38-1.png" width="80%" /&gt;
 ]
 
 ---
