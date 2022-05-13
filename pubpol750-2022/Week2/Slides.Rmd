@@ -70,7 +70,7 @@ glimpse(mpg)
 ---
 class: inverse, middle, center
 
-# Two different philosophies to learning R (one very quick word)
+# Two different philosophies when learning R (one very quick word)
 
 ### <p style="color:grey;">math + base R (not really covered)</p>
 ### <p style="color:green;">data analysis with examples (the focus of this course)</p>
@@ -197,14 +197,14 @@ ggplot(data = mpg) +
 ## Transformations
 .pull-left[
 ```{r}
-demo <- tribble(
+(demo <- tribble(
   ~cut,         ~freq,
   "Fair",       1610,
   "Good",       4906,
   "Very Good",  12082,
   "Premium",    13791,
   "Ideal",      21551
-)
+))
 ```
 ]
 
@@ -275,27 +275,6 @@ ggplot(data = mpg)) + #<<
 
 ---
 
-## Using help
-
-```{r}
-?coord_fixed
-```
-.pull-left[
-```{r out.width='70%'}
-ggplot(data = mpg, mapping =
-         aes(x = displ, y = hwy)) + 
-  geom_point()
-```
-]
-.pull-right[
-```{r, out.width='70%'}
-ggplot(data = mpg, mapping =
-         aes(x = displ, y = hwy)) + 
-  geom_point() + coord_fixed()
-```
-]
-
----
 class: inverse, middle, center
 
 # Summary (Section 3.10 in R4DS)
@@ -364,6 +343,6 @@ class: inverse, middle, center
 
 # Exercices
 
-### 3.3.1, 3.5.1, 3.6.1, 3.7.1, 3.8.1, 3.9.1
+### 3.2.4 3.3.1, 3.5.1, 3.6.1, 3.7.1, 3.8.1, 3.9.1
 
 ### Solutions: https://jrnold.github.io/r4ds-exercise-solutions/
