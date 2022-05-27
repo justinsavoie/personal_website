@@ -1,0 +1,143 @@
+---
+title: "PUBPOL 750 Homework 1"
+output: html_document
+---
+
+### Introduction
+
+This homework mostly involves copying and pasting with some minor tweaks. It should not be too long. It is designed to make sure you can load data, transform data, and visualize it.
+
+In this assigment, we will use data from Canadian Members of Parliament. Data is available here if you want to check it: https://lop.parl.ca/sites/ParlInfo/default/en_CA/People/parliamentarians (you click search and then export all data). But you don't have to download anything. It's available on the course's website with the slides.
+
+You have two things to hand in.
+
+1. Create a R script and save it. The file should look like: `example_rscript_homework1.R`. You will hand in this R script.
+2. In the R script, you will save figures using the ggsave() functions. These will be png figures. Include all figures in a Microsoft Word document. You will hand this in too.
+
+We will take a look at gender representation in the House of Commons, by historical period and by party.
+
+### Homework
+
+Load the three libraries we will need for this assignment. If they are not installed on your computer, install them with `install.packages('nameoflibrary')`.
+
+Take a look at `Parliamentarians.xlsx` in Excel or Numbers.
+
+Change the path of the file. On my computer, `Parliamentarians.xlsx` is in `Downloads`. Change this on your computer so it's wherever the file is.
+
+```{r, warning=FALSE, message=FALSE}
+library(readxl)
+library(tidyverse)
+library(lubridate)
+
+Parliamentarians <- read_excel("~/Downloads/Parliamentarians.xlsx")
+```
+
+Clean the data with the code below. It's fine if this appears very complicated. It should get clearer as the semester advances. Each line has a comment (# are comments) explaining what is going on in the code.
+
+But really, it's also OK if you just copy paste this without understanding the details.
+
+```{r}
+# filter by whether "MP" is in the variable `Type of Parliamentarian`
+Parliamentarians <- filter(Parliamentarians,str_detect(`Type of Parliamentarian`,"MP"))
+
+# create (mutate) variables for start and end date of the parliamentarian
+# str_sub(x,5,14) returns the values between positions 5 and 14
+# e.g. str_sub("abcdefghytr56",3,10) returns "cdefghyt"
+# yms() coerces dates-as-string to date format 
+Parliamentarians <- mutate(Parliamentarians,date_started=ymd(str_sub(`Type of Parliamentarian`,5,14)))
+Parliamentarians <- mutate(Parliamentarians,date_ended=str_sub(`Type of Parliamentarian`,18,27))
+
+# Clean and extract party and province. These are regular expressions and it's fine if it's not clear. Regular expression extract/replace data based on patterns.
+# If you are curious, take a look at this:
+# https://jfjelstul.github.io/regular-expressions-tutorial/
+Parliamentarians <- mutate(Parliamentarians,party=trimws(str_extract(`Political Affiliation`, "[^\\()]+")))
+Parliamentarians <- mutate(Parliamentarians,province=str_extract(`Province/Territory`, "[^\\\r]+"))
+
+# Change format of date to date format
+Parliamentarians <- mutate(Parliamentarians,date_ended=ymd(Parliamentarians$date_ended,quiet = TRUE))
+# If no end date, Parliamentarian is still in HoC so put today as end date.
+# If you are very curious, look up difference between ifelse() and if_else()
+Parliamentarians <- mutate(Parliamentarians,date_ended=if_else(is.na(date_ended),ymd(today()),date_ended))
+
+# Keep only those parties, let's not keep the small parties / indps
+names_keep <- c("Conservative", "Conservative Party of Canada", "Liberal Party of Canada", 
+"New Democratic Party", "Progressive Conservative Party")
+Parliamentarians <- filter(Parliamentarians, party %in% names_keep)
+
+# Keep only variables we need
+Parliamentarians <- select(Parliamentarians, Name,Gender,party,date_started,date_ended,province)
+
+# Delete rows where missing values
+Parliamentarians <- na.omit(Parliamentarians)
+
+```
+
+Output a basic bar chart plotting gender on the x axis and counts on the y axis. You can use this code:
+
+```{r, eval=FALSE}
+ggplot(Parliamentarians,aes(x=Gender)) +
+  geom_bar()
+```
+
+Save it using ggsave(). Play with the width and height parameters so that the graph looks decent. I save the figures on my desktop, but you can save them elsewhere by changing the path. You can add axes-labels/title by adding `+labs(x="yourxlabel",y="yourylabel",title="yourtitle")`. 
+
+```{r, eval=FALSE}
+ggsave("~/Desktop/figure1.png",width=8,height=6)
+```
+
+Output the exact same bar chart, but calculating counts yourself, and then plotting it. Save as figure2.
+
+```{r, eval=FALSE}
+Parliamentarians_grouped <- group_by(Parliamentarians,Gender)
+to_plot <- summarise(Parliamentarians_grouped,count=n())
+
+ggplot(to_plot,aes(x=Gender,y=count)) +
+  geom_bar(stat='identity')
+ggsave("~/Desktop/figure2.png",width=8,height=6)
+```
+
+Create a variable called year_period that cuts years in 4 groups (i.e. those MPs that started before 1900, 1950, 2000 and after 2000). 
+
+```{r, eval=FALSE}
+Parliamentarians <- mutate(Parliamentarians,year=year(date_started))
+Parliamentarians <- mutate(Parliamentarians,year_period=cut(year,c(1860,1900,1950,2000,2025),dig.lab = 4))
+```
+
+Plot the number of male and female MPs per time period. Save as figure3 (not shown).
+
+```{r,eval=FALSE}
+ggplot(Parliamentarians,aes(x=Gender)) +
+  geom_bar() +
+  facet_wrap(~year_period) + 
+  scale_y_continuous(limits=c(0,1300))
+```
+
+Plot the number of male and female MPs per time period and party. Save as figure4 (not shown).
+
+```{r,eval=FALSE}
+ggplot(Parliamentarians,aes(x=Gender,fill=party)) +
+  geom_bar() +
+  facet_grid(cols=vars(party),rows=vars(year_period)) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values=c("darkblue","darkblue","red","orange","darkblue"))
+```
+
+Transform the party variable so that all the various "Conservative" parties are together mapped to "Conservative". Then rerun the last figure. Save as figure5.
+
+```{r, eval=FALSE}
+Parliamentarians <- mutate(Parliamentarians,recode(party,!!!c("Conservative Party of Canada"="Conservative",
+                                          "Progressive Conservative Party"="Conservative")))
+```
+
+Lastly, try to replicate figure5 exactly by first grouping by party and year period and gender (a triple group_), then using summarise() to calculate counts by groups. Then replicate figure5 by adding `stat='identity'` inside geom_bar(). You don't have to include this figure in the Word document, it's just an additional challenge to see that you can do plots in different ways.
+
+```{r, eval=FALSE, include=FALSE}
+to_plot <- Parliamentarians %>%
+  group_by(party,year_period,Gender) %>%
+  summarise(n=n())
+ggplot(to_plot,aes(x=Gender,y=n,fill=party)) +
+  geom_bar(stat='identity') +
+  facet_grid(cols=vars(party),rows=vars(year_period)) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values=c("darkblue","darkblue","red","orange","darkblue"))
+```
