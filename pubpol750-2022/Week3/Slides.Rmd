@@ -22,6 +22,16 @@ library(tidyverse)
 
 class: inverse, center, middle
 
+# Offset in weeks
+### Week 3 in content becomes week 4 in calendar
+### Week 4 in content becomes week 5 in calendar etc.
+### HW1 due June 3; Project 1 due July 8
+### Project 2: no change, due August 12
+
+---
+
+class: inverse, center, middle
+
 # Summary Week 2 Data Viz
 
 ---
@@ -229,3 +239,16 @@ mutate(mtcars_grouped,avg_mpg_cyl=mean(mpg))
 mtcars_grouped <- group_by(mtcars,cyl)
 summarise(mtcars_grouped,avg_mpg_cyl=mean(mpg))
 ```
+
+---
+class: inverse, center, middle
+
+# Homework 1
+
+---
+
+class: inverse, center, middle
+
+# Exercices
+
+### 5.2.4 5.3.1 5.4.1 5.5.2 5.6.7 5.7.1
