@@ -140,14 +140,14 @@ flights
 ```{r}
 filter(flights,month==1,day==1)
 ```
-
+---
 ### filter()
 
 ```{r}
 filtered_flights <- filter(flights,month==1,day==1)
 filtered_flights
 ```
-
+---
 ### filter()
 
 ```{r}
@@ -174,11 +174,11 @@ filter(flights,is.na(arr_time))
 ```{r}
 head(arrange(flights,arr_time))
 ```
-
+---
 ```{r}
 head(arrange(flights,desc(arr_time)))
 ```
-
+---
 ```{r}
 head(arrange(flights,month,desc(day)))
 ```
@@ -200,12 +200,6 @@ select(flights,-month,-day)
 ### select()
 ```{r}
 select(flights,contains('time'))
-```
----
-
-### mutate()
-```{r}
-mutate(mtcars,one=1)
 ```
 ---
 
