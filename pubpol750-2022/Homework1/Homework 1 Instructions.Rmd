@@ -103,7 +103,7 @@ Parliamentarians <- mutate(Parliamentarians,year=year(date_started))
 Parliamentarians <- mutate(Parliamentarians,year_period=cut(year,c(1860,1900,1950,2000,2025),dig.lab = 4))
 ```
 
-Plot the number of male and female MPs per time period. Save as figure3 (not shown).
+Plot the number of male and female MPs per time period. Save as figure3 using ggsave().
 
 ```{r,eval=FALSE}
 ggplot(Parliamentarians,aes(x=Gender)) +
@@ -112,7 +112,7 @@ ggplot(Parliamentarians,aes(x=Gender)) +
   scale_y_continuous(limits=c(0,1300))
 ```
 
-Plot the number of male and female MPs per time period and party. Save as figure4 (not shown).
+Plot the number of male and female MPs per time period and party. Save as figure4 using ggsave().
 
 ```{r,eval=FALSE}
 ggplot(Parliamentarians,aes(x=Gender,fill=party)) +
@@ -122,7 +122,7 @@ ggplot(Parliamentarians,aes(x=Gender,fill=party)) +
   scale_fill_manual(values=c("darkblue","darkblue","red","orange","darkblue"))
 ```
 
-Transform the party variable so that all the various "Conservative" parties are together mapped to "Conservative". Then rerun the last figure. Save as figure5.
+Transform the party variable so that all the various "Conservative" parties are together mapped to "Conservative". Then rerun the last figure. Save as figure5 using ggsave().
 
 ```{r, eval=FALSE}
 Parliamentarians <- mutate(Parliamentarians,recode(party,!!!c("Conservative Party of Canada"="Conservative",

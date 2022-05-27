@@ -238,18 +238,18 @@ ggsave(&quot;~/Desktop/figure2.png&quot;,width=8,height=6)</code></pre>
 <p>Create a variable called year_period that cuts years in 4 groups (i.e. those MPs that started before 1900, 1950, 2000 and after 2000).</p>
 <pre class="r"><code>Parliamentarians &lt;- mutate(Parliamentarians,year=year(date_started))
 Parliamentarians &lt;- mutate(Parliamentarians,year_period=cut(year,c(1860,1900,1950,2000,2025),dig.lab = 4))</code></pre>
-<p>Plot the number of male and female MPs per time period. Save as figure3 (not shown).</p>
+<p>Plot the number of male and female MPs per time period. Save as figure3 using ggsave().</p>
 <pre class="r"><code>ggplot(Parliamentarians,aes(x=Gender)) +
   geom_bar() +
   facet_wrap(~year_period) + 
   scale_y_continuous(limits=c(0,1300))</code></pre>
-<p>Plot the number of male and female MPs per time period and party. Save as figure4 (not shown).</p>
+<p>Plot the number of male and female MPs per time period and party. Save as figure4 using ggsave().</p>
 <pre class="r"><code>ggplot(Parliamentarians,aes(x=Gender,fill=party)) +
   geom_bar() +
   facet_grid(cols=vars(party),rows=vars(year_period)) +
   theme(legend.position = &quot;none&quot;) +
   scale_fill_manual(values=c(&quot;darkblue&quot;,&quot;darkblue&quot;,&quot;red&quot;,&quot;orange&quot;,&quot;darkblue&quot;))</code></pre>
-<p>Transform the party variable so that all the various “Conservative” parties are together mapped to “Conservative”. Then rerun the last figure. Save as figure5.</p>
+<p>Transform the party variable so that all the various “Conservative” parties are together mapped to “Conservative”. Then rerun the last figure. Save as figure5 using ggsave().</p>
 <pre class="r"><code>Parliamentarians &lt;- mutate(Parliamentarians,recode(party,!!!c(&quot;Conservative Party of Canada&quot;=&quot;Conservative&quot;,
                                           &quot;Progressive Conservative Party&quot;=&quot;Conservative&quot;)))</code></pre>
 <p>Lastly, try to replicate figure5 exactly by first grouping by party and year period and gender (a triple group_), then using summarise() to calculate counts by groups. Then replicate figure5 by adding <code>stat=&#39;identity&#39;</code> inside geom_bar(). You don’t have to include this figure in the Word document, it’s just an additional challenge to see that you can do plots in different ways.</p>
