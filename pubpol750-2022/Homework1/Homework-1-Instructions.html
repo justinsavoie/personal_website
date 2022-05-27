@@ -253,6 +253,7 @@ Parliamentarians &lt;- mutate(Parliamentarians,year_period=cut(year,c(1860,1900,
 <pre class="r"><code>Parliamentarians &lt;- mutate(Parliamentarians,recode(party,!!!c(&quot;Conservative Party of Canada&quot;=&quot;Conservative&quot;,
                                           &quot;Progressive Conservative Party&quot;=&quot;Conservative&quot;)))</code></pre>
 <p>Lastly, try to replicate figure5 exactly by first grouping by party and year period and gender (a triple group_), then using summarise() to calculate counts by groups. Then replicate figure5 by adding <code>stat=&#39;identity&#39;</code> inside geom_bar(). You don’t have to include this figure in the Word document, it’s just an additional challenge to see that you can do plots in different ways.</p>
+<p>Optional: if you want to try more data analysis, mutate a new variable called <code>year_in_office</code> with <code>mutate(year(date_ended)-year(date_started))</code>. Filter parliamentarians before 2000 because those after 2000 might actually have a smaller number of years in office (e.g. all those who were elected in 2015 or 2019). Try to use geom_density() with various facets / colors. Try to use summarise() over <code>year_in_office</code> by different groups.</p>
 </div>
 
 
