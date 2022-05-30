@@ -122,10 +122,10 @@ ggplot(Parliamentarians,aes(x=Gender,fill=party)) +
   scale_fill_manual(values=c("darkblue","darkblue","red","orange","darkblue"))
 ```
 
-Transform the party variable so that all the various "Conservative" parties are together mapped to "Conservative". Then rerun the last figure. Save as figure5 using ggsave().
+Transform the party variable so that all the various "Conservative" parties are together mapped to "Conservative". Then rerun the last figure. Save as figure5 using ggsave(). You will have to change the five color values to three.
 
 ```{r, eval=FALSE}
-Parliamentarians <- mutate(Parliamentarians,recode(party,!!!c("Conservative Party of Canada"="Conservative",
+Parliamentarians <- mutate(Parliamentarians,party=recode(party,!!!c("Conservative Party of Canada"="Conservative",
                                           "Progressive Conservative Party"="Conservative")))
 ```
 
