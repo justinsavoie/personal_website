@@ -39,32 +39,46 @@ Parliamentarians <- na.omit(Parliamentarians)
 
 ##### END OF CLEANING
 
+# Make Figure 1
 ggplot(Parliamentarians,aes(x=Gender)) +
-  geom_bar()
+  geom_bar(stat='count')
+# Save Figure 1
 ggsave("~/Desktop/figure1.png")
+
+# Group by Gender and count
 Parliamentarians_grouped <- group_by(Parliamentarians,Gender)
 to_plot <- summarise(Parliamentarians_grouped,count=n())
 
+# Plot and save as Figure 2
+# Note: Figures 1 and 2 are the same. But figure 1 uses stat='count' and figure 2 uses stat='identity'
 ggplot(to_plot,aes(x=Gender,y=count)) +
   geom_bar(stat='identity')
 ggsave("~/Desktop/figure2.png")
+
+# Create a variable called year_period by 'cutting' year in 4 periods
 Parliamentarians <- mutate(Parliamentarians,year=year(date_started))
 Parliamentarians <- mutate(Parliamentarians,year_period=cut(year,c(1860,1900,1950,2000,2025),dig.lab = 4))
 
+# Plot and save figure 3
 ggplot(Parliamentarians,aes(x=Gender)) +
   geom_bar() +
   facet_wrap(~year_period) + 
   scale_y_continuous(limits=c(0,1300))
 ggsave("~/Desktop/figure3.png")
+
+# Plot and save figure 4
 ggplot(Parliamentarians,aes(x=Gender,fill=party)) +
   geom_bar() +
   facet_grid(cols=vars(party),rows=vars(year_period)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=c("darkblue","darkblue","red","orange","darkblue"))
 ggsave("~/Desktop/figure4.png")
+
+# Recode party variable
+table(Parliamentarians$party)
 Parliamentarians <- mutate(Parliamentarians,party=recode(party,!!!c("Conservative Party of Canada"="Conservative",
                                                                     "Progressive Conservative Party"="Conservative")))
-
+table(Parliamentarians$party)
 ggplot(Parliamentarians,aes(x=Gender,fill=party)) +
   geom_bar() +
   facet_grid(cols=vars(party),rows=vars(year_period)) +
