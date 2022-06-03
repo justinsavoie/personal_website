@@ -22,223 +22,232 @@ library(tidyverse)
 
 class: inverse, center, middle
 
-# Summary Week 3 Data transformation
-
----
-
-```{r}
-ggplot(mpg) +
-  geom_point(aes(x=displ,y=hwy, color=class))
-```
-
----
-
-```{r}
-ggplot(mpg) +
-  geom_point(aes(x=displ,y=hwy, color=factor(year))) +
-  facet_wrap(~class) +
-  coord_polar()
-```
-
----
-
-```{r message=FALSE, fig.align='center'}
-library(maps)
-world <- map_data("world")
-world$type <- "No"
-world$type <- ifelse(world$region %in% c("China","France","Russia","UK","USA"),"Perm.",world$type)
-world$type <- ifelse(world$region %in% c("Albania","Brazil","Gabon","Ghana","India","Ireland","Kenya","Mexico","Norway","United Arab Emirates"),"Non.perm",world$type)
-
-ggplot() +
-  geom_polygon(data = world, aes(x=long, y = lat, group = group, fill=type)) + 
-  labs(fill="UN Security Council") + coord_fixed(1.3) + theme(legend.position = "top", plot.margin = margin(-5,1,1.5,1.2, "cm"))
-```
-
----
-class: inverse, center, middle
-
-# Basics
-
----
-
-### Objects
-
-```{r}
-x <- c(1,2,3)
-x
-```
-
-```{r}
-x <- "my name is justin"
-x
-```
-
-```{r}
-z <- sum(c(1,2,3))*2
-z
-```
-
-```{r}
-x1 <- c(2,4,6)
-x2 <- c(4,5,1)
-x12 <- x1+x2
-x12
-```
-
----
-
-### Functions
-
-```{r}
-my_vector <- c(1,2,3,4,5)
-mean(my_vector)
-```
-
-```{r}
-rnorm(10,mean=100,sd=25)
-```
-
-```{r}
-seq(from=0,to=10,by=2)
-```
-```{r}
-seq(0,10,2)
-```
----
-class: inverse, center, middle
-
-# Data transformation
-
----
-
-### Five key verbs
-
-`filter()`
-`arrange()`
-`select()`
-`mutate()`
-`summarise()`
-
-can be used with 
-`groub_by()`
-
-which applies the verbs, but "by group"
-
----
-
-### Let's look at the flights data frame
-
-```{r}
-library(nycflights13)
-flights
-```
-
----
-
-### filter()
-
-```{r}
-filter(flights,month==1,day==1)
-```
----
-### filter()
-
-```{r}
-filtered_flights <- filter(flights,month==1,day==1)
-filtered_flights
-```
----
-### filter()
-
-```{r}
-filter(flights,arr_time>2330)
-```
----
-
-### filter()
-
-```{r}
-filter(flights,arr_time %in% c(2200,2300,2400))
-```
----
-
-### filter()
-
-```{r}
-filter(flights,is.na(arr_time))
-```
----
-
-### arrange()
-
-```{r}
-head(arrange(flights,arr_time))
-```
----
-```{r}
-head(arrange(flights,desc(arr_time)))
-```
----
-```{r}
-head(arrange(flights,month,desc(day)))
-```
-
----
-
-### select()
-```{r}
-select(flights,month,day)  
-```
----
-
-### select()
-```{r}
-select(flights,-month,-day)  
-```
----
-
-### select()
-```{r}
-select(flights,contains('time'))
-```
----
-
-### mutate()
-```{r}
-mutate(mtcars,one=1)
-```
----
-### mutate()
-```{r}
-mutate(mtcars,hp2=hp^2)
-```
----
-### mutate()
-```{r}
-mutate(mtcars,hpbycyl=hp/cyl)
-```
----
-### group_by() with mutate()
-```{r}
-mtcars_grouped <- group_by(mtcars,cyl)
-mutate(mtcars_grouped,avg_mpg_cyl=mean(mpg))
-```
----
-### group_by() with summarise()
-```{r}
-mtcars_grouped <- group_by(mtcars,cyl)
-summarise(mtcars_grouped,avg_mpg_cyl=mean(mpg))
-```
-
----
-class: inverse, center, middle
-
 # Homework 1
+### Solutions code posted on the website
+---
+
+class: inverse, center, middle
+
+# The pipe (%>%)
+---
+
+# The pipe (%>%)
+
+- We use the pipe to emphasise a sequence of actions
+- The pipe means "THEN"
+
+```{r}
+mtcars_grouped <- group_by(mtcars,cyl)
+count(mtcars_grouped)
+```
+---
+# The pipe (%>%)
+```{r}
+mtcars %>%
+  group_by(cyl) %>%
+  count()
+```
+
+In plain language: take the mtcars dataset THEN group by "cyl" THEN count.
+---
+
+```{r}
+mtcars %>%
+  filter(cyl==4) %>%
+  select(mpg,hp,vs,cyl)
+```
+---
+# Another way to think of the pipe (%>%)
+```{r}
+my_vector <- c(1,2,3,4,8)
+mean(my_vector)
+my_vector %>%
+  mean()
+```
+
+More formally, the pipe passes what comes before the pipe as the first argument in the function after the pipe.
+---
+# Now that we know about the pipe, let's take a look at the homework
+---
+
+class: inverse, center, middle
+
+# Data importing
+---
+
+# Reading a csv
+
+```{r, eval=FALSE}
+library(tidyverse)
+Parliamentarians_subset100 <- read_csv("https://www.justinsavoie.com/pubpol750-2022/homework1/Parliamentarians_subset100.csv")
+Parliamentarians_subset100 <- read_csv("~/Downloads/Parliamentarians_subset100.csv")
+Parliamentarians_subset100 <- read_csv("/Users/justinsavoie/Downloads/Parliamentarians_subset100.csv")
+Parliamentarians_subset100 <- read_csv("/Users/justinsavoie/Documents/personal_repos/personal_website/pubpol750-2022/Homework1/Parliamentarians_subset100.csv")
+Parliamentarians_subset100 <- read_csv("C:\\Users\\justinsavoie\\Downloads/Parliamentarians_subset100.csv")
+```
+
+# Reading an excel file
+
+```{r}
+library(readxl)
+Parliamentarians_subset100 <- read_excel("~/Downloads/Parliamentarians.xlsx")
+```
+---
+# Reading spss, sas, stata files
+```{r}
+library(haven)
+#read_spss()
+#read_sas()
+#read_stata()
+library(readstata13)
+#readstata13::read.dta13()
+```
 
 ---
 
 class: inverse, center, middle
 
-# Exercices
+# Tidy data
+---
 
-### 5.2.4 5.3.1 5.4.1 5.5.2 5.6.7 5.7.1
+# Tidy data
+
+(A)
+- Each variable must have its own column.
+- Each observation must have its own row.
+- Each value must have its own cell.
+
+(B)
+- Put each dataset in a tibble.
+- Put each variable in a column.
+
+---
+
+.pull-left[
+```{r}
+table1
+table2
+```
+]
+.pull-right[
+```{r}
+table3
+table4a
+table4b
+```
+]
+---
+# Pivoting
+
+- Pivoting wider
+- Pivoting longer
+---
+# Pivoting wider
+
+- column names are not names of variables, but values of a variable
+.pull-left[
+```{r}
+table4a
+```
+]
+.pull-right[
+```{r}
+table4a %>%
+  pivot_longer(cols=c(`1999`,`2000`),names_to = 'year', values_to = 'cases')
+```
+]
+---
+```{r}
+tidy4a <- table4a %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+tidy4b <- table4b %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "population")
+left_join(tidy4a, tidy4b)
+```
+---
+# Pivoting wider
+.pull-left[
+```{r}
+table2
+```
+]
+.pull-right[
+```{r}
+table2 %>%
+    pivot_wider(names_from = type, values_from = count)
+```
+]
+---
+# Separating
+.pull-left[
+```{r}
+table3
+```
+]
+.pull-right[
+```{r}
+table3 %>% 
+  separate(rate, into = c("cases", "population"))
+```
+]
+---
+# Uniting
+.pull-left[
+```{r}
+table5
+```
+]
+.pull-right[
+```{r}
+table5 %>% 
+  unite(new, century, year)
+```
+]
+---
+# Missing values
+
+- Explicit vs Implicit
+
+```{r}
+(stocks <- tibble(
+  year   = c(2015, 2015, 2015, 2015, 2016, 2016, 2016),
+  qtr    = c(   1,    2,    3,    4,    2,    3,    4),
+  return = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+))
+```
+
+---
+
+- Force explicit
+
+```{r}
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return)
+```
+
+---
+
+```{r}
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return) %>%
+  pivot_longer(cols=c(`2015`,`2016`),names_to='year',values_to='return')
+```
+---
+
+```{r}
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return) %>%
+  pivot_longer(cols=c(`2015`,`2016`),names_to='year',values_to='return',values_drop_na = TRUE)
+```
+---
+.pull-left[
+```{r}
+stocks
+```
+]
+.pull-left[
+```{r}
+stocks %>% 
+  complete(year, qtr)
+```
+]
