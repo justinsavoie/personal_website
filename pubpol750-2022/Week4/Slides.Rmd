@@ -1,0 +1,244 @@
+---
+title: "Week 4: Importing data and tidy data"
+subtitle: "PUBPOL 750 Data Analysis for Public Policy I"
+author: "Justin Savoie"
+institute: "MPP-DS McMaster"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: '16:9'
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(kableExtra)
+library(tidyverse)
+```
+
+class: inverse, center, middle
+
+# Summary Week 3 Data transformation
+
+---
+
+```{r}
+ggplot(mpg) +
+  geom_point(aes(x=displ,y=hwy, color=class))
+```
+
+---
+
+```{r}
+ggplot(mpg) +
+  geom_point(aes(x=displ,y=hwy, color=factor(year))) +
+  facet_wrap(~class) +
+  coord_polar()
+```
+
+---
+
+```{r message=FALSE, fig.align='center'}
+library(maps)
+world <- map_data("world")
+world$type <- "No"
+world$type <- ifelse(world$region %in% c("China","France","Russia","UK","USA"),"Perm.",world$type)
+world$type <- ifelse(world$region %in% c("Albania","Brazil","Gabon","Ghana","India","Ireland","Kenya","Mexico","Norway","United Arab Emirates"),"Non.perm",world$type)
+
+ggplot() +
+  geom_polygon(data = world, aes(x=long, y = lat, group = group, fill=type)) + 
+  labs(fill="UN Security Council") + coord_fixed(1.3) + theme(legend.position = "top", plot.margin = margin(-5,1,1.5,1.2, "cm"))
+```
+
+---
+class: inverse, center, middle
+
+# Basics
+
+---
+
+### Objects
+
+```{r}
+x <- c(1,2,3)
+x
+```
+
+```{r}
+x <- "my name is justin"
+x
+```
+
+```{r}
+z <- sum(c(1,2,3))*2
+z
+```
+
+```{r}
+x1 <- c(2,4,6)
+x2 <- c(4,5,1)
+x12 <- x1+x2
+x12
+```
+
+---
+
+### Functions
+
+```{r}
+my_vector <- c(1,2,3,4,5)
+mean(my_vector)
+```
+
+```{r}
+rnorm(10,mean=100,sd=25)
+```
+
+```{r}
+seq(from=0,to=10,by=2)
+```
+```{r}
+seq(0,10,2)
+```
+---
+class: inverse, center, middle
+
+# Data transformation
+
+---
+
+### Five key verbs
+
+`filter()`
+`arrange()`
+`select()`
+`mutate()`
+`summarise()`
+
+can be used with 
+`groub_by()`
+
+which applies the verbs, but "by group"
+
+---
+
+### Let's look at the flights data frame
+
+```{r}
+library(nycflights13)
+flights
+```
+
+---
+
+### filter()
+
+```{r}
+filter(flights,month==1,day==1)
+```
+---
+### filter()
+
+```{r}
+filtered_flights <- filter(flights,month==1,day==1)
+filtered_flights
+```
+---
+### filter()
+
+```{r}
+filter(flights,arr_time>2330)
+```
+---
+
+### filter()
+
+```{r}
+filter(flights,arr_time %in% c(2200,2300,2400))
+```
+---
+
+### filter()
+
+```{r}
+filter(flights,is.na(arr_time))
+```
+---
+
+### arrange()
+
+```{r}
+head(arrange(flights,arr_time))
+```
+---
+```{r}
+head(arrange(flights,desc(arr_time)))
+```
+---
+```{r}
+head(arrange(flights,month,desc(day)))
+```
+
+---
+
+### select()
+```{r}
+select(flights,month,day)  
+```
+---
+
+### select()
+```{r}
+select(flights,-month,-day)  
+```
+---
+
+### select()
+```{r}
+select(flights,contains('time'))
+```
+---
+
+### mutate()
+```{r}
+mutate(mtcars,one=1)
+```
+---
+### mutate()
+```{r}
+mutate(mtcars,hp2=hp^2)
+```
+---
+### mutate()
+```{r}
+mutate(mtcars,hpbycyl=hp/cyl)
+```
+---
+### group_by() with mutate()
+```{r}
+mtcars_grouped <- group_by(mtcars,cyl)
+mutate(mtcars_grouped,avg_mpg_cyl=mean(mpg))
+```
+---
+### group_by() with summarise()
+```{r}
+mtcars_grouped <- group_by(mtcars,cyl)
+summarise(mtcars_grouped,avg_mpg_cyl=mean(mpg))
+```
+
+---
+class: inverse, center, middle
+
+# Homework 1
+
+---
+
+class: inverse, center, middle
+
+# Exercices
+
+### 5.2.4 5.3.1 5.4.1 5.5.2 5.6.7 5.7.1

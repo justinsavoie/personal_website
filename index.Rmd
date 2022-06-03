@@ -1,50 +1,11 @@
 ---
 output: html_document
-title: 'Justin Savoie'
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-#<div class="topnav">
-#  <a class="active" href="#about">About</a>
-#  <a class="active" href="#research">Research</a>
-#  <a href="#contact">Contact</a>
-#</div>
-#
-#<style>
-#.topnav {
-#  background-color: white;
-#  overflow: hidden;
-#}
-#
-#.topnav a {
-#  float: left;
-#  color: black;
-#  text-align: center;
-#  padding: 14px 16px;
-#  text-decoration: none;
-#  font-size: 17px;
-#}
-#
-#.topnav a:hover {
-#  background-color: white;
-#  color: black;
-#}
-#
-#.topnav a.active {
-#  background-color: white;
-#  color: black;
-#}
-#</style>
-
 ```
-
-<style>
-  .title{
-    display: none;
-  }
-</style>
 
 ### Justin Savoie
 
