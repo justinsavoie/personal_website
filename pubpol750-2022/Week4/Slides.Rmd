@@ -23,7 +23,7 @@ library(tidyverse)
 class: inverse, center, middle
 
 # Homework 1
-### Solutions code posted on the website
+### Solution code for HW1 posted on the website
 ---
 
 class: inverse, center, middle
