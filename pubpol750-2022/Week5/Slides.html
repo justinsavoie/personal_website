@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Week 5: Exploratory Data Analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Justin Savoie" />
+    <meta name="date" content="2022-06-10" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Week 5: Exploratory Data Analysis
+## PUBPOL 750 Data Analysis for Public Policy I
+### Justin Savoie
+### MPP-DS McMaster
+### 2022-06-10
+
+---
+
+
+
+
+class: inverse, center, middle
+
+# Summary to date
+### Visualization
+### Transformation
+### Tidy data
+
+---
+
+class: inverse, center, middle
+
+# Exploratory Data Analysis (EDA)
+
+---
+
+### "There are no routine statistical questions, only questionable statistical routines." - Sir David Cox
+
+### "Far better an approximate answer to the right question, which is often vague, than an exact answer to the wrong question, which can always be made precise." - John Tukey
+
+### Your goal during EDA is to **develop an understanding of your data**.
+
+---
+
+# Some terms
+
+- A variable is a quantity, quality, or property that you can measure. (e.g. satisfaction with policy)
+
+- A value is the state of a variable when you measure it. The value of a variable may change from measurement to measurement. (e.g. Very dissastified, Somewhat dissatisfied, etc.)
+
+- An observation is a set of measurements made under similar conditions (you usually make all of the measurements in an observation at the same time and on the same object). An observation will contain several values, each associated with a different variable. (e.g. Mrs De la Hoya's answers to all questions in the survey)
+
+- Tabular data is a set of values, each associated with a variable and an observation. (e.g. your data that fits in a spreadsheed, where rows are individuals and columns variables)
+
+---
+
+# Variable types
+
+&lt;img src="images/types.png" width="70%" /&gt;
+
+For more info: https://statsandr.com/blog/variable-types-and-examples/
+---
+# Transformations
+
+- Convert ordinal to numeric. e.g. (Q1) How much should the government do to reduce the gap between the rich and the poor? - (1) Much less (2) Somewhat less (3) About the same as now (4) Somewhat more (5) Much more (6) Don't know. (Q1) is called a Likert-type question. The choices are a Likert scale. Likert (3-choices) (5-choices) or (7-choices) are common in social sciences. They are often converted to numeric. But then, you need to decide what to do with "(6) Don't know." ... Can drop it. Can put it as (3-middle-category).
+
+- Convert income numeric to brackets (e.g. &lt;30k, 30-60k ...) 
+
+- Age to age groups
+
+- If you have vote intention maybe you want to convert intention to e.g. "Liberal vs the rest" Or maybe "CPC + PPC" vs the rest.
+
+- Convert a binary category to 1 and 0. e.g. Liberal = 1, the rest = 0.
+
+- Convert income brackets to numeric (e.g. using the median of the bracket). This is seldom done.
+
+---
+# Check the codebook!!!
+
+- female / male / other coded as 1,2,99
+- female / male / other coded as 1,2,3
+- female / male / other coded as 1,2,3,-99
+- female / male / other coded as 1,2,3,60
+
+- a scale from 0-10 coded as 1 to 11 !!!
+---
+# Variable types in R
+
+- R has six data types (character, numeric, integer, logical, complex, raw). But this is not very important.
+
+- For more info: https://swcarpentry.github.io/r-novice-inflammation/13-supp-data-structures/
+
+- R has data structures (**vectors**, list, matrix, **data frame**, **factor**). For now we can ignore lists and matrices.
+
+- A tidy data set is a data frame. It's also called a tibble. A tibble is the tidyverse version of the data frame. 
+
+- A data frame has columns that are variables. Those variables can be numbers, character strings or factors. If you extract those variables from the data frame they become vectors. So the columns of the data frame are vectors.
+
+- Numbers and character strings that's straightforward. Factors are labels of text "over" numbers.
+
+---
+# Data frames (and vectors/variables)
+
+```r
+mtcars$cyl
+```
+
+```
+##  [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+```
+
+```r
+mtcars %&gt;% pull(cyl)
+```
+
+```
+##  [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+```
+
+```r
+# get second column
+mtcars[,2]
+```
+
+```
+##  [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+```
+
+```r
+# get second row
+mtcars[2,]
+```
+
+```
+##               mpg cyl disp  hp drat    wt  qsec vs am gear carb
+## Mazda RX4 Wag  21   6  160 110  3.9 2.875 17.02  0  1    4    4
+```
+---
+
+# Factors
+
+
+```r
+mtcars$cyl
+```
+
+```
+##  [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+```
+
+```r
+factor(mtcars$cyl)
+```
+
+```
+##  [1] 6 6 4 6 8 6 8 4 4 6 6 8 8 8 8 8 8 4 4 4 4 8 8 8 8 4 4 4 8 6 8 4
+## Levels: 4 6 8
+```
+
+```r
+as.character(mtcars$cyl)
+```
+
+```
+##  [1] "6" "6" "4" "6" "8" "6" "8" "4" "4" "6" "6" "8" "8" "8" "8" "8" "8" "4" "4"
+## [20] "4" "4" "8" "8" "8" "8" "4" "4" "4" "8" "6" "8" "4"
+```
+
+```r
+mtcars$cyl+1
+```
+
+```
+##  [1] 7 7 5 7 9 7 9 5 5 7 7 9 9 9 9 9 9 5 5 5 5 9 9 9 9 5 5 5 9 7 9 5
+```
+
+```r
+as.numeric(factor(mtcars$cyl))
+```
+
+```
+##  [1] 2 2 1 2 3 2 3 1 1 2 2 3 3 3 3 3 3 1 1 1 1 3 3 3 3 1 1 1 3 2 3 1
+```
+---
+# Factors
+
+```r
+mtcars$cyl*2
+```
+
+```
+##  [1] 12 12  8 12 16 12 16  8  8 12 12 16 16 16 16 16 16  8  8  8  8 16 16 16 16
+## [26]  8  8  8 16 12 16  8
+```
+
+```r
+# as.character(mtcars$cyl)*2 (ERROR)
+factor(mtcars$cyl)*2
+```
+
+```
+## Warning in Ops.factor(factor(mtcars$cyl), 2): '*' not meaningful for factors
+```
+
+```
+##  [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+## [26] NA NA NA NA NA NA NA
+```
+
+```r
+as.numeric(factor(mtcars$cyl))*2
+```
+
+```
+##  [1] 4 4 2 4 6 4 6 2 2 4 4 6 6 6 6 6 6 2 2 2 2 6 6 6 6 2 2 2 6 4 6 2
+```
+---
+
+# Factors
+
+
+```r
+(df &lt;- tibble(x=c(1,2,3),y=c("a","b","c")))
+```
+
+```
+## # A tibble: 3 × 2
+##       x y    
+##   &lt;dbl&gt; &lt;chr&gt;
+## 1     1 a    
+## 2     2 b    
+## 3     3 c
+```
+
+```r
+(df$y_factor &lt;- factor(df$y))
+```
+
+```
+## [1] a b c
+## Levels: a b c
+```
+
+---
+
+# EDA on single variable OR univariate analysis
+
+- Is the variable a factor, a numeric, a character string ?
+
+- If the variable is continuous, you'll use a histogram.
+
+- If the variable is a numeric, but a count, you'll probably use a bar chart (like if it was a categorical variable).
+
+- If the variable is categorical, you'll use a bar chart.
+
+- If the variable is categorical, you will look at frequencies.
+
+- If the variable is continuous, you will look at min, max, median, mean, standard deviation, kurtosis, skewness.
+
+---
+
+# Categorical variable
+
+
+```r
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut))
+```
+
+&lt;img src="Slides_files/figure-html/unnamed-chunk-6-1.png" width="40%" /&gt;
+---
+# Categorical variable
+
+
+```r
+diamonds %&gt;%
+  group_by(cut) %&gt;% count()
+```
+
+```
+## # A tibble: 5 × 2
+## # Groups:   cut [5]
+##   cut           n
+##   &lt;ord&gt;     &lt;int&gt;
+## 1 Fair       1610
+## 2 Good       4906
+## 3 Very Good 12082
+## 4 Premium   13791
+## 5 Ideal     21551
+```
+---
+# Continuous variable
+
+
+```r
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = carat), binwidth = 0.5)
+```
+
+&lt;img src="Slides_files/figure-html/unnamed-chunk-8-1.png" width="40%" /&gt;
+---
+
+# Continuous variable
+
+
+```r
+diamonds %&gt;%
+  summarise(min=min(carat),
+            max=max(carat),
+            median=median(carat),
+            mean=median(carat),
+            sd=sd(carat),
+            IQR=IQR(carat))
+```
+
+```
+## # A tibble: 1 × 6
+##     min   max median  mean    sd   IQR
+##   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1   0.2  5.01    0.7   0.7 0.474  0.64
+```
+---
+# Thinking about SD and IQR
+
+- Standard deviation and interquartile range are descriptions of your spread.
+
+- SD is the "amount of variation". Variance 
+
+- Imagine in terms of soccer goals:
+
+
+```r
+sd(c(0,1,2,0,0,1,0,2))
+```
+
+```
+## [1] 0.8864053
+```
+
+```r
+sd(c(3,9,0,0,1,6))
+```
+
+```
+## [1] 3.656045
+```
+---
+- IQR gives the spread of the middle of the distribution. IQR is the third quartile minus the first quartile.
+- quartile is a type of quantile which divides the number of data points into four parts.
+- quantiles are cut points dividing the range of a probability distribution into continuous intervals with equal probabilities
+
+
+```r
+IQR(c(0,1,2,0,0,1,0,2))
+```
+
+```
+## [1] 1.25
+```
+
+```r
+IQR(c(3,9,0,0,1,6))
+```
+
+```
+## [1] 5
+```
+
+```r
+quantile(c(3,9,0,0,1,6),c(0.25,0.75))
+```
+
+```
+##  25%  75% 
+## 0.25 5.25
+```
+
+---
+# Other measures for continuous variable
+
+- Skewness: if tail to the right &gt; 0
+- Skewness: if tail to the left &lt; 0
+- Kurtosis: if flat, platykurtic, &lt; 0
+- Kurtosis: if spiked, leptokurtic, &gt; 0
+---
+
+```r
+library(e1071)
+plot(density(rnorm(1000,10,1)))
+```
+
+&lt;img src="Slides_files/figure-html/unnamed-chunk-12-1.png" width="30%" /&gt;
+
+```r
+skewness(rnorm(1000,10,1))
+```
+
+```
+## [1] 0.1161583
+```
+
+```r
+kurtosis(rnorm(1000,10,1))
+```
+
+```
+## [1] 0.1788358
+```
+---
+
+```r
+plot(density(rbeta(1000,1,10)))
+```
+
+&lt;img src="Slides_files/figure-html/unnamed-chunk-13-1.png" width="30%" /&gt;
+
+```r
+skewness(rbeta(1000,1,10))
+```
+
+```
+## [1] 1.571831
+```
+
+```r
+kurtosis(rbeta(1000,1,10))
+```
+
+```
+## [1] 3.998467
+```
+---
+
+```r
+plot(density(rbeta(1000,10,1)))
+```
+
+&lt;img src="Slides_files/figure-html/unnamed-chunk-14-1.png" width="30%" /&gt;
+
+```r
+skewness(rbeta(1000,10,1))
+```
+
+```
+## [1] -1.540746
+```
+
+```r
+kurtosis(rbeta(1000,10,1))
+```
+
+```
+## [1] 2.961721
+```
+---
+
+```r
+plot(density(rbeta(1000,2,2)))
+```
+
+&lt;img src="Slides_files/figure-html/unnamed-chunk-15-1.png" width="30%" /&gt;
+
+```r
+skewness(rbeta(1000,2,2))
+```
+
+```
+## [1] 0.02526159
+```
+
+```r
+kurtosis(rbeta(1000,2,2))
+```
+
+```
+## [1] -0.8268801
+```
+---
+
+```r
+plot(density(rbeta(1000,2,4)))
+```
+
+&lt;img src="Slides_files/figure-html/unnamed-chunk-16-1.png" width="30%" /&gt;
+
+```r
+skewness(rbeta(1000,2,4))
+```
+
+```
+## [1] 0.5056963
+```
+
+```r
+kurtosis(rbeta(1000,2,4))
+```
+
+```
+## [1] -0.4700893
+```
+---
+
+```r
+plot(density(rexp(10000)))
+```
+
+&lt;img src="Slides_files/figure-html/unnamed-chunk-17-1.png" width="30%" /&gt;
+
+```r
+skewness(rexp(10000))
+```
+
+```
+## [1] 1.996753
+```
+
+```r
+kurtosis(rexp(10000))
+```
+
+```
+## [1] 5.660961
+```
+---
+
+```r
+diamonds %&gt;%
+  summarise(kurtosis=kurtosis(carat),
+            skewness=skewness(carat))
+```
+
+```
+## # A tibble: 1 × 2
+##   kurtosis skewness
+##      &lt;dbl&gt;    &lt;dbl&gt;
+## 1     1.26     1.12
+```
+
+---
+
+# Summary
+
+- Get to know your data. Is it continuous or not?
+
+- If it's not continuous, then it's counts. Plot the counts with a bar chart. Know what the mode is (the most frequent category), know, generally, the frequency of your variables.
+
+- If it's continuous, calculate the min, the max, the mean, the median. Is it flat, is it spiked, is it skewed, is it very spread out?
+
+- Are there many missing values? 
+
+---
+
+class: inverse, center, middle
+
+# Next week
+
+### Introducing project 1
+### Rmarkdown
+
+---
+
+class: inverse, center, middle
+
+# Exercices 
+
+### 7.3.4 7.4.1
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
