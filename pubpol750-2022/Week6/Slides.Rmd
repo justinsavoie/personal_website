@@ -32,7 +32,8 @@ class: inverse, center, middle
 - for collaborating with other data scientists
 - as an environment in which to do data science
 
-- "Here's some data, could you run cross-tabs, run these six models, export all this in pdf format. I'd need this tomorrow."
+
+- "Here's some data, could you run cross-tabs, run these six models, export all this in pdf format. I'd need this tomorrow / no need for clean formatting."
 - R Markdown is also great for slide decks (this deck), books (R4DS) and more (dissertations, reports, etc.)
 
 ---
