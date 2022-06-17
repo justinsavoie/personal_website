@@ -67,3 +67,8 @@ Chunks can be given an optional name: ```` ```{r by-name} ````.
 - `include = FALSE` runs the code, but doesn’t show the code or results in the final document. 
 - `echo = FALSE` prevents code, but not the results from appearing in the finished file.
 - `message = FALSE` or `warning = FALSE`
+
+---
+class: inverse, center, middle
+
+# Example with 2015 CES data in R Markdown
