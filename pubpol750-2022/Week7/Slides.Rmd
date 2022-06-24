@@ -1,5 +1,5 @@
 ---
-title: "Week 6: EDA 2: covariation"
+title: "Week 7: EDA 2: covariation"
 subtitle: "PUBPOL 750 Data Analysis for Public Policy I"
 author: "Justin Savoie"
 institute: "MPP-DS McMaster"
