@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Week 6: EDA 2: covariation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Justin Savoie" />
+    <meta name="date" content="2022-06-24" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Week 6: EDA 2: covariation
+## PUBPOL 750 Data Analysis for Public Policy I
+### Justin Savoie
+### MPP-DS McMaster
+### 2022-06-24
+
+---
+
+
+
+
+class: inverse, center, middle
+
+# EDA 2: covariation
+
+---
+
+# A lot of quantitative social science consists of three things:
+
+- Variation (distribution, mean, sd, skew of variable e.g. Age)
+- Covariation (how does Age relate to Income)
+- Covariation, considering some other variables (how does age relate to income considering that the relation is different for different social groups)
+
+
+- in addition (of course) to understanding your problem, and cleaning your data
+
+---
+
+# A lot of quantitative social science consists of three things:
+
+- Variation (distribution, mean, sd, skew of variable e.g. Age)
+- **Covariation (how does Age relate to Income)**
+- Covariation, considering some other variables (how does age relate to income considering that the relation is different for different social groups)
+
+
+- in addition (of course) to understanding your problem, and cleaning your data
+
+---
+
+# Covariation
+
+- A categorical and continuous variable (e.g. ed. degree and income)
+- Two categorical variables (e.g. ed. degree and vote intention)
+- Two continuous variables (e.g. age and income)
+
+
+- Ambiguous cases (e.g. schooling and life satisfaction - schooling could be degree or year in school, life satisfaction could be categorical, could be a scale from 0 to 100)
+
+- In covariation, generally, there's a dependent variable (we want to explain / understand / predict) and independent variable (we want to use it to explain / understand / predict)
+
+---
+
+# Example in The Conversation
+
+---
+
+&lt;img src="images/image1.png" width="90%" /&gt;
+
+---
+&lt;img src="images/image2.png" width="60%" /&gt;
+
+---
+
+# Covariation?
+
+- Women who saw an “enhanced compassion” videotape rated the physician as warmer and more caring, sensitive, and compassionate than did women who watched the “standard” videotape.
+- first variable is categorical: those that got the “enhanced compassion” videotape and those that didn't
+- second variable is (probably) continuous e.g. on a scale of 0-10, rate the physician's compassion
+
+
+- and then you can study the distribution of the second variable, the mean, the sd, how it looks, by group
+
+- you could also study "heterogeneity": e.g. is the treatment more effective among young/older women / racialized/white women
+
+---
+
+# Covariation: what's the objective?
+
+- description (e.g. any poll you usually see in the news)
+- explanation (causal) (e.g. the example above)
+- prediction (e.g. some gdp forecasting / machine learning for spam)
+
+
+- and, of course, this is not always clear
+
+
+- **some add "exploration"**
+- some add "prescription"
+
+---
+
+class: inverse, center, middle
+
+# Code along for exercices
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
