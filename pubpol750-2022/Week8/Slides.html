@@ -43,6 +43,8 @@ class: inverse, center, middle
 - Dealing with character strings
 - Dealing with dates
 
+---
+
 # Binding (columsn or rows) means appending new lines or new columns
 
 ## Binding rows
@@ -80,7 +82,7 @@ df &lt;- bind_rows(df1,df2)
 - Sometimes, you can use a loop to read in numerous csvs. We'll cover this next week. Think of data for 125 riding.
 - Need to make sure columns names are the same.
 
---- 
+---
 
 # Binding columns
 
@@ -263,7 +265,7 @@ left_join(df1,df2)
 ## 3    22 Rosaline Azevedo     12
 ```
 
---- 
+---
 
 # Dealing with character strings
 
@@ -376,7 +378,7 @@ now()+60
 ```
 
 ```
-## [1] "2022-07-07 21:55:05 EDT"
+## [1] "2022-07-07 22:22:29 EDT"
 ```
 
 ```r
@@ -517,6 +519,10 @@ kurtosis(temp,na.rm = TRUE)
 temp &lt;- df$hincome
 kurtosis(temp,na.rm = TRUE)
 ```
+---
+# A worked example
+
+See Script Code Example July 8
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

@@ -38,6 +38,8 @@ class: inverse, center, middle
 - Dealing with character strings
 - Dealing with dates
 
+---
+
 # Binding (columsn or rows) means appending new lines or new columns
 
 ## Binding rows
@@ -62,7 +64,7 @@ df <- bind_rows(df1,df2)
 - Sometimes, you can use a loop to read in numerous csvs. We'll cover this next week. Think of data for 125 riding.
 - Need to make sure columns names are the same.
 
---- 
+---
 
 # Binding columns
 
@@ -133,7 +135,7 @@ df2 <- tibble(income=c(55,30,12,33),name=c("Justin","Ian","Rosaline","Justin"),l
 left_join(df1,df2)
 ```
 
---- 
+---
 
 # Dealing with character strings
 
@@ -269,4 +271,6 @@ kurtosis(temp,na.rm = TRUE)
 
 ```
 ---
-# A worked example instead of 
+# A worked example
+
+See Script Code Example July 8 
