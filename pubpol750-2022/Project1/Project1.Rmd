@@ -218,7 +218,7 @@ Let's clean this variable. You can use what we call a named vector with the reco
 
 Recode is neat. If for instance you wanted to remove the Refused and Skipped, you could replace the "OTH" there by NA.
 
-Note that in recode, the syntax is "old value"="new value". This is different than usually. Usually (e.g. using mutate) syntax is "new value"="old value". \
+Note that in recode, the syntax is "old value"="new value". This is different than usually. Usually (e.g. using mutate) syntax is "new value"="old value".\
 \
 When you use a function for the first time, make sure you read the help file or copy paste code using that function from a trusted resource (e.g. a stackoverflow answer with a lot of up votes).
 
