@@ -4,7 +4,7 @@
     <title>Week 8: Strings, dates and times, joining and binding</title>
     <meta charset="utf-8" />
     <meta name="author" content="Justin Savoie" />
-    <meta name="date" content="2022-07-07" />
+    <meta name="date" content="2022-07-08" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 ## PUBPOL 750 Data Analysis for Public Policy I
 ### Justin Savoie
 ### MPP-DS McMaster
-### 2022-07-07
+### 2022-07-08
 
 ---
 
@@ -33,7 +33,7 @@ class: inverse, center, middle
 # Data wrangling ?
 
 - We've discussed select(), filter(), group(), mutate() etc.
-- A lot of data wrangling is about fixing strings, dates, joining different sources of data
+- A lot of data wrangling is about fixing messy strings, dates; joining data from different sources (from different datasets).
 
 ---
 
@@ -42,14 +42,13 @@ class: inverse, center, middle
 - Joining and binding
 - Dealing with character strings
 - Dealing with dates
+- Two examples + two questions I had on Project 1
 
 ---
 
 # Binding (columsn or rows) means appending new lines or new columns
 
-## Binding rows
-
-- `bind_rows()` is often used if you want to stack some data together than has the same variables
+## Binding rows with `bind_rows()`
 
 
 ```r
@@ -84,7 +83,7 @@ df &lt;- bind_rows(df1,df2)
 
 ---
 
-# Binding columns
+## Binding columns with `bind_cols()`
 
 - `bind_cols()` is often used if you want to stack variables where the individuals are the same
 
@@ -102,6 +101,25 @@ df2 &lt;- tibble(income=c(55,30,12),name=c("Justin","Ian","Rosaline"))
 ## 1    25 Justin       55
 ## 2    29 Ian          30
 ## 3    22 Rosaline     12
+```
+
+```r
+(df &lt;- bind_cols(df1,df2))
+```
+
+```
+## New names:
+## • `name` -&gt; `name...2`
+## • `name` -&gt; `name...4`
+```
+
+```
+## # A tibble: 3 × 4
+##     age name...2 income name...4
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;   
+## 1    25 Justin       55 Justin  
+## 2    29 Ian          30 Ian     
+## 3    22 Rosaline     12 Rosaline
 ```
 
 ---
@@ -123,9 +141,26 @@ df2 &lt;- tibble(income=c(55,30,12),name=c("Justin","Ian","Rosaline"))
 ## 6    NA &lt;NA&gt;         12
 ```
 
+```r
+bind_rows(tibble(x=c(1,2),y=c(2,3)),
+          tibble(y=c(9,8),x=c(10,11)))
+```
+
+```
+## # A tibble: 4 × 2
+##       x     y
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     2
+## 2     2     3
+## 3    10     9
+## 4    11     8
+```
+
 ---
 
 # Joins
+
+Instead of "stacking" like binds, joins "joins" on one or more columns. If you have riding names in two different datasets, you can join them.
 
 - `inner_join()`: includes all rows in x and y.
 
@@ -184,6 +219,44 @@ inner_join(df1,df2)
 
 ```r
 left_join(df1,df2)
+```
+
+```
+## Joining, by = "name"
+```
+
+```
+## # A tibble: 4 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+## 4    23 Jack         NA
+```
+
+---
+
+
+```r
+right_join(df1,df2)
+```
+
+```
+## Joining, by = "name"
+```
+
+```
+## # A tibble: 3 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+```
+
+```r
+full_join(df1,df2)
 ```
 
 ```
@@ -265,9 +338,22 @@ left_join(df1,df2)
 ## 3    22 Rosaline Azevedo     12
 ```
 
+```r
+# or explicitly left_join(df1,df2, c("name"="name","last"="last"))
+```
+
 ---
 
 # Dealing with character strings
+
+- Useful, but potentially frustrating
+- Very cryptic at first (not just at first)
+
+
+
+- replacing, substituting, extracting with `stringr` package
+
+---
 
 
 ```r
@@ -306,7 +392,7 @@ str_extract(my_string,"(?&lt;=\\().+?(?=\\))")
 ```
 
 ```r
-str_replace_all(my_string,"\\((?&lt;=\\().+?(?=\\))\\)","") %&gt;% trimws()
+str_replace(my_string,"\\((?&lt;=\\().+?(?=\\))\\)","") %&gt;% trimws()
 ```
 
 ```
@@ -370,7 +456,7 @@ today()
 ```
 
 ```
-## [1] "2022-07-07"
+## [1] "2022-07-08"
 ```
 
 ```r
@@ -378,7 +464,7 @@ now()+60
 ```
 
 ```
-## [1] "2022-07-07 22:22:29 EDT"
+## [1] "2022-07-08 12:30:40 EDT"
 ```
 
 ```r
@@ -386,7 +472,7 @@ today()+1
 ```
 
 ```
-## [1] "2022-07-08"
+## [1] "2022-07-09"
 ```
 
 ---
@@ -434,8 +520,8 @@ to_plot &lt;- tibble(date=c("2019-01-01","2019-03-01","2020-01-01","2020-06-01")
 ggplot(to_plot,aes(x=date,y=value)) + geom_point()
 ```
 
-![](Slides_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
-
+![](Slides_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+---
 
 ```r
 to_plot &lt;- to_plot %&gt;% mutate(date=ymd(date))
@@ -445,7 +531,7 @@ ggplot(to_plot,aes(x=date,y=value)) + geom_point() + geom_line() +
   theme(axis.text.x = element_text(angle=45)) + scale_y_continuous(limits=c(0,30))
 ```
 
-![](Slides_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+![](Slides_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
 
 ---
 
@@ -480,7 +566,7 @@ df %&gt;%
 
 ---
 
-## Two questions from the Project
+## Two questions from Project 1
 
 
 ```r
@@ -522,7 +608,7 @@ kurtosis(temp,na.rm = TRUE)
 ---
 # A worked example
 
-See Script Code Example July 8
+See Script Code Example July 8 
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

@@ -28,7 +28,7 @@ class: inverse, center, middle
 # Data wrangling ?
 
 - We've discussed select(), filter(), group(), mutate() etc.
-- A lot of data wrangling is about fixing strings, dates, joining different sources of data
+- A lot of data wrangling is about fixing messy strings, dates; joining data from different sources (from different datasets).
 
 ---
 
@@ -37,14 +37,13 @@ class: inverse, center, middle
 - Joining and binding
 - Dealing with character strings
 - Dealing with dates
+- Two examples + two questions I had on Project 1
 
 ---
 
 # Binding (columsn or rows) means appending new lines or new columns
 
-## Binding rows
-
-- `bind_rows()` is often used if you want to stack some data together than has the same variables
+## Binding rows with `bind_rows()`
 
 ```{r }
 
@@ -66,27 +65,31 @@ df <- bind_rows(df1,df2)
 
 ---
 
-# Binding columns
+## Binding columns with `bind_cols()`
 
 - `bind_cols()` is often used if you want to stack variables where the individuals are the same
 
-```{r }
+```{r}
 
 df1 <- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"))
 df2 <- tibble(income=c(55,30,12),name=c("Justin","Ian","Rosaline"))
 (df <- bind_cols(df1,df2 %>% select(-name)))
+(df <- bind_cols(df1,df2))
 ```
 
 ---
 
 ```{r }
-
 (df <- bind_rows(df1,df2 %>% select(-name)))
+bind_rows(tibble(x=c(1,2),y=c(2,3)),
+          tibble(y=c(9,8),x=c(10,11)))
 ```
 
 ---
 
 # Joins
+
+Instead of "stacking" like binds, joins "joins" on one or more columns. If you have riding names in two different datasets, you can join them.
 
 - `inner_join()`: includes all rows in x and y.
 
@@ -116,6 +119,13 @@ left_join(df1,df2)
 ---
 
 ```{r}
+right_join(df1,df2)
+full_join(df1,df2)
+```
+
+---
+
+```{r}
 left_join(df2,df1)
 ```
 
@@ -133,11 +143,21 @@ left_join(df1,df2)
 df1 <- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"),last=c("Savoie","Smith","Azevedo"))
 df2 <- tibble(income=c(55,30,12,33),name=c("Justin","Ian","Rosaline","Justin"),last=c("Savoie","Smith","Azevedo","Gajevic"))
 left_join(df1,df2)
+# or explicitly left_join(df1,df2, c("name"="name","last"="last"))
 ```
 
 ---
 
 # Dealing with character strings
+
+- Useful, but potentially frustrating
+- Very cryptic at first (not just at first)
+
+
+
+- replacing, substituting, extracting with `stringr` package
+
+---
 
 ```{r}
 my_string <- c("Justin Savoie (2019)","Daniel Ortega (2019)", "Natalia Burina (2019)")
@@ -147,7 +167,7 @@ str_sub(my_string,4,-1)
 str_sub(my_string,4,7)
 my_string <- c("Justin Savoie (2019)","Daniel Ortega (2017)", "Natalia Burina (2018)")
 str_extract(my_string,"(?<=\\().+?(?=\\))")
-str_replace_all(my_string,"\\((?<=\\().+?(?=\\))\\)","") %>% trimws()
+str_replace(my_string,"\\((?<=\\().+?(?=\\))\\)","") %>% trimws()
 # https://stackoverflow.com/questions/8613237/extract-info-inside-all-parenthesis-in-r
 ```
 
@@ -190,7 +210,7 @@ as.numeric(ymd_hms(adatetime))
 to_plot <- tibble(date=c("2019-01-01","2019-03-01","2020-01-01","2020-06-01"),value=rnorm(4,10,3))
 ggplot(to_plot,aes(x=date,y=value)) + geom_point()
 ```
-
+---
 ```{r}
 to_plot <- to_plot %>% mutate(date=ymd(date))
 ggplot(to_plot,aes(x=date,y=value)) + geom_point() + geom_line() +
@@ -231,7 +251,7 @@ df %>%
 
 ---
 
-## Two questions from the Project
+## Two questions from Project 1
 
 ```{r eval=FALSE}
 hsum <- df %>%
