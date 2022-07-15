@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Week 9: Functions, loops</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Justin Savoie" />
+    <meta name="date" content="2022-07-14" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Week 9: Functions, loops
+## PUBPOL 750 Data Analysis for Public Policy I
+### Justin Savoie
+### MPP-DS McMaster
+### 2022-07-14
+
+---
+
+
+
+
+class: inverse, center, middle
+
+# Becoming more efficient: functions and loop
+
+---
+
+# Becoming more efficient with functions and loop
+
+- Automate common tasks
+- Apply the same "procedure" to tens or hundreds of files, of objects, of dataframes, of variables.
+
+
+- In a nutshell: 
+  - Functions allow to avoid copy pasting, allow to reuse a procedure
+  - Loops allow to do one thing many times
+  
+They are often used in combination.
+
+---
+
+## Functions
+
+
+```r
+set.seed(232)
+df &lt;- tibble::tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10)
+)
+
+df$a &lt;- (df$a - min(df$a, na.rm = TRUE)) / 
+  (max(df$a, na.rm = TRUE) - min(df$a, na.rm = TRUE))
+df$b &lt;- (df$b - min(df$b, na.rm = TRUE)) / 
+  (max(df$b, na.rm = TRUE) - min(df$b, na.rm = TRUE))
+df$c &lt;- (df$c - min(df$c, na.rm = TRUE)) / 
+  (max(df$c, na.rm = TRUE) - min(df$c, na.rm = TRUE))
+head(df)
+```
+
+```
+## # A tibble: 6 × 3
+##       a     b     c
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 1     0.277 0.667
+## 2 0     0.375 0    
+## 3 0.553 0.634 0.478
+## 4 0.499 1     0.562
+## 5 0.423 0.914 0.629
+## 6 0.589 0.802 0.557
+```
+---
+
+```r
+set.seed(232)
+df &lt;- tibble::tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10)
+)
+
+rescale01 &lt;- function(x) {
+  rng &lt;- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+df$a &lt;- rescale01(df$a)
+df$b &lt;- rescale01(df$b)
+df$c &lt;- rescale01(df$c)
+head(df)
+```
+
+```
+## # A tibble: 6 × 3
+##       a     b     c
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 1     0.277 0.667
+## 2 0     0.375 0    
+## 3 0.553 0.634 0.478
+## 4 0.499 1     0.562
+## 5 0.423 0.914 0.629
+## 6 0.589 0.802 0.557
+```
+---
+
+Implementing the mean function by taking the sum, and dividing by the number of non missing cases.
+
+
+```r
+my_vector &lt;- c(3,8,19,NA,22,1)
+mean(my_vector,na.rm=TRUE)
+```
+
+```
+## [1] 10.6
+```
+
+```r
+custom_mean1 &lt;- function(x){
+  my_sum &lt;- sum(x,na.rm=TRUE)
+  my_length &lt;- sum(!is.na(x))
+  my_sum / my_length
+}
+custom_mean1(my_vector)
+```
+
+```
+## [1] 10.6
+```
+---
+
+Implementing the same mean function by going through all values one by one and calculating a bit like we would do in elementary school. This is often the logic in real functions. Breaking down everything.
+
+
+```r
+custom_mean2 &lt;- function(x){
+  my_length &lt;- 0
+  my_sum &lt;- 0
+  for (i in my_vector){
+    if (!is.na(i)){
+      my_length &lt;- my_length + 1
+      my_sum &lt;- my_sum + i
+    }
+  }
+  my_sum / my_length
+}
+custom_mean2(my_vector)
+```
+
+```
+## [1] 10.6
+```
+---
+## Existing functions
+
+Of course, you likely won't have to write many functions. A lot of functions exists. We've been using functions since the beginning of the semester.
+
+`mean()` `group_by()` `ggplot()` (and many more) these are all functions.
+
+Functions are incredibly useful.
+
+You might, for example, want to:
+
+- Calculate cross tabs and plot them, for many survey questions (à la what polling firms)
+- Read in a court decision and clean it to a format you can analyze
+
+---
+
+## Example 
+
+Imagine we have 200 respondents on 10 questions. Answers: {1:"Strongly disagree",2:"Somewhat disagree",3:"Neutral",4:"Somewhat agree",5:"Strongly agree",6:"Don't know"}. We want to plot the response to each question in a separate figure.
+
+
+```r
+questions &lt;- paste0("question",1:10)
+df &lt;- as_tibble(matrix(sample(1:6,size=2000,replace = TRUE),nrow=200))
+names(df) &lt;- questions
+df
+```
+
+```
+## # A tibble: 200 × 10
+##    question1 question2 question3 question4 question5 question6 question7
+##        &lt;int&gt;     &lt;int&gt;     &lt;int&gt;     &lt;int&gt;     &lt;int&gt;     &lt;int&gt;     &lt;int&gt;
+##  1         5         6         1         3         3         3         6
+##  2         6         3         1         1         3         4         6
+##  3         3         5         5         5         4         6         5
+##  4         3         1         2         6         3         2         5
+##  5         1         2         6         4         5         5         6
+##  6         3         3         5         5         5         3         1
+##  7         6         5         6         3         6         1         1
+##  8         5         3         3         3         5         2         4
+##  9         1         5         5         2         4         3         1
+## 10         3         6         1         4         2         3         1
+## # … with 190 more rows, and 3 more variables: question8 &lt;int&gt;, question9 &lt;int&gt;,
+## #   question10 &lt;int&gt;
+```
+---
+
+```r
+make_plot &lt;- function(data,my_variable,answer_choices){
+  
+  to_plot &lt;- data %&gt;%
+    select(all_of(my_variable)) %&gt;%
+    rename(selected_variable=all_of(my_variable)) %&gt;%
+    group_by(selected_variable) %&gt;%
+    count() %&gt;%
+    ungroup() %&gt;%
+    mutate(p=n/sum(n))  
+
+  to_plot &lt;- to_plot %&gt;%
+    mutate(selected_variable=recode(selected_variable,!!!answer_choices)) %&gt;%
+    mutate(selected_variable = factor(selected_variable,answer_choices))
+  
+  ggplot(to_plot,aes(x=selected_variable,y=p)) +
+    geom_bar(stat='identity') +
+    geom_text(aes(label = p), vjust = 1.5, colour = "white")
+  
+}
+```
+---
+
+```r
+answer_choices=c("Strongly disagree","Somewhat disagree","Neutral",'Somewhat agree',"Strongly agree","Don't know")
+make_plot(data=df,my_variable='question1',answer_choices=answer_choices)
+```
+
+![](Slides_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+---
+
+```r
+make_plot(data=df,my_variable='question2',answer_choices)
+```
+
+![](Slides_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+---
+
+```r
+make_data_to_plot &lt;- function(data,my_variable){
+  
+  to_plot &lt;- data %&gt;%
+    select(all_of(my_variable)) %&gt;%
+    rename(selected_variable=all_of(my_variable)) %&gt;%
+    group_by(selected_variable) %&gt;%
+    count() %&gt;%
+    ungroup() %&gt;%
+    mutate(p=n/sum(n))  
+  to_plot &lt;- to_plot %&gt;%
+    mutate(selected_variable=recode(selected_variable,!!!answer_choices)) %&gt;%
+    mutate(selected_variable = factor(selected_variable,answer_choices))
+  to_plot
+}
+make_plot &lt;-  function(data,answer_choices){
+  ggplot(data,aes(x=selected_variable,y=p)) +
+    geom_bar(stat='identity') +
+    geom_text(aes(label = p), vjust = 1.5, colour = "white")
+}
+```
+
+---
+
+
+```r
+data_to_plot &lt;- make_data_to_plot(data=df,my_variable='question2')
+make_plot(data_to_plot,answer_choices)
+```
+
+![](Slides_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+---
+
+## Loops (Iteration chapter in the book)
+
+
+```r
+threeletters &lt;- c("a","b","c")
+
+for (i in threeletters){
+  print(i)
+}
+```
+
+```
+## [1] "a"
+## [1] "b"
+## [1] "c"
+```
+---
+
+
+```r
+for (i in seq_along(threeletters)){
+  print(i)
+  print(threeletters[i])
+}
+```
+
+```
+## [1] 1
+## [1] "a"
+## [1] 2
+## [1] "b"
+## [1] 3
+## [1] "c"
+```
+
+---
+
+
+```r
+df &lt;- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+```
+
+
+```r
+output &lt;- vector("double", ncol(df))
+for (i in seq_along(df)) {            # 2. sequence
+  output[[i]] &lt;- median(df[[i]])      # 3. body
+}
+output
+```
+
+```
+## [1]  0.333332638  0.758161632 -0.002268765 -0.107977257
+```
+---
+
+```r
+for (i in seq_along(df)) {            # 2. sequence
+  df[[i]] &lt;- df[[i]]+10      # 3. body
+}
+df
+```
+
+```
+## # A tibble: 10 × 4
+##        a     b     c     d
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 10.9  10.6   9.47 10.8 
+##  2  9.40  8.26  9.08 11.1 
+##  3 10.3  11.0  11.0   8.72
+##  4 11.5  11.7  12.0  10.2 
+##  5 11.1  11.6  10.1  10.7 
+##  6 10.2  11.1  10.3   9.57
+##  7  9.23 10.4   9.93  9.02
+##  8  9.88 11.3   9.56 11.2 
+##  9 10.3  10.3  12.0   8.24
+## 10 11.9   9.85  8.42  7.94
+```
+
+---
+
+class: inverse, center, middle
+
+# Exercices
+
+### 19.2.1, 21.2.1
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

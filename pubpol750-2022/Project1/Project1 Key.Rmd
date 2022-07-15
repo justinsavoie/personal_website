@@ -1,0 +1,477 @@
+---
+title: "Project 1"
+author: "PUBPOL 750 McMaster"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+## Project 1 - Exploring data from the 2019 Canadian Electio Study
+
+In this project, we use data from the [2019 Canadian Election Study](http://www.ces-eec.ca/) (CES) to produce an exploratory data analysis. We start with a univariate exploratory data analysis. Then we move to bivariate analysis.
+
+Section 1 is a code along. You just have to run the code. There's no code to write. However, there are questions (marked [QUESTION]{style="color: red;"}: in red) to answer. Answer them directly in the Rmd file.
+
+In Section 2, I ask you to run the an analysis similar to the one in section 1, but on some other variables of your choice. You can pick any variables from the 2019 CES, or from another dataset if you prefer.
+
+Project 1 is due on July 8. When you are done, knit this R Markdown file to html. Submit both the html file and this .Rmd (R Markdown) file.
+
+### Section 1 - Exploring variables (code along)
+
+#### Loading packages, loading the data
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+# The CES data provided is in Stata13 format, so we need readstata13
+library(readstata13)
+# We need e1071 for kurtosis and skewness
+library(e1071)
+# We need kableExtra to produce nice html data tables
+library(kableExtra)
+# Read in the data, assign to df
+df <- read.dta13("~/Downloads/2019 Canadian Election Study - Phone Survey v1.0.dta")
+# Let's make the data frame a tibble
+df <- as_tibble(df)
+```
+
+Use the glimpse function on the dataset.
+
+```{r}
+glimpse(df)
+```
+
+[QUESTION]{style="color: red;"}: How many individuals are there in the dataset? How many variables? What are the 4 column types present in the data (they are between "\<\>" in the output of the glimpse() function?
+
+[A]{style="color: blue;"}: 4021, 273, (int,chr,fct,num)
+
+#### Univariate analysis
+
+Let's look at the distribution of age.
+
+```{r}
+ggplot(df,aes(x=age)) +
+  geom_histogram()
+```
+
+Let's calculate the number of values for which age is not missing, the mean and the median.
+
+```{r}
+sample_size_age <- sum(!is.na(df$age))
+my_mean <- mean(df$age,na.rm=TRUE)
+my_median <- median(df$age,na.rm=TRUE)
+```
+
+Let's redo our histogram, but adding a vertical line where the median is. We can add a caption to programmatically indicate the sample size.
+
+```{r}
+ggplot(df,aes(x=age)) +
+  geom_histogram(binwidth=1,fill="white",color="black") +
+  theme_classic() +
+  labs(x="Age",y="Count (in survey)",title="Age distribution in Canada",
+       caption=paste0("Data from CES 2019; n = ",format(sample_size_age,big.mark   = ","))) +
+  geom_vline(aes(xintercept=my_mean),linetype=2) +
+  annotate("text", x = my_mean-2, y = 90, label = "mean",angle = 90)
+```
+
+[QUESTION]{style="color: red;"}: In your own words, how would you describe the distribution of age?
+
+[A]{style="color: blue;"}: Slight right skew. Truncated to the left at 18. Not normal; no real peak in the middle. Bimodal? 
+
+In the data, there's a variable called age_range. Let's look at it with the table function. The useNa='always' argument is include NAs.
+
+```{r}
+table(df$age_range,useNA = "always")
+```
+
+[QUESTION]{style="color: red;"}: How many NAs are there? How many Don't know's, Refused, Skipped? Why do you think this is the case?
+
+[A]{style="color: blue;"}: Survey weights were created. Age is a weighting variable, so those respondents were removed. Survey weights (covered next week) are inversely proportional to the probability of inclusion. If a demographic is underrepresented, survey weight is heigher.
+
+Now, plot age_range.
+
+```{r}
+ggplot(df,aes(x=age_range)) +
+  geom_bar()
+```
+
+Now, imagine that these are not the groups you want. Rather, you want 18-34, 35-54, 55+. Recode the groups using the following code. You are using the `cut()` function.
+
+```{r}
+df <- df %>%
+  mutate(age_group=cut(age,breaks=c(-Inf,17,34,54,Inf),
+                       label=c("0-17","18-34","35-54","55+")),
+         age_group=droplevels(age_group))
+```
+
+Plot this using a bar graph.
+
+```{r}
+ggplot(df,aes(x=age_group)) +
+  geom_bar()
+```
+
+You can add labels with the count number like this.
+
+```{r}
+ggplot(df,aes(x=age_group)) +
+  geom_bar() + labs(x="",y="") +
+  geom_text(aes(label = ..count..), stat = "count", vjust = 1.5, colour = "white")
+```
+
+Let's drop the empty levels from the age_range factor. You can use the `recode()` function if you want to recode (e.g. clean) them.
+
+```{r}
+df <- df %>%
+  mutate(age_range = droplevels(age_range))
+df <- df %>% 
+  mutate(age_range=recode(age_range,
+                          "(1) 18-24 years old"="18-24",
+                          "(2) 25-34 years old"="25-34",
+                          "(3) 35-44 years old"="35-44",
+                          "(4) 45-54 years old"="45-54",
+                          "(5) 55+ years old"="55+"))
+```
+
+That can be plotted too.
+
+```{r}
+ggplot(df,aes(x=age_range)) +
+  geom_bar() +
+  labs(x="",y="")
+```
+
+Lastly, instead of visualizing age with a graph, let's use a table to get all the summary statistics. Use `kable()` to output these numbers.
+
+```{r}
+age_summary <- df %>%
+  summarize(mean_age = mean(age, na.rm = TRUE), 
+            sd_age = sd(age, na.rm = TRUE), 
+            min_age = min(age, na.rm = TRUE), 
+            max_age = max(age, na.rm = TRUE), 
+            median_age = median(age, na.rm = TRUE), 
+            skew_age = skewness(age, na.rm = TRUE), 
+            kurtosis_age = kurtosis(age, na.rm = TRUE), 
+            n_age =  sum(!is.na(age)))
+
+age_summary %>%
+  kable(format = "simple") 
+
+age_summary %>%
+  t() %>%
+  kable(format = "simple") 
+```
+
+[QUESTION]{style="color: red;"}: What's the mean/sd/min/max/median/skewnewss/kurtosis? Interpret the skewness and kurtosis?
+
+[A]{style="color: blue;"}: See table. Skewness is pretty much zero. No real skew. Kurtosis < 0. Distribution is flatter. 
+
+[QUESTION]{style="color: red;"}: `t()` function stands for transpose. What does `t()` do in practice?
+
+[A]{style="color: blue;"}: Transposes from wide to long. Puts in one column instead of one row.
+
+Now, let's look at the variable household income.
+
+```{r}
+summary(df$q69)
+```
+
+Looking at the codebook, we see that -8 and -9 should be coded as NA.
+
+```{r}
+df <- df %>%
+  mutate(hincome=ifelse(q69 %in% c(-8,-9), NA, q69))
+```
+
+```{r}
+ggplot(df,aes(x=hincome)) +
+  geom_histogram(binwidth = 5000)
+```
+
+It's sort of annoying that the data is all clustered to the left because of those "1%" rich outliers. Let's zoom in. Let's also pick bins of 1000.
+
+```{r}
+ggplot(df,aes(x=hincome)) +
+  geom_histogram(binwidth = 1000) +
+  coord_cartesian(xlim=c(0,500000)) +
+  scale_x_continuous(breaks=seq(0,500000,by=100000),labels=c("0","100k","200k","300k","400k","500k"))
+```
+
+[QUESTION]{style="color: red;"}: What do you notice? What's the shape of the distribution? Why the weird spikes?
+
+[A]{style="color: blue;"}: Not normal at all. Truncated at zero. Note that I've seen in the past a category "negative income". Not here. Also what we call "zero-inflated". The spikes mean that people declare "round" "approximate" values instead of the true value.There clearly are outliers. 
+
+[QUESTION]{style="color: red;"}: By copy and pasting the code above for the summary table using `kable()` try to replicate the statistical analysis but on household income instead of age. Comment very briefly.
+
+```{r}
+hincome_summary <- df %>%
+  summarize(mean_age = mean(hincome, na.rm = TRUE), 
+            sd_age = sd(hincome, na.rm = TRUE), 
+            min_age = min(hincome, na.rm = TRUE), 
+            max_age = max(hincome, na.rm = TRUE), 
+            median_age = median(hincome, na.rm = TRUE), 
+            skew_age = skewness(hincome, na.rm = TRUE), 
+            kurtosis_age = kurtosis(hincome, na.rm = TRUE), 
+            n_age =  sum(!is.na(hincome)))
+
+hincome_summary %>%
+  kable(format = "simple") 
+
+hincome_summary %>%
+  t() %>%
+  kable(format = "simple") 
+```
+
+[QUESTION]{style="color: red;"}: Now on to another variable. Check q11 and q12 in the codebook. What are those variables?
+
+Vote intention / leaning.
+
+Take a look at these three frequency tables.
+
+```{r}
+table(df$q11,useNA = "always")
+table(df$q12,useNA = "always")
+table(df$q12,df$q11,useNA = "always")
+```
+
+So, given this, if we want to merge these two variables, we should start with q12, and if q12 is NA, then put q11. This can be done using the `coalesce()` function. Think of two columns in excel. Column A and column B. `coalesce(a,b)` creates a new variable equal to a if a is not missing and equal to b if b is missing.\
+\
+Specifically, we are coalescing q12 and q11 so that when q12 is missing q11 is used. Equivalently, we could check if q11 = "(-9) Don't know / Undecided" and put values from q12 in using the `ifelse()` function.\
+\
+In other words, for those who said "(-9) Don't know / Undecided", we want to plug in their answer to the follow asking "Is there a party you are leaning to?"
+
+```{r}
+df <- df %>%
+  mutate(vote_coalesced = coalesce(q12,q11))
+```
+
+Let's clean this variable. You can use what we call a named vector with the recode function.
+
+Recode is neat. If for instance you wanted to remove the Refused and Skipped, you could replace the "OTH" there by NA.
+
+Note that in recode, the syntax is "old value"="new value". This is different than usually. Usually (e.g. using mutate) syntax is "new value"="old value".\
+\
+When you use a function for the first time, make sure you read the help file or copy paste code using that function from a trusted resource (e.g. a stackoverflow answer with a lot of up votes).
+
+```{r}
+my_cleaning_mapping <- c("(-9) Don't know"="DK",
+  "(-8) Refused"="OTH",
+  "(-7) Skipped"="OTH",
+  "(1) Liberal (Grits)"="LIB", 
+  "(2) Conservatives (Tory, PCs, Conservative Party of Canada)"="CONS", 
+  "(3) NDP (New Democratic Party, New Democrats, NDPers)"="NDP",
+  "(4) Bloc QuÃ©bÃ©cois (BQ, PQ, Bloc, Parti QuÃ©bÃ©cois)"="BQ", 
+  "(5) Green Party (Greens)"="GRN",
+  "(6) People's Party"="PPC",
+  "(7) Other"="OTH", 
+  "(8) Will not vote"="OTH",
+  "(9) None of these"="OTH",
+  "(10) Will spoil ballet"="OTH", 
+  "(-9) Don't know / Undecided"="DK")
+
+df <- df %>%
+  mutate(vote_clean=recode(vote_coalesced,!!!my_cleaning_mapping))
+```
+
+When you are going to plot this, it's nice if OTH and DK are at the end. You can set the factor levels like this.
+
+```{r}
+df <- df %>%
+  mutate(vote_clean = factor(vote_clean,levels=c("LIB", "CONS", "NDP", "BQ", "GRN", "PPC","OTH","DK")))
+```
+
+Plot this.
+
+```{r}
+party_colors <- c("LIB"="red",
+  "CONS"="darkblue",
+  "NDP"="orange",
+  "BQ"="lightblue",
+  "GRN"="darkgreen",
+  "PPC"="purple",
+  "DK"="darkgrey",
+  "OTH"="grey")
+
+ggplot(df,aes(x=vote_clean,fill=vote_clean)) +
+  geom_bar() + labs(x="",y="") +
+  scale_fill_manual(values=party_colors) +
+  theme(legend.position = "none")
+```
+
+[QUESTION]{style="color: red;"} Given what you know about the 2019 election, does this distribution appear reasonable?
+
+Somewhat, yes. Greens very high, though. Whether it's "reasonable" is debatable. But it's not way off like if you polled people in e.g. a sociology class.
+
+Up to now, we've looked at two continuous variable (age and household income) and one nominal categorical variable (vote intention).
+
+Let's look at another categorical variable, this time an ordered categorical variable.
+
+Q46 asks: Do you strongly agree, somewhat agree, somewhat disagree, or strongly disagree with the following statement: "Justin Trudeau kept the election promises he made in 2015."
+
+```{r}
+ggplot(df,aes(x=q46)) +
+  geom_bar()
+```
+
+Let's clean it like this:
+
+```{r}
+
+my_cleaning_mapping <- c(
+  "(-9) Don't know"="Don't know",
+  "(-8) Refused"=NA,
+  "(-7) Skipped"=NA,
+  "(1) Strongly agree"="Strongly agree", 
+  "(2) Somewhat agree"="Somewhat agree",
+  "(3) Somewhat disagree"="Somewhat disagree",
+  "(4) Strongly disagree"="Strongly disagree"
+)
+
+df <- df %>%
+  mutate(q46=recode(q46,!!!my_cleaning_mapping),
+         q46=factor(q46,levels=c("Strongly disagree","Somewhat disagree",
+                                 "Somewhat agree","Strongly agree","Don't know")),
+         q46=droplevels(q46))
+
+```
+
+Let's plot it again.
+
+```{r}
+ggplot(df,aes(x=q46)) +
+  geom_bar()
+```
+
+Note that in the social science, an ordinal categorical variable is often be converted to numeric. Here, you would have Strongly disagree becomes 1, Somewhat disagree becomes 2, Somewhat agree becomes 3. Strongly agree becomes 4. Note, "lowest / disagree" always come first: we want the numeric scale from "less/disagree" to "more/agree. You also have to decide what to do with the DK. You could drop them (put NAs or code them as 2.5 (middle of scale). We are not going to use this further in this project, but this is how you would do it.
+
+```{r}
+# This is very bad. Don't know are coded as 5. 
+# Recall numbers follow the order of factors. Check with  levels(df$q46)
+df <- df %>% 
+  mutate(q46_numeric=as.numeric(q46))
+# This is better, you could also have DK=2.5
+df <- df %>% 
+  mutate(q46_numeric=recode(q46,!!!c("Strongly disagree"=1,
+                                     "Somewhat disagree"=2,
+                                     "Somewhat agree"=3,
+                                     "Strongly agree"=4,
+                                     "Don't know"=NA)))
+```
+
+Up to now, we did univariate analysis on age, household income, vote intention and q46 (a question asking if Trudeau held his promises).
+
+#### Bivariate analysis
+
+Now, let's do bivariate analysis. When doing bivariate analysis, you look at the distribution of two variables against each other. It's important to understand that the bivariate analysis will be different depending on variable type. This is discussed in the book. You can have:
+
+1 - two continuous variables
+
+2 - one continuous variable and one categorical variable
+
+3 - two categorical variables
+
+Let's explore the three possibilities in turn.
+
+#### 1 - two continuous variables
+
+This is, in a way, the simplest case. We've all seen scatterplots. In the book, they look at carat and price.
+
+Let's plot age on x and household income on y.
+
+```{r}
+ggplot(df,aes(x=age,y=hincome)) +
+  geom_point()
+```
+
+All the points are clustered on top of each other and we don't see much. You can use "alpha" to play with the opacity. Where many points overlap the color will be darker. Where not many points overlap the color will be lighter. This way, you see where the density is.
+
+```{r}
+ggplot(df,aes(x=age,y=hincome)) +
+  geom_point(alpha=0.1)
+```
+
+In the social sciences, we often ask questions of the type: "who's richer, the young or the old". One (extremely naive) way to ask this question is to fit a linear model where income = b0 + b1 \* age + error. You'll see details of this in the sequel to this class. In other words, you ask: when age increases, does household income increase or decrease (or stays the same). You can fit that straight line using a linear model "lm" smooth.
+
+```{r}
+ggplot(df,aes(x=age,y=hincome)) +
+  geom_point(alpha=0.1) + geom_smooth(method="lm", se=FALSE)
+```
+
+This suggests that income decreases with age. But, you can notice that this fit is terrible. Looking at the data, it actually seems that income first increases and then decreases with age.\
+\
+Fitting a straight line is what we call a linear model of degree 1.
+
+We can fit, instead, a local regression. The idea is that instead of having one straightline, you have many local straightlines so the line "moves". This captures non-linearities.
+
+```{r}
+ggplot(df,aes(x=age,y=hincome)) +
+  geom_point(alpha=0.1) + geom_smooth(se=FALSE)
+```
+
+This seems more reasonable, though this statistical model still seems to be poor in the sense that you probably do not explain a lot of the variation in household income using only one variable (age). For now, that's enough for two continuous variables. More on this next semester.
+
+#### 2 - one continuous variable and one categorical variable
+
+One good way to visualize the relation between one continuous variable and one categorical variable is the boxplot.
+
+```{r}
+ggplot(data = df, mapping = aes(x = vote_clean, y = hincome)) +
+  geom_boxplot()
+```
+
+Above, we see the outliers really well, but the bottom is a bit clustered and hard to read. Let's try to transform the y axis using a square root transformation.
+
+```{r}
+ggplot(data = df, mapping = aes(x = vote_clean, y = hincome)) +
+  geom_boxplot() +
+  scale_y_sqrt(breaks=c(0,25000,50000,100000,500000,1000000,2000000))
+```
+
+Better, we still hard to read. Let's just cut off the rich above 250,000 so we see clearly the distribution of the normal folks.
+
+```{r}
+ggplot(data = df, mapping = aes(x = vote_clean, y = hincome)) +
+  geom_boxplot() + coord_cartesian(ylim = c(0,250000))
+```
+
+[QUESTION]{style="color: red;"} How would you interpret these findings from those three boxplots?
+
+[A]{style="color: blue;"}: Liberals and Conservative a bit richer. No major difference, in average.
+
+#### 3 - two categorical variables
+
+In the book, they use geom_count().
+
+```{r}
+ggplot(data = df) +
+  geom_count(mapping = aes(x = vote_clean, y = q46))
+```
+
+That sort of is interesting in the sense that we that many liberals think Trudeau held is promises and many conservatives think he did not.
+
+In the social sciences, what we usually want to know is: "how many % of liberals think he did", "how many % of conservatives think he did" etc. The simplest way to do this is as follow:
+
+```{r}
+df %>%
+  group_by(vote_clean,q46) %>%
+  count() %>%
+  group_by(vote_clean) %>%
+  mutate(percent=100*n/sum(n)) %>%
+  ggplot(aes(x=q46,y=percent,fill=vote_clean)) + 
+  geom_bar(position="dodge",stat="identity") +
+  geom_text(aes(label=round(percent)),position=position_dodge(width=0.9),vjust=-0.1)
+```
+
+[QUESTION]{style="color: red;"} If you focus on the NDP, the Conservatives and the Liberal only (ignore the other parties/choices), for each party, how many % of respondents agree Trudeau his promises (agree = strongly agree + somewhat agree)?
+
+[A]{style="color: blue;"}: 38, 15, 77
+
+### Section 2 - Your turn
+
+Pick two variables of your choice. The variables can be in this dataset, or they can be in another dataset of your choice. The variables can be continuous or categorical.
+
+Describe in a few words the variables you picked.
+
+Make three figures. The first two figures are univariate analyses of your two variables (bar chart if categorical, histogram if continuous). The third figure should depict the two variables together (bivariate analysis); you should be able to adapt the code from above. Very succinctly, comment each figure.
