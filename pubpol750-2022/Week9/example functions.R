@@ -20,9 +20,20 @@ clean_data <- function(path){
   
   
   df %>% 
-    group_by(party) %>%
-    summarise(n_votes <- sum(value,na.rm=TRUE))
+    group_by(Circonscription,party) %>%
+    summarise(n_votes = sum(value,na.rm=TRUE))
 
 }
 
+my_paths <- list.files("~/Downloads/resultats-section-vote2018/",full.names = TRUE)
 
+
+list_to_fill <- list()
+
+for (i in my_paths){
+  list_to_fill[[i]] <- clean_data(i)
+}
+
+df_final <- bind_rows(list_to_fill)
+
+df_final
