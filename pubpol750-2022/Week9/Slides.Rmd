@@ -35,11 +35,12 @@ class: inverse, center, middle
   - Functions allow to avoid copy pasting, allow to reuse a procedure
   - Loops allow to do one thing many times
   
-They are often used in combination.
+
+- They are often used in combination.
 
 ---
 
-## Functions
+## Functions (justyfying their use)
 
 ```{r}
 set.seed(232)
@@ -109,7 +110,7 @@ custom_mean2 <- function(x){
 custom_mean2(my_vector)
 ```
 ---
-## Existing functions
+## Using existing functions
 
 Of course, you likely won't have to write many functions. A lot of functions exists. We've been using functions since the beginning of the semester.
 
@@ -126,7 +127,7 @@ You might, for example, want to:
 
 ## Example 
 
-Imagine we have 200 respondents on 10 questions. Answers: {1:"Strongly disagree",2:"Somewhat disagree",3:"Neutral",4:"Somewhat agree",5:"Strongly agree",6:"Don't know"}. We want to plot the response to each question in a separate figure.
+Imagine we have 200 respondents on 10 questions. Answers: {1:"Strongly disagree",2:"Somewhat disagree",3:"Neutral",4:"Somewhat agree",5:"Strongly agree",6:"Don't know"}. We want to plot the responses to each question in a separate figure.
 
 ```{r, warning=FALSE,message=FALSE}
 questions <- paste0("question",1:10)
@@ -231,15 +232,15 @@ df <- tibble(
 
 ```{r}
 output <- vector("double", ncol(df))
-for (i in seq_along(df)) {            # 2. sequence
-  output[[i]] <- median(df[[i]])      # 3. body
+for (i in seq_along(df)) {            
+  output[[i]] <- median(df[[i]])      
 }
 output
 ```
 ---
 ```{r}
-for (i in seq_along(df)) {            # 2. sequence
-  df[[i]] <- df[[i]]+10      # 3. body
+for (i in seq_along(df)) {            
+  df[[i]] <- df[[i]]+10      
 }
 df
 ```

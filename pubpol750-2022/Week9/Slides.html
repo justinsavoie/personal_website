@@ -4,7 +4,7 @@
     <title>Week 9: Functions, loops</title>
     <meta charset="utf-8" />
     <meta name="author" content="Justin Savoie" />
-    <meta name="date" content="2022-07-14" />
+    <meta name="date" content="2022-07-15" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 ## PUBPOL 750 Data Analysis for Public Policy I
 ### Justin Savoie
 ### MPP-DS McMaster
-### 2022-07-14
+### 2022-07-15
 
 ---
 
@@ -40,11 +40,12 @@ class: inverse, center, middle
   - Functions allow to avoid copy pasting, allow to reuse a procedure
   - Loops allow to do one thing many times
   
-They are often used in combination.
+
+- They are often used in combination.
 
 ---
 
-## Functions
+## Functions (justyfying their use)
 
 
 ```r
@@ -157,7 +158,7 @@ custom_mean2(my_vector)
 ## [1] 10.6
 ```
 ---
-## Existing functions
+## Using existing functions
 
 Of course, you likely won't have to write many functions. A lot of functions exists. We've been using functions since the beginning of the semester.
 
@@ -174,7 +175,7 @@ You might, for example, want to:
 
 ## Example 
 
-Imagine we have 200 respondents on 10 questions. Answers: {1:"Strongly disagree",2:"Somewhat disagree",3:"Neutral",4:"Somewhat agree",5:"Strongly agree",6:"Don't know"}. We want to plot the response to each question in a separate figure.
+Imagine we have 200 respondents on 10 questions. Answers: {1:"Strongly disagree",2:"Somewhat disagree",3:"Neutral",4:"Somewhat agree",5:"Strongly agree",6:"Don't know"}. We want to plot the responses to each question in a separate figure.
 
 
 ```r
@@ -325,8 +326,8 @@ df &lt;- tibble(
 
 ```r
 output &lt;- vector("double", ncol(df))
-for (i in seq_along(df)) {            # 2. sequence
-  output[[i]] &lt;- median(df[[i]])      # 3. body
+for (i in seq_along(df)) {            
+  output[[i]] &lt;- median(df[[i]])      
 }
 output
 ```
@@ -337,8 +338,8 @@ output
 ---
 
 ```r
-for (i in seq_along(df)) {            # 2. sequence
-  df[[i]] &lt;- df[[i]]+10      # 3. body
+for (i in seq_along(df)) {            
+  df[[i]] &lt;- df[[i]]+10      
 }
 df
 ```
