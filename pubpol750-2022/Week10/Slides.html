@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Week 10: Working with weighted data</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Justin Savoie" />
+    <meta name="date" content="2022-07-21" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Week 10: Working with weighted data
+## PUBPOL 750 Data Analysis for Public Policy I
+### Justin Savoie
+### MPP-DS McMaster
+### 2022-07-21
+
+---
+
+
+
+
+class: inverse, center, middle
+
+# Working with weighted data
+
+---
+
+# Weighted data
+
+- Often the data you will be working with is weighted
+- This could, in theory, apply to any type dataset
+- In practice, weighted data is usually data collected on individuals. Intuitively, some individuals are less likely to be represented in your data, they are harder to reach, and you want to increase their weight in your analysis.
+
+---
+
+# Sampling
+
+- Why can we claim that a poll of 100 respondents represent the views of 38M of Canadians ?
+- Random sampling: if we select respondents truly randomly, the results are very close to true population numbers
+- Random digit dialing + random selection within the household
+
+
+- Complex survey designs: strata, clusters
+- [Complex Surveys: a guide to analysis using R](https://r-survey.r-forge.r-project.org/svybook/)
+- [Applied Survey Data Analysis](https://www.isr.umich.edu/src/smp/asda/)
+
+---
+
+# Working with existing weights
+
+- Weights are often calculated by raking: adjusting weights algorithmically to match marginals distributions
+- Marginal distributions are simply the general distribution in the population. We call it "marginal" to distinguish them from a "conditional" distribution which are, for example, the distribution of age, given gender or education.
+
+
+- To calculate weights: you pick which variables you want to weight on. Provide the true numbers in the population for those distribution (marginal distribution). Let R algorithmically create weights. Will provide an example at the end.
+
+---
+
+# Working with existing weights
+
+- Almost all the time, weights either have a mean of 1 or sum to 1. Sometimes weight sum to the population, but this is rarer.
+- Weights with a mean of one mean that this is how much the respondent is worth in that sample.
+- It's not very important which scale the weights are one (if they sum to 1 or sum to the sample size or the population). You can always scale them back (if the weights sum to 1, multiplying them by N has them average to 1, multiplying them by the population has them sum to the population, and vice versa) 
+- It doesn't change any of your analyses. 
+
+---
+
+# Simple weighted mean
+
+
+```r
+library(tidyverse)
+library(readstata13)
+library(survey)
+df &lt;- read.dta13("~/Downloads/2019 Canadian Election Study - Phone Survey v1.0.dta") %&gt;%
+  as_tibble()
+mean(df$q14)
+```
+
+```
+## [1] 46.36732
+```
+
+```r
+weighted.mean(df$q14,df$weight_CES)
+```
+
+```
+## [1] 46.75191
+```
+
+---
+
+
+```r
+df %&gt;%
+  group_by(q44) %&gt;%
+  summarise(nweighted=sum(weight_CES),n=n()) %&gt;%
+  ungroup() %&gt;%
+  mutate(wp=nweighted/sum(nweighted),p=n/sum(n))
+```
+
+```
+## # A tibble: 8 × 5
+##   q44                       nweighted     n       wp        p
+##   &lt;fct&gt;                         &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (-9) Don't know               5.45      6 0.00135  0.00149 
+## 2 (-8) Refused                  0.561     1 0.000139 0.000249
+## 3 (1) None                    128.      134 0.0319   0.0333  
+## 4 (2) 1 to 10 minutes         470.      508 0.117    0.126   
+## 5 (3) 11 to 30 minutes        914.      910 0.227    0.226   
+## 6 (4) 31 to 60 minutes       1051.     1038 0.261    0.258   
+## 7 (5) Between 1 and 2 hours  1063.     1037 0.264    0.258   
+## 8 (6) More than 2 hours       389.      387 0.0968   0.0962
+```
+
+---
+
+
+```r
+CESDesign &lt;- svydesign(ids = ~0,
+                       weights = ~weight_CES,
+                       data    = df)
+svymean(~q14, CESDesign)
+```
+
+```
+##       mean     SE
+## q14 46.752 0.5594
+```
+
+```r
+q14mean &lt;- svymean(~q14, CESDesign)
+confint(q14mean)
+```
+
+```
+##        2.5 %   97.5 %
+## q14 45.65546 47.84836
+```
+
+---
+
+
+```r
+svytable(~q31, CESDesign)
+```
+
+```
+## q31
+##    (-9) Don't know       (-8) Refused       (-7) Skipped         (1) Better 
+##         113.385743           8.218755           0.000000         852.964985 
+##          (2) Worse (3) About the same 
+##        1270.314932        1776.115585
+```
+
+```r
+svyby(~q31,by=~age_range, CESDesign,svymean)
+```
+
+```
+##                               age_range q31(-9) Don't know q31(-8) Refused
+## (1) 18-24 years old (1) 18-24 years old         0.09858770     0.003671925
+## (2) 25-34 years old (2) 25-34 years old         0.05292624     0.003662916
+## (3) 35-44 years old (3) 35-44 years old         0.03218542     0.001306650
+## (4) 45-54 years old (4) 45-54 years old         0.01587141     0.000000000
+## (5) 55+ years old     (5) 55+ years old         0.01493389     0.002451560
+##                     q31(-7) Skipped q31(1) Better q31(2) Worse
+## (1) 18-24 years old               0     0.1356857    0.3535161
+## (2) 25-34 years old               0     0.2031205    0.3338878
+## (3) 35-44 years old               0     0.1922825    0.3447326
+## (4) 45-54 years old               0     0.2099687    0.3304475
+## (5) 55+ years old                 0     0.2334403    0.2888716
+##                     q31(3) About the same se.q31(-9) Don't know
+## (1) 18-24 years old             0.4085385           0.021733816
+## (2) 25-34 years old             0.4064025           0.011124884
+## (3) 35-44 years old             0.4294928           0.007988759
+## (4) 45-54 years old             0.4437124           0.005838565
+## (5) 55+ years old               0.4603027           0.003182128
+##                     se.q31(-8) Refused se.q31(-7) Skipped se.q31(1) Better
+## (1) 18-24 years old        0.003668756                  0       0.02578584
+## (2) 25-34 years old        0.003654493                  0       0.02000676
+## (3) 35-44 years old        0.001306358                  0       0.01704271
+## (4) 45-54 years old        0.000000000                  0       0.01774903
+## (5) 55+ years old          0.001395807                  0       0.01192614
+##                     se.q31(2) Worse se.q31(3) About the same
+## (1) 18-24 years old      0.03518463               0.03584606
+## (2) 25-34 years old      0.02347812               0.02450288
+## (3) 35-44 years old      0.02076485               0.02173208
+## (4) 45-54 years old      0.02006696               0.02150164
+## (5) 55+ years old        0.01248310               0.01393730
+```
+
+---
+
+# Making your own weights
+
+
+```r
+df_sub &lt;- df %&gt;% select(q31,q4,q3,age_range) 
+df_sub &lt;- df_sub %&gt;% mutate_all(as.character)
+
+marginals &lt;- c(`(Intercept)`= 1,
+               c(#`q4(1) Newfoundland and Labrador` = 0.0115942028985507,
+                 `q4(10) British Columbia` = 0.144927536231884,
+                 `q4(2) Prince Edward Island` = 0.00289855072463768, 
+                 `q4(3) Nova Scotia` = 0.0289855072463768,
+                 `q4(4) New Brunswick` = 0.0289855072463768,
+                 `q4(5) Quebec` = 0.231884057971014,
+                 `q4(6) Ontario` = 0.376811594202899,
+                 `q4(7) Manitoba` = 0.0289855072463768,
+                 `q4(8) Saskatchewan` = 0.0289855072463768,
+                 `q4(9) Alberta` = 0.115942028985507
+),c(#"q3(1) Male"=0.48,
+  "q3(2) Female"=0.48, "q3(3) Other"=0.04),
+c(#"age_range(1) 18-24 years old"=0.1, 
+  "age_range(2) 25-34 years old"=0.2, 
+  "age_range(3) 35-44 years old"=0.15,
+  "age_range(4) 45-54 years old"=0.2,
+  "age_range(5) 55+ years old"=0.35))
+```
+---
+
+```r
+tmp_form &lt;- paste(" ~ 1 + q4 + q3 + age_range")
+
+surveyDesign &lt;- svydesign(id = ~ 1, 
+                          weights = ~ 1,
+                          data = df_sub)
+surveyDesign &lt;- calibrate(design     = surveyDesign,
+                          formula    = as.formula(tmp_form),
+                          calfun     = "raking",
+                          population = marginals,
+                          maxit      = 2000)
+df_sub$weight &lt;- weights(surveyDesign)
+```
+---
+
+```r
+plot(df_sub$weight*nrow(df_sub),df$weight_CES)
+```
+
+![](Slides_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+---
+
+```r
+df_sub %&gt;% arrange(desc(weight))
+```
+
+```
+## # A tibble: 4,021 × 5
+##    q31                q4                    q3         age_range          weight
+##    &lt;chr&gt;              &lt;chr&gt;                 &lt;chr&gt;      &lt;chr&gt;               &lt;dbl&gt;
+##  1 (3) About the same (10) British Columbia (3) Other  (2) 25-34 years … 4.00e-2
+##  2 (3) About the same (6) Ontario           (2) Female (1) 18-24 years … 8.88e-4
+##  3 (1) Better         (6) Ontario           (2) Female (1) 18-24 years … 8.88e-4
+##  4 (2) Worse          (6) Ontario           (2) Female (1) 18-24 years … 8.88e-4
+##  5 (1) Better         (6) Ontario           (2) Female (1) 18-24 years … 8.88e-4
+##  6 (-9) Don't know    (6) Ontario           (2) Female (1) 18-24 years … 8.88e-4
+##  7 (3) About the same (6) Ontario           (2) Female (1) 18-24 years … 8.88e-4
+##  8 (3) About the same (6) Ontario           (2) Female (1) 18-24 years … 8.88e-4
+##  9 (2) Worse          (6) Ontario           (2) Female (1) 18-24 years … 8.88e-4
+## 10 (3) About the same (6) Ontario           (2) Female (1) 18-24 years … 8.88e-4
+## # … with 4,011 more rows
+```
+---
+
+```r
+df_sub$weight[df_sub$weight&gt;quantile(df_sub$weight,0.99)] &lt;- quantile(df_sub$weight,0.99)
+plot(df_sub$weight*nrow(df_sub),df$weight_CES)
+```
+
+![](Slides_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+---
+
+## For more information on creating weights.
+
+- [Complex Surveys: a guide to analysis using R](https://r-survey.r-forge.r-project.org/svybook/)
+- [Applied Survey Data Analysis](https://www.isr.umich.edu/src/smp/asda/)
+- https://medium.com/pew-research-center-decoded/weighting-survey-data-with-the-pewmethods-r-package-d040afb0d2c2
+
+---
+
+# When to use weights ?
+
+- As a heuristic, it's ok to use them all the time.
+- Always use them for description (for inferring a proportion from the sample to a population).
+- Unclear when running regressions. See :https://www.jstor.org/stable/24735988#metadata_info_tab_contents
+- If you run a regression where you control weighting variables, it's ok not to use weights.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
