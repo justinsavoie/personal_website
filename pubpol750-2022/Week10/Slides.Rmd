@@ -193,7 +193,7 @@ Let's look at code Weights Example.R
 
 ---
 
-https://www.worldvaluessurvey.org/WVSDocumentationWV7.jsp
-https://electionstudies.org/data-center/2020-time-series-study/ (need to register)
-https://mccourt.georgetown.edu/master-of-science-in-data-science-for-public-policy/data-science-community/public-policy-data-sets-and-resources/
-https://medium.com/metapolicy/how-do-you-practice-data-science-b4c9df59bc9c
+- https://www.worldvaluessurvey.org/WVSDocumentationWV7.jsp
+- https://electionstudies.org/data-center/2020-time-series-study/ (need to register)
+- https://mccourt.georgetown.edu/master-of-science-in-data-science-for-public-policy/data-science-community/public-policy-data-sets-and-resources/
+- https://medium.com/metapolicy/how-do-you-practice-data-science-b4c9df59bc9c
