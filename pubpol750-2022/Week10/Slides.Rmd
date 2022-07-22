@@ -28,7 +28,13 @@ class: inverse, center, middle
 
 - Often the data you will be working with is weighted
 - This could, in theory, apply to any type dataset
-- In practice, weighted data is usually data collected on individuals. Intuitively, some individuals are less likely to be represented in your data, they are harder to reach, and you want to increase their weight in your analysis.
+- Policy cases could be weighted, counties could have weights
+
+
+- In practice, weighted data is usually data collected on individuals. Intuitively, some individuals are less likely to be represented in your data, they are harder to reach, and you want to increase their weight in your analysis
+
+
+- Weights allow for a dataset to be corrected so that results more accurately represent the population being studied.
 
 ---
 
@@ -57,10 +63,10 @@ class: inverse, center, middle
 
 # Working with existing weights
 
-- Almost all the time, weights either have a mean of 1 or sum to 1. Sometimes weight sum to the population, but this is rarer.
-- Weights with a mean of one mean that this is how much the respondent is worth in that sample.
-- It's not very important which scale the weights are one (if they sum to 1 or sum to the sample size or the population). You can always scale them back (if the weights sum to 1, multiplying them by N has them average to 1, multiplying them by the population has them sum to the population, and vice versa) 
-- It doesn't change any of your analyses. 
+- Almost all the time, weights either have a mean of 1 or sum to 1. Sometimes weight sum to the population size.
+- Weights with a mean of one attribute how much respondent is worth in that sample.
+- It's not very important which scale the weights are one (if they sum to 1 or sum to the sample size or the population). You can always scale them back (if the weights sum to 1, multiplying them by N has them average to 1, multiplying them by the population has them sum to the population, and vice versa).
+- Importantly, it will not affect your analyses.
 
 ---
 
@@ -80,7 +86,7 @@ weighted.mean(df$q14,df$weight_CES)
 
 ```{r}
 df %>%
-  group_by(q44) %>%
+  group_by(q31) %>%
   summarise(nweighted=sum(weight_CES),n=n()) %>%
   ungroup() %>%
   mutate(wp=nweighted/sum(nweighted),p=n/sum(n))
@@ -95,6 +101,10 @@ CESDesign <- svydesign(ids = ~0,
 svymean(~q14, CESDesign)
 q14mean <- svymean(~q14, CESDesign)
 confint(q14mean)
+t.test(df$q14)[[4]]
+
+47.29210-45.4425;47.84836-45.65546
+
 ```
 
 ---
@@ -176,3 +186,14 @@ plot(df_sub$weight*nrow(df_sub),df$weight_CES)
 - Always use them for description (for inferring a proportion from the sample to a population).
 - Unclear when running regressions. See :https://www.jstor.org/stable/24735988#metadata_info_tab_contents
 - If you run a regression where you control weighting variables, it's ok not to use weights.
+
+---
+
+Let's look at code Weights Example.R
+
+---
+
+https://www.worldvaluessurvey.org/WVSDocumentationWV7.jsp
+https://electionstudies.org/data-center/2020-time-series-study/ (need to register)
+https://mccourt.georgetown.edu/master-of-science-in-data-science-for-public-policy/data-science-community/public-policy-data-sets-and-resources/
+https://medium.com/metapolicy/how-do-you-practice-data-science-b4c9df59bc9c
