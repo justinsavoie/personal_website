@@ -45,7 +45,7 @@ def dropbox_get_link(dropbox_file_path):
             #return shared_link
 
 ######## Only run for new folder
-folders = {#"2022-05-24-Naissance Aurelien Mai et Juin":"Mai et Juin 2022",
+folders = {"2022-05-24-Naissance Aurelien Mai et Juin":"Mai et Juin 2022"}
 "2022-07": "Juillet 2022"}
 
 #os.remove('2022-07_shares')
@@ -86,18 +86,38 @@ for folder in folders.keys():
     file_object = open(folders.get(folder)+"/images.html","a")
 
     file_object.write(
-    """<html>
+"""<html>
     <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-    img {
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
+    html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+img {
+    padding: 0;
+    display: block;
+    margin: 0 auto;
+    max-height: 85%;
+    max-width: 85%;
+}
     </style>
     </head>
-    <body>\n""")
+    <body>""")        
+#    """<html>
+#    <head>
+#    <meta name="viewport" content="width=device-width, initial-scale=1">
+#    <style>
+#    img {
+#      display: block;
+#      margin-left: auto;
+#      margin-right: auto;
+#    }
+#    </style>
+#    </head>
+#    <body>\n""")
     
 
     sharelink[-9:-6]
@@ -116,21 +136,21 @@ for folder in folders.keys():
         extension = sharelink[-9:-6]
 
         if ((extension == 'jpg') or (extension == 'png')):
-            file_object.write('<p><a href="' + sharelink + '">')
-            file_object.write('\n')
-            file_object.write('<img src="' + sharelink + '" alt="Mountain View" height="600", class="center">')
-            file_object.write('\n')
-            file_object.write('</a></p>')
-            file_object.write('</body>\n</html>\n')
+            file_object.write('<a href="' + sharelink + '">')
+            file_object.write('<br>')
+            file_object.write('<img src="' + sharelink + '"')
+            file_object.write('<br>')
         if ((extension == 'mov') or (extension == 'mp4')):
-            file_object.write('<video height="600" controls>')
-            file_object.write('\n')
+            file_object.write('<center>')
+            file_object.write('<video height="1000" controls>')
+            file_object.write('<br>')
             file_object.write('<source src="' + sharelink + '" type="video/'+extension+'">')
-            file_object.write('\n')
+            file_object.write('<br>')
             file_object.write('</video>')
-            file_object.write('\n')
+            file_object.write('</center>')
+            file_object.write('<br>')
 
-
+    file_object.write('</body></html>')
     file_object.close()
 
 
