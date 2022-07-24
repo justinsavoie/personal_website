@@ -45,7 +45,7 @@ def dropbox_get_link(dropbox_file_path):
             #return shared_link
 
 ######## Only run for new folder
-folders = {"2022-05-24-Naissance Aurelien Mai et Juin":"Mai et Juin 2022"}
+folders = {"2022-05-24-Naissance Aurelien Mai et Juin":"Mai et Juin 2022",
 "2022-07": "Juillet 2022"}
 
 #os.remove('2022-07_shares')
@@ -120,8 +120,6 @@ img {
 #    <body>\n""")
     
 
-    sharelink[-9:-6]
-
     for sharelink in templist:
 
         contains = 0;
@@ -141,6 +139,7 @@ img {
             file_object.write('<img src="' + sharelink + '"')
             file_object.write('<br>')
         if ((extension == 'mov') or (extension == 'mp4')):
+            file_object.write('<a href="' + sharelink + '">')
             file_object.write('<center>')
             file_object.write('<video height="1000" controls>')
             file_object.write('<br>')
