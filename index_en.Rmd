@@ -5,11 +5,10 @@ title: "Justin Savoie"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 ```
 
-### Justin Savoie
-
-[English website](index.html)
+[Site web en français](index_fr.html)
 
 <body style="background-color:#e9f5f4;">
 
@@ -19,21 +18,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 </div>
 
-Je suis étudiant au doctorat en science politique à l'Université de Toronto. Auparavant, j'étais à l'Université Laval pour mon baccalauréat (économie et politique) et ma [maîtrise](https://corpus.ulaval.ca/jspui/bitstream/20.500.11794/33747/1/34864.pdf) (science politique).
+Welcome! I am a PhD student in Political Science at the University of Toronto. Previously, I was at Université Laval for my undergraduate degree (Economics and Politics) and [master's degree](https://corpus.ulaval.ca/jspui/bitstream/20.500.11794/33747/1/34864.pdf) (Political Science). 
 
-Mes travaux portent sur le design et l'analyse de sondages, les méthodes computationelles en science sociale et l'analyse textuelle automatisée. 
+I am primarily interested in the design and analysis of large-scale surveys and applied computational methods in social science. Some of my work has appeared in the International Journal of Forecasting, PS: Political Science & Politics, the Canadian Journal of Political Science, French Politics, the Journal of Experimental Political Science and the Journal of European Public Policy.
 
-Ma thèse utilise les "word embeddings" et autres modèles d'espace vectoriel pour étudier l'évolution et les changements de signification en politique canadienne.
+My dissertation uses word embeddings and other vector space models to study the evolution and changing meanings of key concepts in Canadian politics.
 
-En plus de mes travaux universitaires, j'ai travaillé pendant quatre ans dans le secteur en science des données, d'abord en tant que scientifique des données, puis en tant que scientifique des données principal chez [Vox Pop Labs](voxpoplabs.com), une entreprise sociale qui crée des applications web basées sur des enquêtes pour organiser les données socio-politiques. Dans le cadre de mon mandat, je dirige toutes les activités de science des données pour des projets tels que la [Boussole électorale](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) et le [COVID-19 Monitor](https://covid19monitor.org/). J'ai également de l'expérience en tant que consultant en analyse statistique de données d'enquête.
+In addition to my academic work, I have been involved for four years in industry, first as Data Scientist and then as Lead Data Science with [Vox Pop Labs](voxpoplabs.com), a social enterprise that builds survey-based applications that organizes political and social data in meaningful ways.  Under my tenure, I lead all data science activities for projects such as [Vote Compass](https://votecompass.com/), [Australia Talks](https://australiatalks.abc.net.au/) and the [COVID-19 Monitor](https://covid19monitor.org/). I also have experience as a consultant for projects involving the statistical analysis of survey data.
 
-Mon [CV](cv_academic.pdf) (version anglaise; version française disponible sous peu).
+My CV is available [here](cv_academic.pdf).
 
-Mon profil [Google Scholar](https://scholar.google.ca/citations?user=U4l1gLYAAAAJ&hl=en).
+My Google Scholar page is available [here](https://scholar.google.ca/citations?user=U4l1gLYAAAAJ&hl=en).
 
-#### Recherche
+#### Research
 
-##### Articles évalués par les pairs
+##### Peer-reviewed papers
 
 Dufresne, Y., Jérôme, B. Lewis-Beck, M. Murr, A.,Savoie, J. 2022. [Citizen Forecasting: The 2022 French Presidential Elections.](https://www.cambridge.org/core/journals/ps-political-science-and-politics/article/citizen-forecasting-the-2022-french-presidential-elections/0FBB7FDC3FAF7F41A2E99C595D7753AF) *PS: Political Science & Politics.*
 
@@ -49,7 +48,7 @@ Temporão, M., Dufresne, Y., Savoie, J., van der Linden, C. 2019. [Crowdsourcing
 
 Fréchet, N., Savoie, J., Dufresne, Y. 2019. [Analysis of Text-Analysis Syllabi: Building a Text-Analysis Syllabus Using Scaling](https://www.cambridge.org/core/journals/ps-political-science-and-politics/article/analysis-of-textanalysis-syllabi-building-a-textanalysis-syllabus-using-scaling/63FD1DC30AEDAF1D2DC10D4FEDA539A7) *PS: Political Science and Politics*.
 
-##### Chapitres de livres 
+##### Book chapters 
 
 Elder, E., Lees-Marshment, J., Chant L., Osborne, D., Savoie, J., van der Linden, C. 2021 *What the Market Wanted: Vote Compass 2020 and Public Views on Issues and Leadership* in [Political Marketing and Management in the 2020 New Zealand General Election](https://link.springer.com/book/10.1007/978-3-030-77333-5). Palgrave Pivot
 
@@ -59,15 +58,15 @@ Lees-Marshment, J., Elder, E., Chant L., Osborne, D., Savoie, J., van der Linden
 
 Lees-Marshment, J., Elder, E., Chant L., Osborne, D., Savoie, J., van der Linden, C. 2018. *Political Parties and Their Customers: The Alignment of Party Policies with Supporter, Target and Undecided Market Preferences* in [Political Marketing and Management in the 2017 New Zealand Election](https://www.palgrave.com/gp/book/9783319942971). Palgrave Pivot
 
-##### Soumis ou en R&R
+##### Work in progress (submitted at least once or R&R)
 
-Getting the Message: Why Mail-Delivered GOTV Interventions Succeed or Fail (avec Alexandre Fortier-Chouinard, Marc André Bodet, François Gélineau, Mathieu Ouimet)
+Getting the Message: Why Mail-Delivered GOTV Interventions Succeed or Fail (with Alexandre Fortier-Chouinard, Marc André Bodet, François Gélineau, Mathieu Ouimet)
 
-Increasing Lobbying Transparency Through an Oversight in Designing a Health System Governance Reform (avec Mathieu Ouimet and Eric Montigny)
+Increasing Lobbying Transparency Through an Oversight in Designing a Health System Governance Reform (with Mathieu Ouimet and Eric Montigny)
 
-Where is the EU-UK Relationship Heading in the Medium-Term? A Conjoint Survey Experiment of Brexit Trade-Offs (avec Simon Hix, Clifton van der Linden, Joanna Massie, Mark Pickup)
+Where is the EU-UK Relationship Heading in the Medium-Term? A Conjoint Survey Experiment of Brexit Trade-Offs (with Simon Hix, Clifton van der Linden, Joanna Massie, Mark Pickup)
 
-#### Me contacter
+#### Contact
 
 [Twitter justinsavoie](https://twitter.com/justinsavoie)
 
@@ -75,4 +74,4 @@ Where is the EU-UK Relationship Heading in the Medium-Term? A Conjoint Survey Ex
 
 [Github justinsavoie](https://github.com/justinsavoie)
 
-Courriel: justin.savoie@mail.utoronto.ca
+Mail: justin.savoie@mail.utoronto.ca
