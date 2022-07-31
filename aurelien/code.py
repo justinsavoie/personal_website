@@ -48,8 +48,8 @@ def dropbox_get_link(dropbox_file_path):
 folders = {"2022-05-24-Naissance Aurelien Mai et Juin":"Mai et Juin 2022",
 "2022-07": "Juillet 2022"}
 
-#os.remove('2022-07_shares')
-#os.remove('2022-05-24-Naissance Aurelien Mai et Juin_shares')
+os.remove('2022-07_shares')
+os.remove('2022-05-24-Naissance Aurelien Mai et Juin_shares')
 
 for folder in folders.keys():
     files = os.listdir("/Users/justinsavoie/Dropbox (Personal)/Photos Master Justin Alicia/" + folder)
