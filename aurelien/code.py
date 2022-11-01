@@ -2,7 +2,11 @@
 
 DROPBOX_ACCESS_TOKEN = open("/Users/justinsavoie/Documents/toks/dpappAure.txt", "r").readlines()[0]
 
-to_remove = ["282248943_392549602925651_1188772972070919140_n.jpg","283596438_385143626913351_1340144692078241921_n.jpg"]
+to_remove = ["282248943_392549602925651_1188772972070919140_n.jpg",
+"283596438_385143626913351_1340144692078241921_n.jpg",
+"video-1660850285.mp4",
+"video-1660850293.mp4",
+"video-1660850302.mp4"]
 
 import pathlib
 import pandas as pd
@@ -44,9 +48,10 @@ def dropbox_get_link(dropbox_file_path):
             return shared_link.replace('?dl=0', '?raw=1')    
             #return shared_link
 
-######## Only run for new folder
+######## In the future, only run for new folder
 folders = {"2022-05-24-Naissance Aurelien Mai et Juin":"Mai et Juin 2022",
-"2022-07": "Juillet 2022"}
+"2022-07": "Juillet 2022", "2022-08": "Aout 2022", "2022-09": "Septembre 2022",
+"2022-10":"Octobre 2022"}
 
 os.remove('2022-07_shares')
 os.remove('2022-05-24-Naissance Aurelien Mai et Juin_shares')
@@ -72,7 +77,8 @@ for folder in myfolders:
     shutil.rmtree(folder)
 
 folders = {"2022-05-24-Naissance Aurelien Mai et Juin":"Mai et Juin 2022",
-"2022-07": "Juillet 2022"}
+"2022-07": "Juillet 2022", "2022-08": "Aout 2022", "2022-09": "Septembre 2022",
+"2022-10":"Octobre 2022"}
 
 for folder in folders.keys():
     
