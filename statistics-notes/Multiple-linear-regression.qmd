@@ -1,10 +1,10 @@
 ---
 title: "Multiple linear regression"
-format: html
+format:
+  html:
+    embed-resources: true
 editor: visual
 ---
-
-## Multiple linear regression
 
 The [basic linear regression model](https://en.wikipedia.org/wiki/Linear_regression) takes the form $$y_i=\beta_0+\beta_1x_i+...+\beta_kx_{ik}+\varepsilon = x_i^T\beta+\varepsilon_i, i = 1,...,n$$
 
@@ -16,7 +16,7 @@ In R
 
 ```{r}
 d <- read.csv("https://stats.idre.ucla.edu/wp-content/uploads/2019/02/elemapi2v2.csv")
-summary(fit <- lm(api00 ~  enroll + meals + full, data = d))
+coef(summary(fit <- lm(api00 ~  enroll + meals + full, data = d)))
 X <- as.matrix(cbind(1,d[,c("enroll","meals","full")]))
 y <- d$api00
 betas <- solve(t(X) %*% X) %*% t(X) %*% y
