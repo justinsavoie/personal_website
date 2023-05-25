@@ -1,0 +1,8 @@
+---
+title: "Statistics notes"
+format: html
+editor: visual
+---
+
+1 - [Multiple linear regression](multiple-linear-regression.html) (2023-05)
+
