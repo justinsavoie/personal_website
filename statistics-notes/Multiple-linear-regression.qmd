@@ -3,12 +3,16 @@ title: "Multiple linear regression"
 format:
   html:
     embed-resources: true
+    toc: true
+    toc-location: left
 editor: visual
 ---
 
+## OLS with matrices
+
 The [basic linear regression model](https://en.wikipedia.org/wiki/Linear_regression) takes the form $$y_i=\beta_0+\beta_1x_i+...+\beta_kx_{ik}+\varepsilon = x_i^T\beta+\varepsilon_i, i = 1,...,n$$
 
-In matrix form $$y=X\beta+\varepsilon_i$$
+In matrix form $$y=X\beta+\varepsilon$$
 
 $\hat{\beta}$, the vector of coefficients, can be obtained using matrix operations $$(X^TX)^{-1}X^Ty$$
 
@@ -32,4 +36,60 @@ residual_variance <- sum(residuals^2) / degrees_of_freedom
 betas_cov <- residual_variance * solve(t(X) %*% X)
 betas_se <- sqrt(diag(betas_cov))
 cbind(betas,betas_se)
+```
+
+## Maximum likelihood estimation
+
+With $y=X\beta+\varepsilon$
+
+$$L(\beta, \sigma^2 | Y, X) = \prod_{i=1}^{n} {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left({\frac {x-X\beta }{\sigma }}\right)^{2}}$$
+
+With a [little bit of math](https://www.statlect.com/fundamentals-of-statistics/normal-distribution-maximum-likelihood)
+
+$$lnL(\beta, \sigma^2 | Y, X) = -\frac{n}{2}\ln(2\pi)-n/2ln(\sigma^2)-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(y-Bx)$$
+
+One simple way to optimize this in R is
+
+```{r}
+betas_params_initial <- rnorm(4)
+sigma_params_initial <- rlnorm(1)
+params <- c(betas_params_initial,sigma_params_initial)
+to_optim <- function(pars,y,x1,x2,x3){
+  b0 <- pars[1]
+  b1 <- pars[2]
+  b2 <- pars[3]
+  b3 <- pars[4]
+  sigma_u <- pars[5]
+  sigma <- exp(sigma_u)
+  mu_vector <- b0+b1*x1+b2*x2+b3*x3
+  n<-length(y)
+  -sum(sapply(1:n, function(x) {dnorm(y[x],mu_vector[x],sigma,log=TRUE)}))
+  # alternatively without using dnorm
+  #log_density <- function(x, mean, sd) {-0.5 * log(2 * pi) - log(sd) - 0.5 * ((x - mean)/sd)^2}
+  #-sum(sapply(1:n, function(x) {log_density(y[x], mu_vector[x], sigma)}))
+}
+optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="L-BFGS-B")$par
+```
+
+But it does not always work ...
+
+```{r}
+(nelder_mead_params <- optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="Nelder-Mead")$par)
+(BFGS_params <- optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="BFGS")$par)
+```
+
+```{r}
+mean((y - X %*% coef(fit))^2)
+mean((y - X %*% rep(0,4))^2)
+mean((y - X %*% nelder_mead_params[1:4])^2)
+```
+
+Nelder-Mead is very bad. I guess it found a local minimum.
+
+To obtain the standard errors, we need the Hessian matrix of the second derivatives of the log-likelihood function evaluated at the maximum likelihood estimates. The inverse of this matrix is an estimate of the covariance matrix of the parameter estimates.
+
+```{r}
+fit <- optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="L-BFGS-B",hessian = TRUE)
+cov_beta_hat <- solve(fit$hessian)
+(se_beta_hat <- sqrt(diag(cov_beta_hat)))
 ```
