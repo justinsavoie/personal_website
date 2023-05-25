@@ -22,7 +22,7 @@ y <- d$api00
 betas <- solve(t(X) %*% X) %*% t(X) %*% y
 ```
 
-The variance of $\hat{\beta}$ is $Var(\hat{\beta})=\hat{\sigma^2}(X^TX)^{-1}$
+The [variance](https://web.stanford.edu/~mrosenfe/soc_meth_proj3/matrix_OLS_NYU_notes.pdf) of $\hat{\beta}$ is $Var(\hat{\beta})=\hat{\sigma^2}(X^TX)^{-1}$
 
 ```{r}
 residuals <- y - (X %*% betas)

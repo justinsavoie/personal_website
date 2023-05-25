@@ -2650,7 +2650,7 @@ full          1.0810944  0.23945269   4.514856  8.369020e-06</code></pre>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> d<span class="sc">$</span>api00</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">t</span>(X) <span class="sc">%*%</span> X) <span class="sc">%*%</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The variance of <span class="math inline">\(\hat{\beta}\)</span> is <span class="math inline">\(Var(\hat{\beta})=\hat{\sigma^2}(X^TX)^{-1}\)</span></p>
+<p>The <a href="https://web.stanford.edu/~mrosenfe/soc_meth_proj3/matrix_OLS_NYU_notes.pdf">variance</a> of <span class="math inline">\(\hat{\beta}\)</span> is <span class="math inline">\(Var(\hat{\beta})=\hat{\sigma^2}(X^TX)^{-1}\)</span></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>residuals <span class="ot">&lt;-</span> y <span class="sc">-</span> (X <span class="sc">%*%</span> betas)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)<span class="sc">-</span><span class="dv">1</span></span>
