@@ -42,11 +42,11 @@ cbind(betas,betas_se)
 
 With $y=X\beta+\varepsilon$
 
-$$L(\beta, \sigma^2 | Y, X) = \prod_{i=1}^{n} {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left({\frac {x-X\beta }{\sigma }}\right)^{2}}$$
+$$L(\beta, \sigma^2 | Y, X) = \prod_{i=1}^{n} {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left({\frac {y_i-X_i\beta }{\sigma }}\right)^{2}}$$
 
-With a [little bit of math](https://www.statlect.com/fundamentals-of-statistics/normal-distribution-maximum-likelihood)
+With a [little bit of math](https://www.statlect.com/fundamentals-of-statistics/normal-distribution-maximum-likelihood) we can get the log likelihood
 
-$$lnL(\beta, \sigma^2 | Y, X) = -\frac{n}{2}\ln(2\pi)-n/2ln(\sigma^2)-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(y-Bx)$$
+$$lnL(\beta, \sigma^2 | Y, X) = -\frac{n}{2}\ln(2\pi)-\frac{n}{2}ln(\sigma^2)-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(y_i-X_i\beta)$$
 
 One simple way to optimize this in R is
 
@@ -89,7 +89,26 @@ Nelder-Mead is very bad. I guess it found a local minimum.
 To obtain the standard errors, we need the Hessian matrix of the second derivatives of the log-likelihood function evaluated at the maximum likelihood estimates. The inverse of this matrix is an estimate of the covariance matrix of the parameter estimates.
 
 ```{r}
-fit <- optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="L-BFGS-B",hessian = TRUE)
-cov_beta_hat <- solve(fit$hessian)
+fit_optim <- optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="L-BFGS-B",hessian = TRUE)
+cov_beta_hat <- solve(fit_optim$hessian)
 (se_beta_hat <- sqrt(diag(cov_beta_hat)))
+```
+
+We can also do the optimization by hand using [Netwon-Raphson](https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization). It involves updating parameters by subtracting the multiplication of the inverse of the Hessian with the gradient vector.   
+
+```{r}
+betas <- params[1:4]
+
+for (i in 1:5){
+  yhat = X %*% betas
+  gradients <- t(X) %*% (y-yhat)
+  hessian <- - t(X) %*% X
+  betas <- betas - solve(hessian) %*% gradients
+}
+
+residuals <- y - X %*% betas
+sigma2_hat <- sum(residuals^2) / (length(y) - length(betas))
+cov_beta_hat <- sigma2_hat * solve(-hessian)
+se_beta_hat <- sqrt(diag(cov_beta_hat))
+cbind(betas,se_beta_hat)
 ```

@@ -2684,9 +2684,9 @@ full     1.0810944  0.23945269</code></pre>
 <section id="maximum-likelihood-estimation" class="level2">
 <h2 class="anchored" data-anchor-id="maximum-likelihood-estimation">Maximum likelihood estimation</h2>
 <p>With <span class="math inline">\(y=X\beta+\varepsilon\)</span></p>
-<p><span class="math display">\[L(\beta, \sigma^2 | Y, X) = \prod_{i=1}^{n} {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left({\frac {x-X\beta }{\sigma }}\right)^{2}}\]</span></p>
-<p>With a <a href="https://www.statlect.com/fundamentals-of-statistics/normal-distribution-maximum-likelihood">little bit of math</a></p>
-<p><span class="math display">\[lnL(\beta, \sigma^2 | Y, X) = -\frac{n}{2}\ln(2\pi)-n/2ln(\sigma^2)-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(y-Bx)\]</span></p>
+<p><span class="math display">\[L(\beta, \sigma^2 | Y, X) = \prod_{i=1}^{n} {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left({\frac {y_i-X_i\beta }{\sigma }}\right)^{2}}\]</span></p>
+<p>With a <a href="https://www.statlect.com/fundamentals-of-statistics/normal-distribution-maximum-likelihood">little bit of math</a> we can get the log likelihood</p>
+<p><span class="math display">\[lnL(\beta, \sigma^2 | Y, X) = -\frac{n}{2}\ln(2\pi)-\frac{n}{2}ln(\sigma^2)-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(y_i-X_i\beta)\]</span></p>
 <p>One simple way to optimize this in R is</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>betas_params_initial <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">4</span>)</span>
@@ -2708,18 +2708,18 @@ full     1.0810944  0.23945269</code></pre>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>)<span class="sc">$</span>par</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 801.82498577  -0.05144206  -3.65969205   1.08106611   4.06795659</code></pre>
+<pre><code>[1] 801.83005965  -0.05145567  -3.65973464   1.08109221   4.06795470</code></pre>
 </div>
 </div>
 <p>But it does not always work …</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>(nelder_mead_params <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;Nelder-Mead&quot;</span>)<span class="sc">$</span>par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -6.3766034  0.1292008 -1.6498323  8.0583776  4.6749539</code></pre>
+<pre><code>[1] -6.67447585  0.01593077  0.76685622  7.03616498  4.93746207</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>(BFGS_params <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;BFGS&quot;</span>)<span class="sc">$</span>par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 809.54246327  -0.05325596  -3.67869606   1.01484959   4.06798710</code></pre>
+<pre><code>[1] 811.86892816  -0.05492782  -3.68370631   0.99570822   4.07244281</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -2733,17 +2733,41 @@ full     1.0810944  0.23945269</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>((y <span class="sc">-</span> X <span class="sc">%*%</span> nelder_mead_params[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>])<span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 11480.85</code></pre>
+<pre><code>[1] 18372.57</code></pre>
 </div>
 </div>
 <p>Nelder-Mead is very bad. I guess it found a local minimum.</p>
 <p>To obtain the standard errors, we need the Hessian matrix of the second derivatives of the log-likelihood function evaluated at the maximum likelihood estimates. The inverse of this matrix is an estimate of the covariance matrix of the parameter estimates.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>,<span class="at">hessian =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>cov_beta_hat <span class="ot">&lt;-</span> <span class="fu">solve</span>(fit<span class="sc">$</span>hessian)</span>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>fit_optim <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>,<span class="at">hessian =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>cov_beta_hat <span class="ot">&lt;-</span> <span class="fu">solve</span>(fit_optim<span class="sc">$</span>hessian)</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>(se_beta_hat <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(cov_beta_hat)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 26.29962299  0.01376861  0.10825858  0.23829745  0.03535540</code></pre>
+<pre><code>[1] 26.29128234  0.01376778  0.10824579  0.23822911  0.03535533</code></pre>
+</div>
+</div>
+<p>We can also do the optimization by hand using <a href="https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization">Netwon-Raphson</a>. It involves updating parameters by subtracting the multiplication of the inverse of the Hessian with the gradient vector.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> params[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>){</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  yhat <span class="ot">=</span> X <span class="sc">%*%</span> betas</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  gradients <span class="ot">&lt;-</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> (y<span class="sc">-</span>yhat)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  hessian <span class="ot">&lt;-</span> <span class="sc">-</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> X</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  betas <span class="ot">&lt;-</span> betas <span class="sc">-</span> <span class="fu">solve</span>(hessian) <span class="sc">%*%</span> gradients</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>residuals <span class="ot">&lt;-</span> y <span class="sc">-</span> X <span class="sc">%*%</span> betas</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>sigma2_hat <span class="ot">&lt;-</span> <span class="fu">sum</span>(residuals<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> (<span class="fu">length</span>(y) <span class="sc">-</span> <span class="fu">length</span>(betas))</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>cov_beta_hat <span class="ot">&lt;-</span> sigma2_hat <span class="sc">*</span> <span class="fu">solve</span>(<span class="sc">-</span>hessian)</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>se_beta_hat <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(cov_beta_hat))</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(betas,se_beta_hat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                   se_beta_hat
+1      801.8298337 26.42660282
+enroll  -0.0514556  0.01383741
+meals   -3.6597345  0.10879550
+full     1.0810944  0.23945269</code></pre>
 </div>
 </div>
 </section>
