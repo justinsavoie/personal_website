@@ -72,3 +72,52 @@ summary(fit<-glm(vs~cyl+hp,mtcars,family='binomial'))
 ```{r}
 predict(fit,data.frame(cyl=4,hp=97),type='response')
 ```
+
+Scaling
+
+```{r}
+mtcars_s <- mtcars
+mtcars_s$cyl <- c(scale(mtcars_s$cyl));mtcars_s$hp <- c(scale(mtcars_s$hp));
+summary(fit_s<-glm(vs~cyl+hp,mtcars_s,family='binomial'))
+```
+
+```{r}
+c(coef(fit)[2] * sd(mtcars$cyl),
+  coef(fit_s)[2])
+```
+
+When showing coefficients side by side, scaling allows to directly compare magnitude. Below: -2.26 vs -0.019 doesn't tell us anything, -4.04 vs -1.3 tells us cyl is a better predictor.
+
+```{r}
+cbind(coef(lm(mpg~cyl+hp,mtcars)),
+      coef(lm(mpg~cyl+hp,mtcars_s)))
+```
+
+Of course, it's problematic when one or more variable is not continuous
+
+```{r}
+coef(lm(mpg~cyl+hp+vs,mtcars_s))
+```
+
+[Gelman suggests](https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.3107?casa_token=ViLc1x5Km7YAAAAA:lKAgtN697ynv4GPuxEsilFMuMQOJR4wGI177YxV-QU_HHn54-s9glomDdffWmBFG8nf7VvmDHFrWT1I7) to scale by dividing by twice the standard deviation. "We recommend the general practice of scaling numeric inputs by dividing
+by two standard deviations, which allows the coefficients to be interpreted in the same way as
+with binary inputs. (We leave binary inputs unscaled because their coefficients can already be
+interpreted directly.)"
+
+```{r}
+mtcars_s <- mtcars
+mtcars_s$cyl <- (mtcars_s$cyl-mean(mtcars_s$cyl)) / (2*sd(mtcars_s$cyl))
+mtcars_s$hp <- (mtcars_s$hp-mean(mtcars_s$hp)) / (2*sd(mtcars_s$hp))
+coef(lm(mpg~cyl+hp+vs,mtcars_s))
+```
+
+These are now comparable. 
+
+Alternatively, we can scale all variables. I've seen this before. If we use the coeficients as indicators of the strength of each predictor, it's roughly equivalent (-9.003918/-1.333978 = 6.74 vs -4.5019591/-0.6723465 = 6.69). Note that it's not exactly equal. Gelman's suggestion only puts the coefficients exactly on the same scale if the proportion of the binary variable is 0.5. Yet it has the advantage of keeping the interpretability of the coefficient on the binary input.
+
+```{r}
+mtcars_s <- mtcars
+mtcars_s[,c("cyl","hp","vs")] <- 
+  lapply(mtcars_s[,c("cyl","hp","vs")],scale)
+coef(lm(mpg~cyl+hp+vs,mtcars_s))
+```
