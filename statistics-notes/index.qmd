@@ -6,5 +6,8 @@ format:
 editor: visual
 ---
 
-1 - [Multiple linear regression](multiple-linear-regression.html) (2023-05)
+3 - [Scaling in regression](scaling-in-regression.html) (2023-05)
 
+2 - [Logistic regression](logistic-regression.html) (2023-05)
+
+1 - [Multiple linear regression](multiple-linear-regression.html) (2023-05)

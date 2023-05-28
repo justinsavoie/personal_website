@@ -94,7 +94,7 @@ cov_beta_hat <- solve(fit_optim$hessian)
 (se_beta_hat <- sqrt(diag(cov_beta_hat)))
 ```
 
-We can also do the optimization by hand using [Netwon-Raphson](https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization). It involves updating parameters by subtracting the multiplication of the inverse of the Hessian with the gradient vector.   
+We can also do the optimization by hand using [Netwon-Raphson](https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization). It involves updating parameters by subtracting the multiplication of the inverse of the Hessian with the gradient vector.
 
 ```{r}
 betas <- params[1:4]

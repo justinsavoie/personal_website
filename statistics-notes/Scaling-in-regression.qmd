@@ -1,0 +1,74 @@
+---
+title: "Scaling in regression"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+editor: visual
+---
+
+## OLS
+
+Let's use as an example the simple model for mpg below. When cyl = 0 & hp = 0, the expected value of mpg is 36.9 (the intercept). For realistic values of cyl = 6 and hp = 125, the expected values of mpg is $36.9+-2.26*6-0.01912*125=20.93$.
+
+```{r}
+summary(fit<-lm(mpg~cyl+hp,mtcars))
+predict(fit,data.frame(cyl=6,hp=125))
+```
+
+When we scale, the mean of each scaled variable is 0. Predicting with the model with scaled predictors with predictors set at zero, and with the model with unscaled predictors set at their means, is equivalent.
+
+```{r}
+mean(c(scale(mtcars$hp))==(mtcars$hp-mean(mtcars$hp))/sd(mtcars$hp))
+```
+
+```{r}
+mtcars_s <- mtcars
+mtcars_s$cyl <- c(scale(mtcars_s$cyl));mtcars_s$hp <- c(scale(mtcars_s$hp));
+summary(fit_s<-lm(mpg~cyl+hp,mtcars_s))
+c(predict(fit_s,data.frame(cyl=0,hp=0)),
+  predict(fit,data.frame(cyl=mean(mtcars$cyl),hp=mean(mtcars$hp))))
+```
+
+When scaling, the coefficient represents the impact of increasing that predictor by on standard deviation.
+
+```{r}
+c(coef(fit)[2] * sd(mtcars$cyl),
+  coef(fit_s)[2])
+```
+
+Further, let's say I have a car with 4 cyl and 97 hp, the predicted value for mpg is 26. 
+
+```{r}
+predict(fit,data.frame(cyl=4,hp=97))
+```
+
+Equivalently
+
+```{r}
+predict(fit_s,data.frame(cyl=(4-mean(mtcars$cyl))/sd(mtcars$cyl),
+                         hp=(97-mean(mtcars$hp))/sd(mtcars$hp)))
+```
+
+And again, increasing cyl by one sd in both models is equivalent.
+
+```{r}
+predict(fit,data.frame(cyl=4+sd(mtcars$cyl),hp=97))
+predict(fit_s,
+        data.frame(cyl=(4-mean(mtcars$cyl))/sd(mtcars$cyl) + 1,
+                   hp=(97-mean(mtcars$hp))/sd(mtcars$hp)))
+```
+
+
+## Logistic regression
+
+At cyl = 0 and hp = 0, p(am=1) = `r plogis(9.08901)` = 0.9998. Of course, this is a non-sensical prediction (can't have 0 cylinders/hp). With 4 cyl and 97 hp, `r plogis(9.08901+-0.68950*4+-0.04135*97)` = 0.91.
+
+```{r}
+summary(fit<-glm(vs~cyl+hp,mtcars,family='binomial'))
+```
+
+```{r}
+predict(fit,data.frame(cyl=4,hp=97),type='response')
+```
