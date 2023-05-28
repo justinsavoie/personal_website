@@ -99,6 +99,8 @@ Of course, it's problematic when one or more variable is not continuous
 coef(lm(mpg~cyl+hp+vs,mtcars_s))
 ```
 
+## Gelman scaling
+
 [Gelman suggests](https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.3107?casa_token=ViLc1x5Km7YAAAAA:lKAgtN697ynv4GPuxEsilFMuMQOJR4wGI177YxV-QU_HHn54-s9glomDdffWmBFG8nf7VvmDHFrWT1I7) to scale by dividing by twice the standard deviation. "We recommend the general practice of scaling numeric inputs by dividing
 by two standard deviations, which allows the coefficients to be interpreted in the same way as
 with binary inputs. (We leave binary inputs unscaled because their coefficients can already be
