@@ -1,10 +1,12 @@
 ---
-title: "[Statistics notes](https://www.justinsavoie.com/)"
+title: "[Justin Savoie](https://www.justinsavoie.com/)"
 format:
   html:
     embed-resources: true
 editor: visual
 ---
+
+### Statistics notes
 
 3 - [Scaling in regression](scaling-in-regression.html) (2023-05)
 
