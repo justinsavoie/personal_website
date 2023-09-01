@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Statistics notes</title>
+<title>Am I a Bayesian or a Frequentist?</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -2981,15 +2981,19 @@ vertical-align: -.125em;
 
 </head>
 
-<body class="fullcontent">
+<body>
 
-<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><a href="https://www.justinsavoie.com/">Statistics notes</a></h1>
+<h1 class="title"><a href="index.html">Am I a Bayesian or a Frequentist?</a></h1>
 </div>
 
 
@@ -3004,9 +3008,15 @@ vertical-align: -.125em;
 
 </header>
 
-<p>3 - <a href="scaling-in-regression.html">Scaling in regression</a> (2023-05)</p>
-<p>2 - <a href="logistic-regression.html">Logistic regression</a> (2023-05)</p>
-<p>1 - <a href="multiple-linear-regression.html">Multiple linear regression</a> (2023-05)</p>
+<p><strong>Good question!</strong> Most of the times, I don’t think about it. I’m pragmatic and my current view is that for what I do most of the times (often some relatively simple version of linear regression) it doesn’t matter much.</p>
+<p>Frequentists often use Maximum Likelihood Estimation (MLE) to obtain point estimates for parameters. Bayesians, on the other hand, combine the likelihood with a prior distribution using Bayes’ theorem to obtain a posterior distribution, from which point or interval estimates can be derived, akin to taking a weighted average of the likelihood and the prior.</p>
+<p>We often employ vague or not-very-informative priors. Consequently, the posterior distribution of our estimates tends to align closely with the Maximum Likelihood Estimation (MLE) results.</p>
+<p>There are packages that do very easily the Bayesian versions of stuff like <code>lm()</code>, <code>glm()</code>, <code>lmer()</code> and <code>glmer()</code> (mostly <code>rstanarm</code> and <code>brms</code>).</p>
+<p>The results are very often similar to what you would get with <code>lm()</code>, <code>glm()</code> .. and if they are not then we should absolutely try to understand why ; it’s important.</p>
+<p>In practice I’ll use the frequentist methods because they are much faster on large datasets and also because it’s often annoying to explain to people why we should be using Bayesian statistics. But for these kinds of models, it’s similar. We’re applied practionners, not theorists.</p>
+<p>I’ll sometimes use <code>rstanarm</code> and <code>brms</code> if, for some reason, I need the full posterior distribution of parameters because I want to get the uncertainty around something downstream from the model, like poststratified predictions. Of course, I think we can often get these with bootstrap or the delta method. But in applied work, I like flexibility, what makes sense scientifically, what’s doable.</p>
+<p>My really high level view is pretty much something like section 5.5.5 of this book Murphy’s <a href="probml.github.io/pml-book/book1.html">book</a>, especially the quote by Donald Rubin at the top of p. 203:</p>
+<p>“The applied statistician should be Bayesian in principle and calibrated to the real world in practice. [They] should attempt to use specifications that lead to approximately calibrated procedures under reasonable deviations from [their assumptions]. [They] should avoid models that are contradicted by observed data in relevant ways — frequency calculations for hypothetical replications can model a model’s adequacy and help to suggest more appropriate models.”</p>
 
 </main>
 <!-- /main column -->

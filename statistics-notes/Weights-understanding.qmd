@@ -1,0 +1,189 @@
+---
+title: "Using and understanding survey weights (with an example using the Canadian Election study)"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+editor: visual
+---
+
+I use survey data a lot and such data almost always comes with weights. Unfortunately, it's [not always clear](https://statmodeling.stat.columbia.edu/2015/07/14/survey-weighting-and-regression-modeling/) how to use weights. Further see [here](https://stats.stackexchange.com/questions/11018/recommend-references-on-survey-sample-weighting) or [here](https://healthyalgorithms.com/2011/05/24/journal-culture/). There is, however, a consensus that for descriptive statistics (in contrast to whatever is done with regression), one should use weights.
+
+There are [different kinds of weights](https://statmodeling.stat.columbia.edu/2021/01/17/weights-in-statistics/). Thomas Lumley, the author of `survey`, the main package for the analysis of surveys in R [calls them](https://notstatschat.rbind.io/2020/08/04/weights-in-statistics/) precision weights, frequency weights, sampling weights. These different weights will lead to the same estimate. However, they will differ in standard errors and here it's where it can get complicated. Here, I focus on sampling weights because those are the ones we use in survey data; the ones that "describe how the sample can be scaled up to the population". I will use *2021 Canadian Election Study v1.0.dta* available [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XBZHKC) which you can load using `haven::read_stata`.
+
+Let's take the first 3000 rows to have larger standard errors, otherwise some are tiny. There's a lot of missing data too, some questions were possibly randomized and asked onl to some respondents. 
+
+```{r, message=FALSE,warning=FALSE}
+library(haven)
+library(tidyverse)
+df <- read_stata("~/Downloads/dataverse_files_CES2021/2021 Canadian Election Study v1.0.dta")
+df <- df[1:5000,]
+```
+
+In descriptive statistics for survey data, we usually do two things: we calculate averages and we calculate proportions. I say "two things" but proportions can be seen as a special case of averages.
+
+I'll start without taking into accounts the weights. Let's look at:
+
+**cps21_pol_eth** It is important that politicians behave ethically in office.
+
+-   Strongly disagree (1)
+-   Somewhat disagree (2)
+-   Somewhat agree (3)
+-   Strongly agree (4)
+-   Don't know / Prefer not to answer (5)
+
+```{r}
+summary(df$cps21_pol_eth)
+```
+
+Let's remove DK/Pnta, and let's treat it as continuous:
+
+```{r}
+df %>% 
+  select(cps21_pol_eth) %>%
+  filter(complete.cases(.),
+         cps21_pol_eth!=5) %>%
+  summarise(estimate=mean(cps21_pol_eth))
+```
+
+For proportions:
+
+```{r}
+df %>% 
+  select(cps21_pol_eth) %>%
+  filter(complete.cases(.),
+         cps21_pol_eth!=5) %>%
+  group_by(cps21_pol_eth) %>%
+  count() %>% 
+  ungroup() %>%
+  mutate(estimate=n/sum(n))
+```
+
+Proportions can be seen as a special case of averages when we dummify each category:
+
+```{r}
+df %>% 
+  select(cps21_pol_eth) %>%
+  filter(complete.cases(.),
+         cps21_pol_eth!=5) %>%
+  summarise(mean(cps21_pol_eth==4),
+            mean(cps21_pol_eth==3))
+```
+
+We can get the standard error and a 95% CI with
+
+```{r}
+df %>%
+  select(cps21_pol_eth) %>%
+  filter(complete.cases(.),cps21_pol_eth!=5) %>%
+  summarise(estimate=mean(cps21_pol_eth),
+            n=n(),sd=sd(cps21_pol_eth)) %>%
+  mutate(se=sd / sqrt(n),
+         min=estimate-1.96*se,
+         max=estimate+1.96*se)
+```
+
+Which is also approximately equal to the confidence interval from a t-distribution because n is large:
+
+```{r}
+c(t.test(df$cps21_pol_eth[df$cps21_pol_eth!=5],na.rm=TRUE)[[4]])
+```
+
+Let's look at averages broken down by a group (by gender):
+
+```{r}
+df %>%
+  select(cps21_pol_eth,cps21_genderid) %>%
+  filter(complete.cases(.),cps21_pol_eth!=5) %>%
+  group_by(cps21_genderid) %>%
+  summarise(estimate=mean(cps21_pol_eth),
+            n=n(),sd=sd(cps21_pol_eth)) %>%
+  mutate(se=sd / sqrt(n),
+         min=estimate-1.96*se,
+         max=estimate+1.96*se)
+```
+
+You'll sometimes see people doing the same thing with a linear model:
+
+```{r}
+fit <- lm(cps21_pol_eth~as_factor(cps21_genderid),df %>% filter(cps21_pol_eth!=5))
+pred.fit <- fit %>% 
+  predict(newdata = df %>%
+          filter(cps21_pol_eth!=5) %>% 
+          select(cps21_genderid) %>% 
+          unique() %>% arrange(cps21_genderid),se.fit = TRUE)
+tibble(label=sort(unique(df$cps21_genderid)),
+  min=pred.fit$fit-1.96*pred.fit$se.fit,
+  estimate=pred.fit$fit,
+  max=pred.fit$fit+1.96*pred.fit$se.fit,
+  se=pred.fit$se.fit)
+```
+
+The package `srvyr` has some functions to get survey means. Weights of 1 are equivalent to no weights.
+
+```{r, message=FALSE}
+library(srvyr)
+df %>%
+  mutate(w1=1) %>%
+  filter(cps21_pol_eth!=5) %>%
+  as_survey_design(ids = 1, weight = w1) %>%
+  group_by(cps21_genderid) %>%
+  summarise(survey_mean(cps21_pol_eth))
+```
+
+If we look at the three last outputs, the standard errors are all different, for example in the case of "another gender", it's: 0.167, 0.172, 0.152. And we are not even using weights! What's going on?
+
+Let's start with no grouping group (general average, not by gender). Here we actually don't have differences. 
+
+```{r}
+df %>%
+    mutate(w1=1) %>%
+    filter(cps21_pol_eth!=5) %>%
+    as_survey_design(ids = 1, weight = w1) %>%
+    summarise(survey_mean(cps21_pol_eth))
+x <- df$cps21_pol_eth[df$cps21_pol_eth!=5]
+x <- as.numeric(x[!is.na(x)])
+mean(x);sd(x)/sqrt(length(x))
+predict(lm(x~1),data.frame(x=1),se.fit=TRUE)[1:2]
+```
+
+So the standard errors are different because of the groups. 
+
+```{r}
+x <- df %>%
+  filter(cps21_pol_eth!=5,
+         !is.na(cps21_pol_eth),
+         cps21_genderid==4) %>% pull(cps21_pol_eth) %>%
+  as.numeric()
+mean(x);sd(x)/sqrt(length(x))
+
+fit <- lm(cps21_pol_eth~1,df %>% filter(cps21_pol_eth!=5,cps21_genderid==4))
+pred.fit <- fit %>% 
+  predict(newdata = data.frame(a=1),se.fit = TRUE)
+tibble(min=pred.fit$fit-1.96*pred.fit$se.fit,
+  estimate=pred.fit$fit,
+  max=pred.fit$fit+1.96*pred.fit$se.fit,
+  se=pred.fit$se.fit)
+
+```
+If we use `lm()` on a subset only, now the standard errors match for the linear model and the by hand method. In the linear model with many groups, the standard error is inversely related to the square root of the sample size and the residual variance.
+
+It still doesn't match for this though:
+
+```{r}
+df %>%
+  mutate(w1=1) %>%
+  filter(cps21_pol_eth!=5) %>%
+  as_survey_design(ids = 1, weight = w1) %>%
+  group_by(cps21_genderid) %>%
+  summarise(survey_mean(cps21_pol_eth))
+```
+
+What is being calculated?
+
+```{r}
+sqrt(sum(((1/2660)*(1-(1/2660)))*x^2) / 7075600)
+```
+
+Amazing vignettes! https://cran.r-project.org/web/packages/survey/index.html

@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [Site web en français](index.html)
 
-<body style="background-color:#e9f5f4;">
+<body style="background-color:#f7f7f7;">
 
 <div style= "float:right;position: relative; left: 30px;">
 

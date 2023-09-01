@@ -1,0 +1,180 @@
+---
+title: "Chapter 1 - Introduction"
+execute:
+  message: false
+  warning: false
+format:
+  html:
+    toc: true
+    toc-location: left
+    embed-resources: true
+    code-fold: true
+website:
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+      - section: "Basics"
+        contents:
+          - index.qmd
+          - basics-knitr.qmd
+          - basics-jupyter.qmd
+      - section: "Layout"
+        contents:
+          - layout.qmd
+          - layout-knitr.qmd
+          - layout-jupyter.qmd
+---
+
+## 1.1 What is machine learning?
+
+A popular definition of machine learning (ML) by Tom Mitchell is given: "A computer program is said to learn from experience E with respect to some class of tasks T, and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E."
+
+For the social scientist, this includes regression (e.g. OLS) and classification (e.g. logistic regression). 
+
+In the book, ML is considered from a probabilistic perspective (predictions and parameters are treated as random variables endowed with a probability distribution). In some sense, this is radically different than most "standard" account of statistics in the social sciences. Standard frequentist methods often rely on point estimates, confidence intervals, and p-values rather than probability distributions. For example, in OLS, the error term is typically assumed to be normally distributed with a mean of zero but the estimated parameters themselves are not assigned probability distributions within the OLS framework. OLS is a frequentist method that focuses on estimating fixed parameter values based on observed data rather than treating them as random variables.
+
+Why so? 1 - it's optimal for decision making under uncertainty 2- it provides a unifying framework between all fields of computational science.
+
+## 1.2 Supervised learning
+
+The most common form of ML is supervised learning. The task T is to learn a mapping $f$ from the inputs (features,covariates,predictors) $x\ \epsilon\ \chi$ to the outcome $y\ \epsilon\ \gamma$ (label,target,response).
+
+### 1.2.1 Classification
+
+The outcomes belong to a class (e.g., logistic regression in social sciences, which is a method for binary classification). Classification can also be a problem with more than 2 classes.
+
+#### 1.2.1.1 Example: classifying Iris flowers
+
+The Iris dataset is an example of tabular data (in social sciences we often work with this, it's just a standard dataset). Input space is $\chi=\mathbb{R}^4$. Iris has 4 predictors and they are real numbers. Data isn't always in tabular format. However, such data is often converted to fixed-sized feature representation ("featurization"), thus creating tabular data (or design matrix).
+
+The first 4 columns are the (real numbers) inputs and the fifth column is the outcome (3 classes).
+
+```{r}
+head(iris)
+table(iris$Species)
+```
+
+#### 1.2.1.2 Exploratory data analysis
+
+Always do exploratory data analysis. For higher-dimensional data, do dimensionality reduction first.
+
+```{r}
+library(GGally)
+ggpairs(iris, columns = 1:4, aes(color = Species, alpha = 0.5),
+        upper = list(continuous = "points"))
+```
+
+#### 1.2.1.3 Learning a classifier
+
+Here, we diverge slightly from typical quantitative work in the social science. We build a very simple decision tree. A decision tree is a model, and that model is represented in the left pane of Figure 1.4. This model is easily interpretable. It just happens that in the social sciences, we often use linear models. This is because we often like to do inference about the effect of one variable on the outcome. Decision trees don't usually allow for this kind of statistical inference. This book is about probabilistic modelling, so it's possible the view adopte here is difference. The threshold values use in the left pane of Figure 1.4 are treated as parameters, so there should be a way to quantify the uncertainty around them during estimation.
+
+#### 1.2.1.4 Empirical risk minimization
+
+This is not something we often talk about in quantitative social science. There, the loss function is usually implicit. In OLS for example, it's the Mean Squared Error. In (1.2) the missclassification rate is simply the percentage of missclassified items (the sum of all items where the prediction is an error divided by the number of items in the training dataset). In (1.4) empirical risk is defined as the average loss of the predictor on the training dataset. The math are similar to (1.2), we still sum over all items in the training dataset, but the loss is asymmetric. All errors are not equal. 
+
+Let's build in R the classifier in Figure 1.4.
+
+```{r}
+classify_iris <- function(petal_length, petal_width) {
+  if (petal_length <= 2.45) {
+    "setosa"
+  } else {
+    if (petal_width <= 1.75) {
+      "versicolor"
+    } else {
+      "virginica"
+    }
+  }
+}
+
+predictions <- sapply(1:150, function(x){
+  classify_iris(iris$Petal.Length[x],iris$Petal.Width[x])
+  }
+)
+
+```
+
+Equation (1.2)
+
+```{r}
+(1/150) * sum(
+  sapply(1:150, function(x){predictions[x]!=iris$Species[x]})
+)
+```
+
+Equation (1.4)
+
+It's coded as a sum but for each of the 150 cases, only one case is true, so 8 out of 8 items in the sum are zero.
+
+```{r}
+(1/150) * sum(
+  sapply(1:150, function(x){
+    
+    0 * (predictions[x]=="setosa" & iris$Species[x]=="setosa") +
+    1 * (predictions[x]=="setosa" & iris$Species[x]=="versicolor") +
+    1 * (predictions[x]=="setosa" & iris$Species[x]=="virginica") +
+    1 * (predictions[x]=="versicolor" & iris$Species[x]=="setosa") +
+    0 * (predictions[x]=="versicolor" & iris$Species[x]=="versicolor") +
+    1 * (predictions[x]=="versicolor" & iris$Species[x]=="virginica") +     
+    10 * (predictions[x]=="virginica" & iris$Species[x]=="setosa") +
+    10 * (predictions[x]=="virginica" & iris$Species[x]=="versicolor") +
+    0 * (predictions[x]=="virginica" & iris$Species[x]=="virginica")
+    }
+  )
+)
+```
+
+And of course (1.5) is equivalent to 1.2 with a zero-one loss
+
+```{r}
+(1/150) * sum(
+  sapply(1:150, function(x){
+    
+    0 * (predictions[x]=="setosa" & iris$Species[x]=="setosa") +
+    1 * (predictions[x]=="setosa" & iris$Species[x]=="versicolor") +
+    1 * (predictions[x]=="setosa" & iris$Species[x]=="virginica") +
+    1 * (predictions[x]=="versicolor" & iris$Species[x]=="setosa") +
+    0 * (predictions[x]=="versicolor" & iris$Species[x]=="versicolor") +
+    1 * (predictions[x]=="versicolor" & iris$Species[x]=="virginica") +     
+    1 * (predictions[x]=="virginica" & iris$Species[x]=="setosa") +
+    1 * (predictions[x]=="virginica" & iris$Species[x]=="versicolor") +
+    0 * (predictions[x]=="virginica" & iris$Species[x]=="virginica")
+    }
+  )
+)
+```
+
+(1.6) tells us that once the loss is defined, the training process consists in finding the parameters that minimize the empirical risk.
+
+#### 1.2.1.5 Uncertainty
+
+Uncertainty is important. 
+
+- Epistemic/model uncertainty: uncertainty in the model; from the model's lack of knowledge. The model can be improved.
+
+- Aleatoric/data uncertainty: inherent randomness in the data or the process being modeled. For example if I flip a coin one million time and conclude the coin is fair I will not improve the model by flipping it another million time. The process has inherent randomness.
+
+Equation (1.7) $p(y=c|x;\theta=f_c(x;\theta))$ reads: "The probability that the target variable y equals the class c, given the features x and parameters $\theta$, is equal to the function $f_c$ of x parameterized by $\theta$." Probabilities are between 0 and 1. All probabilities sum to 1.
+
+To avoid these restrictions, we use the softmax: the model returns unnormalized log probabilities and they are scaled between 0 and 1 using (1.8).
+
+For example, if for individual 1, in a problem with three classes, the unnormalized log probabilities are -2, -1 and 1, then:
+
+```{r}
+ulg <- c(-2,-1,1)
+exp(ulg)/sum(exp(ulg))
+```
+
+The inputs to the softmax are called the logits.
+
+In (1.10) logistic regression is presented as a common special case of this overall model. An affine function is simply a linear function (the coefficients) with shifting (the intercept). This is jargon. Affine simply means that's it's linear but there's also an intercept (a translation/shifting). Technically, linear function pass through 0 (even if in common parlance when we say 'linear' we usually mean a function that doesn't pass through 0, so we mean affine.)
+
+The coefficients and intercept of stats are called, respectively, weights and bias in ML. Bias here must not be confused with bias in stats (i.e. bias-variance tradeoff).
+
+#### 1.2.1.6 Maximum likelihood estimation
+
+In (1.13) the loss function is the negative log probability of the data given the model. The negative log likelihood is the average of this quantity over the training set. Minimizing the negative log likelihood is equivalent to computing the maximum likelihood estimation. 
+
+### 1.2.2 Regression
+

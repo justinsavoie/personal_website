@@ -1,0 +1,27 @@
+---
+title: "[Am I a Bayesian or a Frequentist?](index.html)"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+editor: visual
+---
+
+**Good question!** Most of the times, I don't think about it. I'm pragmatic and my current view is that for what I do most of the times (often some relatively simple version of linear regression) it doesn't matter much.
+
+Frequentists often use Maximum Likelihood Estimation (MLE) to obtain point estimates for parameters. Bayesians, on the other hand, combine the likelihood with a prior distribution using Bayes' theorem to obtain a posterior distribution, from which point or interval estimates can be derived, akin to taking a weighted average of the likelihood and the prior.
+
+We often employ vague or not-very-informative priors. Consequently, the posterior distribution of our estimates tends to align closely with the Maximum Likelihood Estimation (MLE) results.
+
+There are packages that do very easily the Bayesian versions of stuff like `lm()`, `glm()`, `lmer()` and `glmer()` (mostly `rstanarm` and `brms`).
+
+The results are very often similar to what you would get with `lm()`, `glm()` .. and if they are not then we should absolutely try to understand why ; it's important.
+
+In practice I'll use the frequentist methods because they are much faster on large datasets and also because it's often annoying to explain to people why we should be using Bayesian statistics. But for these kinds of models, it's similar. We're applied practionners, not theorists.
+
+I'll sometimes use `rstanarm` and `brms` if, for some reason, I need the full posterior distribution of parameters because I want to get the uncertainty around something downstream from the model, like poststratified predictions. Of course, I think we can often get these with bootstrap or the delta method. But in applied work, I like flexibility, what makes sense scientifically, what's doable.
+
+My really high level view is pretty much something like section 5.5.5 of this book Murphy's [book](probml.github.io/pml-book/book1.html), especially the quote by Donald Rubin at the top of p. 203:
+
+"The applied statistician should be Bayesian in principle and calibrated to the real world in practice. \[They\] should attempt to use specifications that lead to approximately calibrated procedures under reasonable deviations from \[their assumptions\]. \[They\] should avoid models that are contradicted by observed data in relevant ways --- frequency calculations for hypothetical replications can model a model's adequacy and help to suggest more appropriate models."

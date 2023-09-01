@@ -1,5 +1,5 @@
 ---
-title: "Statistics notes"
+title: "[Statistics notes](https://www.justinsavoie.com/)"
 format:
   html:
     embed-resources: true

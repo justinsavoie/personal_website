@@ -1,0 +1,9 @@
+---
+title: "Linear Algebra"
+format: html
+editor: visual
+---
+
+## Scalars, Vectors, Matrices, and Tensors
+
+A scalar is just a number. A vector is a 1D array of numbers, it can be horizontal or vertical, it's usually assumed to be vertical.

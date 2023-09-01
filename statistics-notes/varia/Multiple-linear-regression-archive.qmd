@@ -10,17 +10,17 @@ editor: visual
 
 ## OLS with matrices
 
-The well known [linear regression model](https://en.wikipedia.org/wiki/Linear_regression) takes the form: $$y_i=\beta_0+\beta_1x_i+...+\beta_kx_{ik}+\varepsilon = x_i^T\beta+\varepsilon_i, i = 1,...,n$$
+The [basic linear regression model](https://en.wikipedia.org/wiki/Linear_regression) takes the form $$y_i=\beta_0+\beta_1x_i+...+\beta_kx_{ik}+\varepsilon = x_i^T\beta+\varepsilon_i, i = 1,...,n$$
 
-In matrix form: $$y=X\beta+\varepsilon$$
+In matrix form $$y=X\beta+\varepsilon$$
 
-$\hat{\beta}$, the vector of coefficients, can be obtained using matrix operations: $$(X^TX)^{-1}X^Ty$$
+$\hat{\beta}$, the vector of coefficients, can be obtained using matrix operations $$(X^TX)^{-1}X^Ty$$
 
-In R, let's model api00 as a function of enroll, meals and full. Let's then break down what's going on:
+In R
 
 ```{r}
 d <- read.csv("https://stats.idre.ucla.edu/wp-content/uploads/2019/02/elemapi2v2.csv")
-fit <- lm(api00 ~  enroll + meals + full, data = d)
+coef(summary(fit <- lm(api00 ~  enroll + meals + full, data = d)))
 X <- as.matrix(cbind(1,d[,c("enroll","meals","full")]))
 y <- d$api00
 betas <- solve(t(X) %*% X) %*% t(X) %*% y
@@ -33,24 +33,22 @@ residuals <- y - (X %*% betas)
 k <- ncol(X)-1
 degrees_of_freedom <- nrow(X) - k - 1
 residual_variance <- sum(residuals^2) / degrees_of_freedom 
-# residual_variance is the sigma hat squared
 betas_cov <- residual_variance * solve(t(X) %*% X)
 betas_se <- sqrt(diag(betas_cov))
-cbind(c(betas),unname(c(betas_se)))
-coef(summary(fit))[,1:2]
+cbind(betas,betas_se)
 ```
 
 ## Maximum likelihood estimation
 
-With $y=X\beta+\varepsilon$:
+With $y=X\beta+\varepsilon$
 
 $$L(\beta, \sigma^2 | Y, X) = \prod_{i=1}^{n} {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left({\frac {y_i-X_i\beta }{\sigma }}\right)^{2}}$$
 
-With a [little bit of math](https://www.statlect.com/fundamentals-of-statistics/normal-distribution-maximum-likelihood) we can get the log likelihood:
+With a [little bit of math](https://www.statlect.com/fundamentals-of-statistics/normal-distribution-maximum-likelihood) we can get the log likelihood
 
 $$lnL(\beta, \sigma^2 | Y, X) = -\frac{n}{2}\ln(2\pi)-\frac{n}{2}ln(\sigma^2)-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(y_i-X_i\beta)$$
 
-This is something we can optimize in R:
+One simple way to optimize this in R is
 
 ```{r}
 betas_params_initial <- rnorm(4)
@@ -71,27 +69,29 @@ to_optim <- function(pars,y,x1,x2,x3){
   #-sum(sapply(1:n, function(x) {log_density(y[x], mu_vector[x], sigma)}))
 }
 optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="L-BFGS-B")$par
-coef(summary(fit))[,1]
 ```
 
-Evidently, optimization does not always work so it makes sense to use already tested functions and packages ...
+But it does not always work ...
 
 ```{r}
 (nelder_mead_params <- optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="Nelder-Mead")$par)
 (BFGS_params <- optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="BFGS")$par)
-coef(summary(fit))[,1]
 ```
-I'm not sure why Nelder-Mead is so bad. I guess it found a local minimum.
 
-To obtain the standard errors, we need the Hessian matrix of the second derivatives of the log-likelihood function evaluated at the maximum likelihood estimates. Here's where I need to brush up. I need to write something in the future about gradients, jacobians, hessians and Newton's method (see below for dirty code) for MLE. 
+```{r}
+mean((y - X %*% coef(fit))^2)
+mean((y - X %*% rep(0,4))^2)
+mean((y - X %*% nelder_mead_params[1:4])^2)
+```
 
-Anyways, the inverse of this matrix is an estimate of the covariance matrix of the parameter estimates.
+Nelder-Mead is very bad. I guess it found a local minimum.
+
+To obtain the standard errors, we need the Hessian matrix of the second derivatives of the log-likelihood function evaluated at the maximum likelihood estimates. The inverse of this matrix is an estimate of the covariance matrix of the parameter estimates.
 
 ```{r}
 fit_optim <- optim(params,to_optim,y=d$api00,x1=d$enroll,x2=d$meals,x3=d$full,method="L-BFGS-B",hessian = TRUE)
 cov_beta_hat <- solve(fit_optim$hessian)
 (se_beta_hat <- sqrt(diag(cov_beta_hat)))
-coef(summary(fit))[,2]
 ```
 
 We can also do the optimization by hand using [Netwon-Raphson](https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization). It involves updating parameters by subtracting the multiplication of the inverse of the Hessian with the gradient vector.
@@ -110,43 +110,5 @@ residuals <- y - X %*% betas
 sigma2_hat <- sum(residuals^2) / (length(y) - length(betas))
 cov_beta_hat <- sigma2_hat * solve(-hessian)
 se_beta_hat <- sqrt(diag(cov_beta_hat))
-cbind(c(betas),unname(c(betas_se)))
-coef(summary(fit))[,1:2]
+cbind(betas,se_beta_hat)
 ```
-
-Finally, no one uses that in applied statistics in the social sciences but it's widely used in machine learning so it's helpful to know ; here's how to get the point estimates of the coefficients using gradient descent:
-
-For gradient descent, we need to scale.
-
-```{r}
-X <- as.matrix(cbind(1, d[, c("enroll", "meals", "full")]))
-X[,-1] <- scale(X[,-1])
-y <- scale(d$api00)
-m <- length(y)
-
-# Settings
-alpha <- 0.0001  # Learning rate
-num_iterations <- 100000
-betas <- matrix(rnorm(4,0,0.1), ncol(X), 1)  # Initialize beta values
-
-# Gradient Descent in a for loop
-for(i in 1:num_iterations){
-  # Compute the prediction
-  prediction <- X %*% betas
-  
-  # Compute the error
-  error <- prediction - matrix(y, ncol=1)
-  
-  # Update betas
-  for(j in 1:ncol(X)){
-    gradient <- t(X[, j]) %*% error
-    betas[j,] <- betas[j,] - alpha * (1/m) * gradient
-  }
-}
-
-round(print(betas),3)
-round(coef(lm(y~X[,-1])),3)
-
-```
-
-It ultimately worked but I had to play with alpha and the number of iterations. It doesn't make sense to use gradient descent for the kind of applied statistical work we do in social science.
