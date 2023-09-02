@@ -3193,7 +3193,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 </div>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">optim</span>(pars_init, to_optim, <span class="at">y =</span> y, <span class="at">X =</span> X,<span class="at">method =</span> <span class="st">&quot;BFGS&quot;</span>)<span class="sc">$</span>par</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1]  0.9549121 -1.1154913 -1.4202894</code></pre>
+<pre><code>[1] 0.8051420 0.4284923 1.6576362</code></pre>
 </div>
 </div>
 <p>It doesn’t work. Looks like it’s an optimization problem.</p>
@@ -3214,10 +3214,10 @@ scale(hp)   -4.9595270   2.373026</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(fit_optim<span class="sc">$</span>par,se_beta_hat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                se_beta_hat
-[1,] -1.7597244    1.161799
-[2,] -0.2040604    1.090673
-[3,] -4.9596423    2.373139</code></pre>
+<pre><code>               se_beta_hat
+[1,] -1.759680    1.161770
+[2,] -0.204051    1.090666
+[3,] -4.959532    2.373080</code></pre>
 </div>
 </div>
 <p>Doing the optimization by hand with Newton Raphson</p>

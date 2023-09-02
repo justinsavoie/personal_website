@@ -3135,6 +3135,8 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
   <ul>
   <li><a href="#ols-with-matrices" id="toc-ols-with-matrices" class="nav-link active" data-scroll-target="#ols-with-matrices">OLS with matrices</a></li>
   <li><a href="#maximum-likelihood-estimation" id="toc-maximum-likelihood-estimation" class="nav-link" data-scroll-target="#maximum-likelihood-estimation">Maximum likelihood estimation</a></li>
+  <li><a href="#additional-statistics-lm" id="toc-additional-statistics-lm" class="nav-link" data-scroll-target="#additional-statistics-lm">Additional statistics lm()</a></li>
+  <li><a href="#additional-statistics-glm-for-the-gaussian-family" id="toc-additional-statistics-glm-for-the-gaussian-family" class="nav-link" data-scroll-target="#additional-statistics-glm-for-the-gaussian-family">Additional statistics glm() for the Gaussian family</a></li>
   </ul>
 </nav>
 </div>
@@ -3161,27 +3163,30 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 
 <section id="ols-with-matrices" class="level2">
 <h2 class="anchored" data-anchor-id="ols-with-matrices">OLS with matrices</h2>
-<p>The well known <a href="https://en.wikipedia.org/wiki/Linear_regression">linear regression model</a> takes the form: <span class="math display">\[y_i=\beta_0+\beta_1x_i+...+\beta_kx_{ik}+\varepsilon = x_i^T\beta+\varepsilon_i, i = 1,...,n\]</span></p>
+<p>The <a href="https://en.wikipedia.org/wiki/Linear_regression">linear regression model</a> takes the form: <span class="math display">\[y_i=\beta_0+\beta_1x_i+...+\beta_kx_{ik}+\varepsilon = x_i^T\beta+\varepsilon_i, i = 1,...,n\]</span></p>
 <p>In matrix form: <span class="math display">\[y=X\beta+\varepsilon\]</span></p>
-<p><span class="math inline">\(\hat{\beta}\)</span>, the vector of coefficients, can be obtained using matrix operations: <span class="math display">\[(X^TX)^{-1}X^Ty\]</span></p>
-<p>In R, let’s model api00 as a function of enroll, meals and full. Let’s then break down what’s going on:</p>
+<p>This model returns a prediction which is essentially a weighted average of the independent variables, plus an intercept, which represents the expected value of the dependent variable when all predictors are set to zero.</p>
+<p>In <code>R</code>, let’s model <code>api00</code> as a function of <code>enroll</code>, <code>meals</code> and <code>full</code>. Let’s then break down each part:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;https://stats.idre.ucla.edu/wp-content/uploads/2019/02/elemapi2v2.csv&quot;</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(api00 <span class="sc">~</span>  enroll <span class="sc">+</span> meals <span class="sc">+</span> full, <span class="at">data =</span> d)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">cbind</span>(<span class="dv">1</span>,d[,<span class="fu">c</span>(<span class="st">&quot;enroll&quot;</span>,<span class="st">&quot;meals&quot;</span>,<span class="st">&quot;full&quot;</span>)]))</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> d<span class="sc">$</span>api00</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">t</span>(X) <span class="sc">%*%</span> X) <span class="sc">%*%</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> d<span class="sc">$</span>api00</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The vector of coefficients <span class="math inline">\(\hat{\beta}\)</span> can be obtained using matrix operations: <span class="math display">\[(X^TX)^{-1}X^Ty\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="fu">t</span>(X) <span class="sc">%*%</span> X) <span class="sc">%*%</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <a href="https://web.stanford.edu/~mrosenfe/soc_meth_proj3/matrix_OLS_NYU_notes.pdf">variance</a> of <span class="math inline">\(\hat{\beta}\)</span> is <span class="math inline">\(Var(\hat{\beta})=\hat{\sigma^2}(X^TX)^{-1}\)</span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>residuals <span class="ot">&lt;-</span> y <span class="sc">-</span> (X <span class="sc">%*%</span> betas)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)<span class="sc">-</span><span class="dv">1</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>degrees_of_freedom <span class="ot">&lt;-</span> <span class="fu">nrow</span>(X) <span class="sc">-</span> k <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>residual_variance <span class="ot">&lt;-</span> <span class="fu">sum</span>(residuals<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> degrees_of_freedom </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># residual_variance is the sigma hat squared</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>betas_cov <span class="ot">&lt;-</span> residual_variance <span class="sc">*</span> <span class="fu">solve</span>(<span class="fu">t</span>(X) <span class="sc">%*%</span> X)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>betas_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(betas_cov))</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(<span class="fu">c</span>(betas),<span class="fu">unname</span>(<span class="fu">c</span>(betas_se)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>residuals <span class="ot">&lt;-</span> y <span class="sc">-</span> (X <span class="sc">%*%</span> betas)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)<span class="sc">-</span><span class="dv">1</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>degrees_of_freedom <span class="ot">&lt;-</span> <span class="fu">nrow</span>(X) <span class="sc">-</span> k <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>residual_variance <span class="ot">&lt;-</span> <span class="fu">sum</span>(residuals<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> degrees_of_freedom </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># residual_variance is the sigma hat squared</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>betas_cov <span class="ot">&lt;-</span> residual_variance <span class="sc">*</span> <span class="fu">solve</span>(<span class="fu">t</span>(X) <span class="sc">%*%</span> X)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>betas_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(betas_cov))</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(<span class="fu">c</span>(betas),<span class="fu">unname</span>(<span class="fu">c</span>(betas_se)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>            [,1]        [,2]
 [1,] 801.8298337 26.42660282
@@ -3189,7 +3194,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 [3,]  -3.6597345  0.10879550
 [4,]   1.0810944  0.23945269</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               Estimate  Std. Error
 (Intercept) 801.8298337 26.42660282
@@ -3207,28 +3212,28 @@ full          1.0810944  0.23945269</code></pre>
 <p><span class="math display">\[lnL(\beta, \sigma^2 | Y, X) = -\frac{n}{2}\ln(2\pi)-\frac{n}{2}ln(\sigma^2)-\frac{1}{2\sigma^2}\sum_{i=1}^{n}(y_i-X_i\beta)\]</span></p>
 <p>This is something we can optimize in R:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>betas_params_initial <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">4</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>sigma_params_initial <span class="ot">&lt;-</span> <span class="fu">rlnorm</span>(<span class="dv">1</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">c</span>(betas_params_initial,sigma_params_initial)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>to_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(pars,y,x1,x2,x3){</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  b0 <span class="ot">&lt;-</span> pars[<span class="dv">1</span>]</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  b1 <span class="ot">&lt;-</span> pars[<span class="dv">2</span>]</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  b2 <span class="ot">&lt;-</span> pars[<span class="dv">3</span>]</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  b3 <span class="ot">&lt;-</span> pars[<span class="dv">4</span>]</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  sigma_u <span class="ot">&lt;-</span> pars[<span class="dv">5</span>]</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  sigma <span class="ot">&lt;-</span> <span class="fu">exp</span>(sigma_u)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  mu_vector <span class="ot">&lt;-</span> b0<span class="sc">+</span>b1<span class="sc">*</span>x1<span class="sc">+</span>b2<span class="sc">*</span>x2<span class="sc">+</span>b3<span class="sc">*</span>x3</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  n<span class="ot">&lt;-</span><span class="fu">length</span>(y)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="sc">-</span><span class="fu">sum</span>(<span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="cf">function</span>(x) {<span class="fu">dnorm</span>(y[x],mu_vector[x],sigma,<span class="at">log=</span><span class="cn">TRUE</span>)}))</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># alternatively without using dnorm</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">#log_density &lt;- function(x, mean, sd) {-0.5 * log(2 * pi) - log(sd) - 0.5 * ((x - mean)/sd)^2}</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="co">#-sum(sapply(1:n, function(x) {log_density(y[x], mu_vector[x], sigma)}))</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>)<span class="sc">$</span>par</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>betas_params_initial <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">4</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>sigma_params_initial <span class="ot">&lt;-</span> <span class="fu">rlnorm</span>(<span class="dv">1</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">c</span>(betas_params_initial,sigma_params_initial)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>to_optim <span class="ot">&lt;-</span> <span class="cf">function</span>(pars,y,x1,x2,x3){</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  b0 <span class="ot">&lt;-</span> pars[<span class="dv">1</span>]</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  b1 <span class="ot">&lt;-</span> pars[<span class="dv">2</span>]</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  b2 <span class="ot">&lt;-</span> pars[<span class="dv">3</span>]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  b3 <span class="ot">&lt;-</span> pars[<span class="dv">4</span>]</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  sigma_u <span class="ot">&lt;-</span> pars[<span class="dv">5</span>]</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  sigma <span class="ot">&lt;-</span> <span class="fu">exp</span>(sigma_u)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  mu_vector <span class="ot">&lt;-</span> b0<span class="sc">+</span>b1<span class="sc">*</span>x1<span class="sc">+</span>b2<span class="sc">*</span>x2<span class="sc">+</span>b3<span class="sc">*</span>x3</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  n<span class="ot">&lt;-</span><span class="fu">length</span>(y)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="sc">-</span><span class="fu">sum</span>(<span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="cf">function</span>(x) {<span class="fu">dnorm</span>(y[x],mu_vector[x],sigma,<span class="at">log=</span><span class="cn">TRUE</span>)}))</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># alternatively without using dnorm</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="co">#log_density &lt;- function(x, mean, sd) {-0.5 * log(2 * pi) - log(sd) - 0.5 * ((x - mean)/sd)^2}</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="co">#-sum(sapply(1:n, function(x) {log_density(y[x], mu_vector[x], sigma)}))</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>)<span class="sc">$</span>par</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 801.84883257  -0.05145286  -3.65969047   1.08080604   4.06794980</code></pre>
+<pre><code>[1] 801.82481619  -0.05145419  -3.65972962   1.08113533   4.06795215</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(Intercept)      enroll       meals        full 
 801.8298337  -0.0514556  -3.6597345   1.0810944 </code></pre>
@@ -3236,15 +3241,15 @@ full          1.0810944  0.23945269</code></pre>
 </div>
 <p>Evidently, optimization does not always work so it makes sense to use already tested functions and packages …</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>(nelder_mead_params <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;Nelder-Mead&quot;</span>)<span class="sc">$</span>par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(nelder_mead_params <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;Nelder-Mead&quot;</span>)<span class="sc">$</span>par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -18.8989170   0.1347661  -1.6300262   8.1510488   4.6870579</code></pre>
+<pre><code>[1] -15.0729005   0.1348802  -1.6483546   8.1211111   4.6812464</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>(BFGS_params <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;BFGS&quot;</span>)<span class="sc">$</span>par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>(BFGS_params <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;BFGS&quot;</span>)<span class="sc">$</span>par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 616.48898843   0.01098076  -3.25098802   2.67904587   4.12614752</code></pre>
+<pre><code>[1] 802.32880705  -0.05153892  -3.66078254   1.07683480   4.06870409</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(Intercept)      enroll       meals        full 
 801.8298337  -0.0514556  -3.6597345   1.0810944 </code></pre>
@@ -3254,13 +3259,13 @@ full          1.0810944  0.23945269</code></pre>
 <p>To obtain the standard errors, we need the Hessian matrix of the second derivatives of the log-likelihood function evaluated at the maximum likelihood estimates. Here’s where I need to brush up. I need to write something in the future about gradients, jacobians, hessians and Newton’s method (see below for dirty code) for MLE.</p>
 <p>Anyways, the inverse of this matrix is an estimate of the covariance matrix of the parameter estimates.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>fit_optim <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>,<span class="at">hessian =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>cov_beta_hat <span class="ot">&lt;-</span> <span class="fu">solve</span>(fit_optim<span class="sc">$</span>hessian)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>(se_beta_hat <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(cov_beta_hat)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>fit_optim <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>,<span class="at">hessian =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>cov_beta_hat <span class="ot">&lt;-</span> <span class="fu">solve</span>(fit_optim<span class="sc">$</span>hessian)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>(se_beta_hat <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(cov_beta_hat)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 26.29835693  0.01376841  0.10825625  0.23828685  0.03535516</code></pre>
+<pre><code>[1] 26.30267631  0.01376886  0.10826278  0.23832241  0.03535524</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(Intercept)      enroll       meals        full 
 26.42660282  0.01383741  0.10879550  0.23945269 </code></pre>
@@ -3268,20 +3273,20 @@ full          1.0810944  0.23945269</code></pre>
 </div>
 <p>We can also do the optimization by hand using <a href="https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization">Netwon-Raphson</a>. It involves updating parameters by subtracting the multiplication of the inverse of the Hessian with the gradient vector.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> params[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>){</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  yhat <span class="ot">=</span> X <span class="sc">%*%</span> betas</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  gradients <span class="ot">&lt;-</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> (y<span class="sc">-</span>yhat)</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  hessian <span class="ot">&lt;-</span> <span class="sc">-</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> X</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  betas <span class="ot">&lt;-</span> betas <span class="sc">-</span> <span class="fu">solve</span>(hessian) <span class="sc">%*%</span> gradients</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>residuals <span class="ot">&lt;-</span> y <span class="sc">-</span> X <span class="sc">%*%</span> betas</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>sigma2_hat <span class="ot">&lt;-</span> <span class="fu">sum</span>(residuals<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> (<span class="fu">length</span>(y) <span class="sc">-</span> <span class="fu">length</span>(betas))</span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>cov_beta_hat <span class="ot">&lt;-</span> sigma2_hat <span class="sc">*</span> <span class="fu">solve</span>(<span class="sc">-</span>hessian)</span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>se_beta_hat <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(cov_beta_hat))</span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(<span class="fu">c</span>(betas),<span class="fu">unname</span>(<span class="fu">c</span>(betas_se)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> params[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>){</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  yhat <span class="ot">=</span> X <span class="sc">%*%</span> betas</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  gradients <span class="ot">&lt;-</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> (y<span class="sc">-</span>yhat)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  hessian <span class="ot">&lt;-</span> <span class="sc">-</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> X</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  betas <span class="ot">&lt;-</span> betas <span class="sc">-</span> <span class="fu">solve</span>(hessian) <span class="sc">%*%</span> gradients</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>residuals <span class="ot">&lt;-</span> y <span class="sc">-</span> X <span class="sc">%*%</span> betas</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>sigma2_hat <span class="ot">&lt;-</span> <span class="fu">sum</span>(residuals<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> (<span class="fu">length</span>(y) <span class="sc">-</span> <span class="fu">length</span>(betas))</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>cov_beta_hat <span class="ot">&lt;-</span> sigma2_hat <span class="sc">*</span> <span class="fu">solve</span>(<span class="sc">-</span>hessian)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>se_beta_hat <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(cov_beta_hat))</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(<span class="fu">c</span>(betas),<span class="fu">unname</span>(<span class="fu">c</span>(betas_se)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>            [,1]        [,2]
 [1,] 801.8298337 26.42660282
@@ -3289,7 +3294,7 @@ full          1.0810944  0.23945269</code></pre>
 [3,]  -3.6597345  0.10879550
 [4,]   1.0810944  0.23945269</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>               Estimate  Std. Error
 (Intercept) 801.8298337 26.42660282
@@ -3301,38 +3306,38 @@ full          1.0810944  0.23945269</code></pre>
 <p>Finally, no one uses that in applied statistics in the social sciences but it’s widely used in machine learning so it’s helpful to know ; here’s how to get the point estimates of the coefficients using gradient descent:</p>
 <p>For gradient descent, we need to scale.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">cbind</span>(<span class="dv">1</span>, d[, <span class="fu">c</span>(<span class="st">&quot;enroll&quot;</span>, <span class="st">&quot;meals&quot;</span>, <span class="st">&quot;full&quot;</span>)]))</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>X[,<span class="sc">-</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">scale</span>(X[,<span class="sc">-</span><span class="dv">1</span>])</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">scale</span>(d<span class="sc">$</span>api00)</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">length</span>(y)</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Settings</span></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.0001</span>  <span class="co"># Learning rate</span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>num_iterations <span class="ot">&lt;-</span> <span class="dv">100000</span></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">4</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="fu">ncol</span>(X), <span class="dv">1</span>)  <span class="co"># Initialize beta values</span></span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Gradient Descent in a for loop</span></span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>num_iterations){</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute the prediction</span></span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>  prediction <span class="ot">&lt;-</span> X <span class="sc">%*%</span> betas</span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute the error</span></span>
-<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>  error <span class="ot">&lt;-</span> prediction <span class="sc">-</span> <span class="fu">matrix</span>(y, <span class="at">ncol=</span><span class="dv">1</span>)</span>
-<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Update betas</span></span>
-<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(X)){</span>
-<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>    gradient <span class="ot">&lt;-</span> <span class="fu">t</span>(X[, j]) <span class="sc">%*%</span> error</span>
-<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    betas[j,] <span class="ot">&lt;-</span> betas[j,] <span class="sc">-</span> alpha <span class="sc">*</span> (<span class="dv">1</span><span class="sc">/</span>m) <span class="sc">*</span> gradient</span>
-<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">print</span>(betas),<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">cbind</span>(<span class="dv">1</span>, d[, <span class="fu">c</span>(<span class="st">&quot;enroll&quot;</span>, <span class="st">&quot;meals&quot;</span>, <span class="st">&quot;full&quot;</span>)]))</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>X[,<span class="sc">-</span><span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">scale</span>(X[,<span class="sc">-</span><span class="dv">1</span>])</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">scale</span>(d<span class="sc">$</span>api00)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">length</span>(y)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Settings</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.001</span>  <span class="co"># Learning rate</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>num_iterations <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>betas <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(<span class="dv">4</span>,<span class="dv">0</span>,<span class="fl">0.1</span>), <span class="fu">ncol</span>(X), <span class="dv">1</span>)  <span class="co"># Initialize beta values</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Gradient Descent in a for loop</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>num_iterations){</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute the prediction</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  prediction <span class="ot">&lt;-</span> X <span class="sc">%*%</span> betas</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute the error</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  error <span class="ot">&lt;-</span> prediction <span class="sc">-</span> <span class="fu">matrix</span>(y, <span class="at">ncol=</span><span class="dv">1</span>)</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Update betas</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(X)){</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>    gradient <span class="ot">&lt;-</span> <span class="fu">t</span>(X[, j]) <span class="sc">%*%</span> error</span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>    betas[j,] <span class="ot">&lt;-</span> betas[j,] <span class="sc">-</span> alpha <span class="sc">*</span> (<span class="dv">1</span><span class="sc">/</span>m) <span class="sc">*</span> gradient</span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">print</span>(betas),<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              [,1]
-[1,]  3.595191e-06
-[2,] -8.114079e-02
-[3,] -8.177588e-01
-[4,]  1.172692e-01</code></pre>
+[1,]  3.890356e-07
+[2,] -8.126468e-02
+[3,] -8.182659e-01
+[4,]  1.166978e-01</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       [,1]
@@ -3341,13 +3346,179 @@ full          1.0810944  0.23945269</code></pre>
 [3,] -0.818
 [4,]  0.117</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">coef</span>(<span class="fu">lm</span>(y<span class="sc">~</span>X[,<span class="sc">-</span><span class="dv">1</span>])),<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">coef</span>(<span class="fu">lm</span>(y<span class="sc">~</span>X[,<span class="sc">-</span><span class="dv">1</span>])),<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  (Intercept) X[, -1]enroll  X[, -1]meals   X[, -1]full 
         0.000        -0.082        -0.821         0.114 </code></pre>
 </div>
 </div>
 <p>It ultimately worked but I had to play with alpha and the number of iterations. It doesn’t make sense to use gradient descent for the kind of applied statistical work we do in social science.</p>
+</section>
+<section id="additional-statistics-lm" class="level2">
+<h2 class="anchored" data-anchor-id="additional-statistics-lm">Additional statistics lm()</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = api00 ~ enroll + meals + full, data = d)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-181.721  -40.802    1.129   39.983  158.774 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 801.82983   26.42660  30.342  &lt; 2e-16 ***
+enroll       -0.05146    0.01384  -3.719 0.000229 ***
+meals        -3.65973    0.10880 -33.639  &lt; 2e-16 ***
+full          1.08109    0.23945   4.515 8.37e-06 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 58.73 on 396 degrees of freedom
+Multiple R-squared:  0.8308,    Adjusted R-squared:  0.8295 
+F-statistic: 648.2 on 3 and 396 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>(R2 <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (<span class="fu">sum</span>((fit<span class="sc">$</span>model<span class="sc">$</span>api00 <span class="sc">-</span> <span class="fu">predict</span>(fit))<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>((fit<span class="sc">$</span>model<span class="sc">$</span>api00<span class="sc">-</span><span class="fu">mean</span>(fit<span class="sc">$</span>model<span class="sc">$</span>api00))<span class="sc">^</span><span class="dv">2</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.8308122</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>(R2adj <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> (<span class="dv">1</span> <span class="sc">-</span> R2) <span class="sc">*</span> ((<span class="fu">nrow</span>(fit<span class="sc">$</span>model) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> </span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>                           (<span class="fu">nrow</span>(fit<span class="sc">$</span>model) <span class="sc">-</span> <span class="fu">length</span>(fit<span class="sc">$</span>coefficients[<span class="sc">-</span><span class="dv">1</span>]) <span class="sc">-</span> <span class="dv">1</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.8295304</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>(Residuals <span class="ot">&lt;-</span> <span class="fu">quantile</span>(fit<span class="sc">$</span>residuals,<span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="dv">1</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         0%         25%         50%         75%        100% 
+-181.720968  -40.801636    1.128517   39.983048  158.774215 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>(tstats <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span>] <span class="sc">/</span> </span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(Intercept)      enroll       meals        full 
+  30.341767   -3.718585  -33.638657    4.514856 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>(d_free <span class="ot">&lt;-</span> <span class="fu">nrow</span>(fit<span class="sc">$</span>model) <span class="sc">-</span> <span class="fu">length</span>(fit<span class="sc">$</span>coefficients))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 396</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>(pvalues <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">pt</span>(<span class="fu">abs</span>(tstats), <span class="at">df=</span>d_free)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> (Intercept)       enroll        meals         full 
+0.000000e+00 2.292395e-04 0.000000e+00 8.369020e-06 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>(Res_se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(fit<span class="sc">$</span>residuals<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>       (<span class="fu">nrow</span>(fit<span class="sc">$</span>model)<span class="sc">-</span>(<span class="dv">1</span><span class="sc">+</span><span class="fu">length</span>(fit<span class="sc">$</span>coefficients[<span class="sc">-</span><span class="dv">1</span>])))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 58.73169</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>SSE<span class="ot">=</span><span class="fu">sum</span>(fit<span class="sc">$</span>residuals<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>SSyy<span class="ot">=</span><span class="fu">sum</span>((fit<span class="sc">$</span>model<span class="sc">$</span>api00<span class="sc">-</span><span class="fu">mean</span>(fit<span class="sc">$</span>model<span class="sc">$</span>api00))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>k<span class="ot">&lt;-</span><span class="fu">length</span>(fit<span class="sc">$</span>coefficients)<span class="sc">-</span><span class="dv">1</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>Fstat <span class="ot">&lt;-</span> ((SSyy<span class="sc">-</span>SSE)<span class="sc">/</span>k) <span class="sc">/</span> (SSE<span class="sc">/</span>(<span class="dv">400</span><span class="sc">-</span>(<span class="dv">3</span><span class="sc">+</span><span class="dv">1</span>)))</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>(Fstat_pval <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span><span class="fu">pf</span>(Fstat,<span class="dv">3</span>,<span class="dv">396</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0</code></pre>
+</div>
+</div>
+</section>
+<section id="additional-statistics-glm-for-the-gaussian-family" class="level2">
+<h2 class="anchored" data-anchor-id="additional-statistics-glm-for-the-gaussian-family">Additional statistics glm() for the Gaussian family</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>fit_glm <span class="ot">&lt;-</span> <span class="fu">glm</span>(api00 <span class="sc">~</span>  enroll <span class="sc">+</span> meals <span class="sc">+</span> full, <span class="at">data =</span> d, <span class="at">family=</span><span class="st">&#39;gaussian&#39;</span>)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit_glm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = api00 ~ enroll + meals + full, family = &quot;gaussian&quot;, 
+    data = d)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-181.721   -40.802     1.129    39.983   158.774  
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 801.82983   26.42660  30.342  &lt; 2e-16 ***
+enroll       -0.05146    0.01384  -3.719 0.000229 ***
+meals        -3.65973    0.10880 -33.639  &lt; 2e-16 ***
+full          1.08109    0.23945   4.515 8.37e-06 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+(Dispersion parameter for gaussian family taken to be 3449.412)
+
+    Null deviance: 8073672  on 399  degrees of freedom
+Residual deviance: 1365967  on 396  degrees of freedom
+AIC: 4399.5
+
+Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(fit_glm<span class="sc">$</span>residuals,<span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         0%         25%         50%         75%        100% 
+-181.720968  -40.801636    1.128517   39.983048  158.774215 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>(Dispersion <span class="ot">&lt;-</span> <span class="fu">sum</span>(fit<span class="sc">$</span>residuals<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">nrow</span>(fit<span class="sc">$</span>model)<span class="sc">-</span>(<span class="dv">1</span><span class="sc">+</span><span class="fu">length</span>(fit<span class="sc">$</span>coefficients[<span class="sc">-</span><span class="dv">1</span>]))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3449.412</code></pre>
+</div>
+</div>
+<p>It’s possible to get the loglik from brute force:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>(loglikMLE <span class="ot">&lt;-</span> <span class="fu">sum</span>(</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">400</span>, <span class="cf">function</span>(i){</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">log</span>(<span class="fu">dnorm</span>(fit_glm<span class="sc">$</span>model<span class="sc">$</span>api00[i],</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>              <span class="fu">coef</span>(fit_glm)[[<span class="dv">1</span>]] <span class="sc">+</span> <span class="fu">sum</span>(fit_glm<span class="sc">$</span>model[i,<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>] <span class="sc">*</span> <span class="fu">coef</span>(fit_glm)[<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>]),</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>              <span class="fu">sqrt</span>(Dispersion)))</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -2194.767</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">logLik</span>(fit_glm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&#39;log Lik.&#39; -2194.757 (df=5)</code></pre>
+</div>
+</div>
+<p>It’s possible to get the loglik using a formula derived from summation:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>(nulldeviance <span class="ot">&lt;-</span> <span class="fu">sum</span>((d<span class="sc">$</span>api00 <span class="sc">-</span> <span class="fu">mean</span>(d<span class="sc">$</span>api00))<span class="sc">^</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 8073672</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>(residualdeviance <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">residuals</span>(fit_glm)<span class="sc">^</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1365967</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>(loglikDirect <span class="ot">&lt;-</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>    (<span class="sc">-</span><span class="dv">400</span><span class="sc">/</span><span class="dv">2</span>) <span class="sc">*</span> <span class="fu">log</span>(<span class="dv">2</span><span class="sc">*</span>pi) <span class="sc">-</span> (<span class="dv">400</span><span class="sc">/</span><span class="dv">2</span>) <span class="sc">*</span> <span class="fu">log</span>(Dispersion) <span class="sc">-</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>    (<span class="dv">1</span><span class="sc">/</span>(<span class="dv">2</span><span class="sc">*</span>Dispersion)) <span class="sc">*</span> residualdeviance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -2194.767</code></pre>
+</div>
+</div>
+<p>4 coefficient parameters + dispersion of Gaussian = 5</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">AIC =</span> <span class="dv">2</span><span class="sc">*</span><span class="dv">5</span> <span class="sc">-</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">logLik</span>(fit_glm))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&#39;log Lik.&#39; 4399.514 (df=5)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">BIC</span>(fit_glm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4419.472</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unname</span>(<span class="dv">5</span><span class="sc">*</span><span class="fu">log</span>(<span class="dv">400</span>) <span class="sc">-</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">logLik</span>(fit_glm))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&#39;log Lik.&#39; 4419.472 (df=5)</code></pre>
+</div>
+</div>
+<p>I want to discuss Fisher Scoring in another entry.</p>
 </section>
 
 </main>
