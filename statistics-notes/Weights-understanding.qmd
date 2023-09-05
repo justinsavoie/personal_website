@@ -12,7 +12,7 @@ I use survey data a lot and such data almost always comes with weights. Unfortun
 
 There are [different kinds of weights](https://statmodeling.stat.columbia.edu/2021/01/17/weights-in-statistics/). Thomas Lumley, the author of `survey`, the main package for the analysis of surveys in R [calls them](https://notstatschat.rbind.io/2020/08/04/weights-in-statistics/) precision weights, frequency weights, sampling weights. These different weights will lead to the same estimate. However, they will differ in standard errors and here it's where it can get complicated. Here, I focus on sampling weights because those are the ones we use in survey data; the ones that "describe how the sample can be scaled up to the population". I will use *2021 Canadian Election Study v1.0.dta* available [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XBZHKC) which you can load using `haven::read_stata`.
 
-Let's take the first 3000 rows to have larger standard errors, otherwise some are tiny. There's a lot of missing data too, some questions were possibly randomized and asked onl to some respondents. 
+Let's take the first 3000 rows to have larger standard errors, otherwise some are tiny. There's a lot of missing data too, some questions were possibly randomized and asked onl to some respondents.
 
 ```{r, message=FALSE,warning=FALSE}
 library(haven)
@@ -134,7 +134,7 @@ df %>%
 
 If we look at the three last outputs, the standard errors are all different, for example in the case of "another gender", it's: 0.167, 0.172, 0.152. And we are not even using weights! What's going on?
 
-Let's start with no grouping group (general average, not by gender). Here we actually don't have differences. 
+Let's start with no grouping group (general average, not by gender). Here we actually don't have differences.
 
 ```{r}
 df %>%
@@ -148,7 +148,7 @@ mean(x);sd(x)/sqrt(length(x))
 predict(lm(x~1),data.frame(x=1),se.fit=TRUE)[1:2]
 ```
 
-So the standard errors are different because of the groups. 
+So the standard errors are different because of the groups.
 
 ```{r}
 x <- df %>%
@@ -167,6 +167,7 @@ tibble(min=pred.fit$fit-1.96*pred.fit$se.fit,
   se=pred.fit$se.fit)
 
 ```
+
 If we use `lm()` on a subset only, now the standard errors match for the linear model and the by hand method. In the linear model with many groups, the standard error is inversely related to the square root of the sample size and the residual variance.
 
 It still doesn't match for this though:
@@ -187,3 +188,98 @@ sqrt(sum(((1/2660)*(1-(1/2660)))*x^2) / 7075600)
 ```
 
 Amazing vignettes! https://cran.r-project.org/web/packages/survey/index.html
+
+```{r}
+library(haven)
+library(tidyverse)
+df <- read_stata("~/Downloads/dataverse_files_CES2021/2021 Canadian Election Study v1.0.dta")
+df <- df[1:5000,]
+# An average
+# No weights
+# Later we will break it down by gender so let's select complete cases on y,x,w
+to_model <- df %>% 
+  select(cps21_pol_eth,cps21_genderid,weight=cps21_weight_general_restricted) |>
+  drop_na() |>
+  filter(cps21_pol_eth!=5)
+to_model |> 
+  summarise(estimate=mean(cps21_pol_eth),
+            n=n(),sd=sd(cps21_pol_eth)) |>
+  mutate(se=sd / sqrt(n),
+         min=estimate-1.96*se,
+         max=estimate+1.96*se)
+# For this simple case, a linear model gives the same estimate and std. err.:
+fit <- lm(cps21_pol_eth~1,to_model)
+to_predict <- tibble(a=0)
+pred_fit <- predict(fit,to_predict,se.fit = TRUE) 
+to_predict |> 
+  mutate(pred=pred_fit$fit,
+         se=pred_fit$se.fit,
+         min=pred-1.96*se,
+         max=pred+1.96*se)
+
+# Let's additionaly break down by gender
+
+to_model |> 
+  group_by(cps21_genderid) |>
+  summarise(estimate=mean(cps21_pol_eth),
+            n=n(),sd=sd(cps21_pol_eth)) |>
+  mutate(se=sd / sqrt(n),
+         min=estimate-1.96*se,
+         max=estimate+1.96*se)
+
+# Here the estimate is the same but the std. err. differ
+
+fit <- lm(cps21_pol_eth~as_factor(cps21_genderid),to_model)
+to_predict <- to_model |>
+  select(cps21_genderid) |>
+  unique() |>
+  arrange()
+pred_fit <- predict(fit,to_predict,se.fit = TRUE) 
+to_predict |> 
+  mutate(pred=pred_fit$fit,
+         se=pred_fit$se.fit,
+         min=pred-1.96*se,
+         max=pred+1.96*se)
+
+# If I want a simple summary of the data, the first approach is straightforward. 
+# If I'm more interested in the relationship between 
+# cps21_genderid and cps21_pol_eth, and potentially controlling/interactions 
+# maybe the regression approach is more appropriate.
+# Using regression, you also need to check assumptions (e.g., homoscedasticity)
+
+predict(lm(mpg~factor(cyl),mtcars),se.fit=TRUE)$se.fit
+
+```
+```{r}
+#library(haven)
+#library(tidyverse)
+#df <- read_stata("~/Downloads/dataverse_files_CES2021/2021 Canadian Election Study v1.0.dta")
+#df <- df[1:5000,]
+## An average
+## No weights
+## Later we will break it down by gender so let's select complete cases on y,x,w
+#to_model <- df %>% 
+#  select(cps21_pol_eth,cps21_genderid,weight=cps21_weight_general_restricted) |>
+#  drop_na() |>
+#  filter(cps21_pol_eth!=5)
+#library(srvyr)
+#to_model |>
+#  #mutate(weight=1) |>
+#  as_survey_design(ids = 1, weight = weight) |>
+#  group_by(cps21_genderid) |>
+#  summarise(survey_mean(cps21_pol_eth))
+#el <- list()
+#for (i in 1:1000){
+#  ids <- sample(1:nrow(to_model),replace = TRUE,prob = to_model$weight)
+#  tm_ <- to_model[ids,]
+#  el[[i]] <- tm_ %>%
+#    group_by(cps21_genderid) %>%
+#    summarise(m=weighted.mean(cps21_pol_eth))
+#}  
+#quantile(sapply(el,function(x){
+#  x$m[[1]]}
+#),c(0.025,0.975))
+#3.81+0.0223*1.96
+#3.81-0.0223*1.96
+
+```
