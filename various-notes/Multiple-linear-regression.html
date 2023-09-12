@@ -3147,7 +3147,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Multiple linear regression</h1>
+<h1 class="title"><a href="index.html">Multiple linear regression</a></h1>
 </div>
 
 
@@ -3235,7 +3235,7 @@ full          1.0810944  0.23945269</code></pre>
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>)<span class="sc">$</span>par</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 801.73847918  -0.05148155  -3.65900720   1.08185057   4.06789285</code></pre>
+<pre><code>[1] 801.83873933  -0.05146513  -3.65975800   1.08106420   4.06796330</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -3258,18 +3258,18 @@ full          1.0810944  0.23945269</code></pre>
 <span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="fu">optim</span>(paramsDirectSum,to_optimDirectSum,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>)<span class="sc">$</span>par</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 801.8298338  -0.0514556  -3.6597345   1.0810944</code></pre>
+<pre><code>[1] 801.82908193  -0.05146091  -3.65973002   1.08113458</code></pre>
 </div>
 </div>
 <p>Optimization does not always work:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>(nelder_mead_params <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;Nelder-Mead&quot;</span>)<span class="sc">$</span>par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -2.2863254  0.1290931 -1.6541401  8.0111676  4.6680893</code></pre>
+<pre><code>[1]  0.6391398  1.0909668 -8.1725264  5.4775162  5.7315367</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>(BFGS_params <span class="ot">&lt;-</span> <span class="fu">optim</span>(params,to_optim,<span class="at">y=</span>d<span class="sc">$</span>api00,<span class="at">x1=</span>d<span class="sc">$</span>enroll,<span class="at">x2=</span>d<span class="sc">$</span>meals,<span class="at">x3=</span>d<span class="sc">$</span>full,<span class="at">method=</span><span class="st">&quot;BFGS&quot;</span>)<span class="sc">$</span>par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 525.28968661   0.01114386  -2.97534148   3.46506655   4.19061537</code></pre>
+<pre><code>[1] 840.83648191  -0.06076046  -3.76474390   0.74301723   4.07261206</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -3285,7 +3285,7 @@ full          1.0810944  0.23945269</code></pre>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>cov_beta_hat <span class="ot">&lt;-</span> <span class="fu">solve</span>(fit_optim<span class="sc">$</span>hessian)</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>(se_beta_hat <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(cov_beta_hat)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 26.30458144  0.01376837  0.10826152  0.23833687  0.03535314</code></pre>
+<pre><code>[1] 26.29256437  0.01376801  0.10824831  0.23823963  0.03535563</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">summary</span>(fit))[,<span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -3356,17 +3356,17 @@ full          1.0810944  0.23945269</code></pre>
 <span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">print</span>(betas),<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>              [,1]
-[1,]  3.279593e-06
-[2,] -8.096649e-02
-[3,] -8.170419e-01
-[4,]  1.180765e-01</code></pre>
+[1,] -2.928004e-06
+[2,] -8.122462e-02
+[3,] -8.179810e-01
+[4,]  1.169966e-01</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       [,1]
 [1,]  0.000
 [2,] -0.081
-[3,] -0.817
-[4,]  0.118</code></pre>
+[3,] -0.818
+[4,]  0.117</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">coef</span>(<span class="fu">lm</span>(y<span class="sc">~</span>X[,<span class="sc">-</span><span class="dv">1</span>])),<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">

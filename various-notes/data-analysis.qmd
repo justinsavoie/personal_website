@@ -1,0 +1,11 @@
+---
+title: "[What is data analysis?](index.html)"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+editor: visual
+---
+
+Data analysis is the process of inspecting, cleaning, transforming, and modeling data with the objective of discovering useful information, drawing conclusions, and supporting decision-making.

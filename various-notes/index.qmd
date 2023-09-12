@@ -6,10 +6,12 @@ format:
 editor: visual
 ---
 
-### Various notes
+### Notes
 
-3 - [Scaling in regression](scaling-in-regression.html) (2023-05)
+4 - [Am I a Bayesian or a Frequentist?](being-bayesian-frequentist.html) (2023-09) A short reflection on the use of simple models in social science.
 
-2 - [Logistic regression](logistic-regression.html) (2023-05)
+3 - [Scaling in regression](scaling-in-regression.html) (2023-05) Technical notes and R code about scaling before regression.
 
-1 - [Multiple linear regression](multiple-linear-regression.html) (2023-05)
+2 - [Logistic regression](logistic-regression.html) (2023-05) Technical notes and R code for derivation of logistic regression and associated statistics.
+
+1 - [Multiple linear regression](multiple-linear-regression.html) (2023-05) Technical notes and R code for derivation of linear regression and associated statistics.

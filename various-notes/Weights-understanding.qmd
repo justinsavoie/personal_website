@@ -1,5 +1,6 @@
 ---
-title: "Using and understanding survey weights (with an example using the Canadian Election study)"
+title: "[Using and understanding survey weights](index.html)"
+subtitle: With an example using the Canadian Election study
 format:
   html:
     embed-resources: true
@@ -12,7 +13,7 @@ I use survey data a lot and such data almost always comes with weights. Unfortun
 
 There are [different kinds of weights](https://statmodeling.stat.columbia.edu/2021/01/17/weights-in-statistics/). Thomas Lumley, the author of `survey`, the main package for the analysis of surveys in R [calls them](https://notstatschat.rbind.io/2020/08/04/weights-in-statistics/) precision weights, frequency weights, sampling weights. These different weights will lead to the same estimate. However, they will differ in standard errors and here it's where it can get complicated. Here, I focus on sampling weights because those are the ones we use in survey data; the ones that "describe how the sample can be scaled up to the population". I will use *2021 Canadian Election Study v1.0.dta* available [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XBZHKC) which you can load using `haven::read_stata`.
 
-Let's take the first 3000 rows to have larger standard errors, otherwise some are tiny. There's a lot of missing data too, some questions were possibly randomized and asked onl to some respondents.
+Let's take the first 3000 rows to have larger standard errors, otherwise some are tiny. There's a lot of missing data too, some questions were possibly randomized and asked only to some respondents.
 
 ```{r, message=FALSE,warning=FALSE}
 library(haven)
@@ -192,13 +193,14 @@ Amazing vignettes! https://cran.r-project.org/web/packages/survey/index.html
 ```{r}
 library(haven)
 library(tidyverse)
+library(srvyr)
 df <- read_stata("~/Downloads/dataverse_files_CES2021/2021 Canadian Election Study v1.0.dta")
 df <- df[1:5000,]
 # An average
 # No weights
 # Later we will break it down by gender so let's select complete cases on y,x,w
 to_model <- df %>% 
-  select(cps21_pol_eth,cps21_genderid,weight=cps21_weight_general_restricted) |>
+  select(cps21_ResponseId,cps21_pol_eth,cps21_genderid,weight=cps21_weight_general_restricted) |>
   drop_na() |>
   filter(cps21_pol_eth!=5)
 to_model |> 
@@ -217,7 +219,7 @@ to_predict |>
          min=pred-1.96*se,
          max=pred+1.96*se)
 
-# Let's additionaly break down by gender
+# Let's additionally break down by gender
 
 to_model |> 
   group_by(cps21_genderid) |>
@@ -238,8 +240,8 @@ pred_fit <- predict(fit,to_predict,se.fit = TRUE)
 to_predict |> 
   mutate(pred=pred_fit$fit,
          se=pred_fit$se.fit,
-         min=pred-1.96*se,
-         max=pred+1.96*se)
+         min=pred-qt(0.975,2396)*se,
+         max=pred+qt(0.975,2396)*se)
 
 # If I want a simple summary of the data, the first approach is straightforward. 
 # If I'm more interested in the relationship between 
@@ -247,39 +249,111 @@ to_predict |>
 # maybe the regression approach is more appropriate.
 # Using regression, you also need to check assumptions (e.g., homoscedasticity)
 
-predict(lm(mpg~factor(cyl),mtcars),se.fit=TRUE)$se.fit
+# I'm not sure how these ones are calculated:
+# In practice, it's pretty close.
+
+# Using srvyr:
+
+to_model %>%
+  mutate(w1=1) %>%
+  as_survey_design(ids = 1, weight = w1) %>%
+  group_by(cps21_genderid) %>%
+  summarise(survey_mean(cps21_pol_eth),n=n(),
+            survey_mean(cps21_pol_eth,vartype = "ci"))
+
+# If I wanted to get the weighted equivalent:
+# Using an approximation based on Kisch's effective sample size and the
+# weighted variance
+
+to_model |> 
+  group_by(cps21_genderid) |>
+  summarise(estimate=weighted.mean(cps21_pol_eth,weight),
+            n=n(),wn=sum(weight)^2/sum(weight^2),sd=sd(cps21_pol_eth),
+            wsd=sqrt(Hmisc::wtd.var(cps21_pol_eth,weight))) |>
+  mutate(se=wsd / sqrt(wn),
+         min=estimate-1.96*se,
+         max=estimate+1.96*se)
+
+# Using the weighted linear model
+fit <- lm(cps21_pol_eth~as_factor(cps21_genderid),to_model,weights = weight)
+to_predict <- to_model |>
+  select(cps21_genderid) |>
+  unique() |>
+  arrange()
+pred_fit <- predict(fit,to_predict,se.fit = TRUE) 
+
+to_predict |> 
+  mutate(pred=pred_fit$fit,
+         se=pred_fit$se.fit,
+         min=pred-qt(0.975,2396)*se,
+         max=pred+qt(0.975,2396)*se)
+
+# Using srvyr:
+
+to_model %>%
+  as_survey_design(ids = 1, weight = weight) %>%
+  group_by(cps21_genderid) %>%
+  summarise(survey_mean(cps21_pol_eth),n=n(),
+            survey_mean(cps21_pol_eth,vartype = "ci"))
+
+# Proportions:
+
+# Let's skip directly to weighted:
+
+# Using the approximation:
+
+to_model |> 
+  group_by(cps21_genderid,cps21_pol_eth) |> 
+  summarise(estimate=sum(weight),wn=sum(weight)^2/sum(weight^2)) |> 
+  group_by(cps21_genderid) |> 
+  mutate(estimate=estimate/sum(estimate),wng=sum(wn),
+         se=sqrt(((estimate)*(1-estimate))/wng),
+         min=estimate-1.96*se,
+         max=estimate+1.96*se,
+         min=ifelse(min<0,0,min),max=ifelse(max>1,1,max))
+
+# Using srvyr:
+
+to_model |> 
+  as_survey_design(ids = 1, weight = weight) |>
+  group_by(cps21_genderid,cps21_pol_eth) |> 
+  summarise(survey_mean(),survey_mean(vartype = "ci"))
 
 ```
+
+"Raking weights" (or iterative proportional fitting) is a method to create weights.
+
+In short, raking involves:
+
+Selecting Marginals: First, you identify key demographic (or other relevant) characteristics where you know both the distribution in your sample and the true distribution in the population (e.g., age groups, gender, education, region).
+
+Adjusting Weights: For each characteristic, you adjust the sample weights so that the weighted distribution matches the known population distribution.
+
+After the process, each survey respondent will have a weight (or a multiplier) that's used to make the sample data better resemble the actual population across the specified characteristics.
+
+I don't know what the marginals used for raking are. The documentation says: "Marginal values were successively weighted according to province, as well as gender, age group, and education level. All population data were taken from the 2016 Canadian census."
+
+By summing the weights over the categories on which the weights are probably created, I can get some marginals.
+
 ```{r}
-#library(haven)
-#library(tidyverse)
-#df <- read_stata("~/Downloads/dataverse_files_CES2021/2021 Canadian Election Study v1.0.dta")
-#df <- df[1:5000,]
-## An average
-## No weights
-## Later we will break it down by gender so let's select complete cases on y,x,w
-#to_model <- df %>% 
-#  select(cps21_pol_eth,cps21_genderid,weight=cps21_weight_general_restricted) |>
-#  drop_na() |>
-#  filter(cps21_pol_eth!=5)
-#library(srvyr)
-#to_model |>
-#  #mutate(weight=1) |>
-#  as_survey_design(ids = 1, weight = weight) |>
-#  group_by(cps21_genderid) |>
-#  summarise(survey_mean(cps21_pol_eth))
-#el <- list()
-#for (i in 1:1000){
-#  ids <- sample(1:nrow(to_model),replace = TRUE,prob = to_model$weight)
-#  tm_ <- to_model[ids,]
-#  el[[i]] <- tm_ %>%
-#    group_by(cps21_genderid) %>%
-#    summarise(m=weighted.mean(cps21_pol_eth))
-#}  
-#quantile(sapply(el,function(x){
-#  x$m[[1]]}
-#),c(0.025,0.975))
-#3.81+0.0223*1.96
-#3.81-0.0223*1.96
+library(haven)
+library(tidyverse)
+
+df <- read_stata("~/Downloads/dataverse_files_CES2021/2021 Canadian Election Study v1.0.dta")
+
+df %>%
+  group_by(cps21_genderid) %>%
+  summarise(sw=sum(cps21_weight_general_restricted,na.rm=TRUE)) %>%
+  mutate(sw/sum(sw))
+
+df %>%
+  mutate(age=cut(cps21_age,c(0,17,24,34,44,54,64,74,130))) %>%
+  group_by(age) %>%
+  summarise(sw=sum(cps21_weight_general_restricted,na.rm=TRUE)) %>%
+  mutate(sw/sum(sw))
 
 ```
+
+Let's use these marginals to create new weights, see if it makes sense.
+
+A [nice deck](https://static1.squarespace.com/static/56dcecbd2eeb8186f4568c24/t/5ce178c362f60d0001c3be53/1558280389093/4_Sampling.pdf) by Prillaman.

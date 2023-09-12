@@ -1,5 +1,5 @@
 ---
-title: "Multiple linear regression"
+title: "[Multiple linear regression](index.html)"
 format:
   html:
     embed-resources: true
@@ -16,7 +16,7 @@ where $x_1,x_2...x_k$ are the predictor variables and $\beta_1,\beta_2...\beta_k
 
 In matrix form: $$y=X\beta+\varepsilon$$
 
-where $y$ is a $n \times 1$ vector of dependent variable, $X$ is $n \times (p+1)$ with the first columns as 1s that multiply the intercept $\beta_0$, $\beta$ is a $(p+1)\times 1 $ vector of regression coefficients, including the intercept, \varepsilon is a $n \times 1$ vector of residuals (or errors).
+where $y$ is a $n \times 1$ vector of dependent variable, $X$ is $n \times (p+1)$ with the first columns as 1s that multiply the intercept $\beta_0$, $\beta$ is a \$(p+1)\times 1 \$ vector of regression coefficients, including the intercept, \varepsilon is a $n \times 1$ vector of residuals (or errors).
 
 This model returns a prediction which is essentially a weighted average of the independent variables, plus an intercept which represents the expected value of the dependent variable when all predictors are set to zero.
 

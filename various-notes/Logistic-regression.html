@@ -3144,7 +3144,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Logistic regression</h1>
+<h1 class="title"><a href="index.html">Logistic regression</a></h1>
 </div>
 
 
@@ -3174,6 +3174,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>fit<span class="ot">&lt;-</span><span class="fu">glm</span>(vs<span class="sc">~</span>mpg<span class="sc">+</span>hp,mtcars,<span class="at">family=</span><span class="st">&#39;binomial&#39;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Optimizing:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>pars_init <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">3</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> mtcars<span class="sc">$</span>vs</span>
@@ -3193,7 +3194,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 </div>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">optim</span>(pars_init, to_optim, <span class="at">y =</span> y, <span class="at">X =</span> X,<span class="at">method =</span> <span class="st">&quot;BFGS&quot;</span>)<span class="sc">$</span>par</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.8051420 0.4284923 1.6576362</code></pre>
+<pre><code>[1]  3.6854603 79.1027200  0.9586848</code></pre>
 </div>
 </div>
 <p>It doesn’t work. Looks like it’s an optimization problem.</p>
@@ -3214,10 +3215,10 @@ scale(hp)   -4.9595270   2.373026</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(fit_optim<span class="sc">$</span>par,se_beta_hat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>               se_beta_hat
-[1,] -1.759680    1.161770
-[2,] -0.204051    1.090666
-[3,] -4.959532    2.373080</code></pre>
+<pre><code>                se_beta_hat
+[1,] -1.7598400    1.161868
+[2,] -0.2041065    1.090686
+[3,] -4.9599152    2.373276</code></pre>
 </div>
 </div>
 <p>Doing the optimization by hand with Newton Raphson</p>
@@ -3257,6 +3258,189 @@ mpg -0.2040335 1.090672
 hp  -4.9595270 2.373079</code></pre>
 </div>
 </div>
+<p>Getting residuals:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>fit<span class="ot">&lt;-</span><span class="fu">glm</span>(vs<span class="sc">~</span>mpg<span class="sc">+</span>hp,mtcars,<span class="at">family=</span><span class="st">&#39;binomial&#39;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = vs ~ mpg + hp, family = &quot;binomial&quot;, data = mtcars)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-2.09164  -0.19536  -0.01377   0.50499   1.18424  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)  
+(Intercept)  9.53119    7.03368   1.355   0.1754  
+mpg         -0.03385    0.18097  -0.187   0.8516  
+hp          -0.07234    0.03461  -2.090   0.0366 *
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 43.860  on 31  degrees of freedom
+Residual deviance: 16.803  on 29  degrees of freedom
+AIC: 22.803
+
+Number of Fisher Scoring iterations: 7</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> mtcars<span class="sc">$</span>vs</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>pred_p <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit,<span class="at">type =</span> <span class="st">&#39;response&#39;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># deviance residuals</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sign</span>(y<span class="sc">-</span>pred_p) <span class="sc">*</span> <span class="fu">ifelse</span>(y<span class="sc">==</span><span class="dv">1</span>,<span class="fu">sqrt</span>(<span class="sc">-</span><span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(pred_p)),<span class="fu">sqrt</span>(<span class="sc">-</span><span class="dv">2</span><span class="sc">*</span><span class="fu">log</span>(<span class="dv">1</span><span class="sc">-</span>pred_p)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Mazda RX4       Mazda RX4 Wag          Datsun 710      Hornet 4 Drive 
+      -1.5590059536       -1.5590059536        0.4962884481        0.8437021366 
+  Hornet Sportabout             Valiant          Duster 360           Merc 240D 
+      -0.2144937088        0.6871394963       -0.0184808702        0.1707999694 
+           Merc 230            Merc 280           Merc 280C          Merc 450SE 
+       0.5310868376        1.1842357578        1.1641307770       -0.1863798530 
+         Merc 450SL         Merc 450SLC  Cadillac Fleetwood Lincoln Continental 
+      -0.1835858307       -0.1901703014       -0.0838160203       -0.0584048409 
+  Chrysler Imperial            Fiat 128         Honda Civic      Toyota Corolla 
+      -0.0315760682        0.2253974400        0.1318746631        0.2230111955 
+      Toyota Corona    Dodge Challenger         AMC Javelin          Camaro Z28 
+       0.5565252682       -0.5419825955       -0.5445474113       -0.0187963265 
+   Pontiac Firebird           Fiat X1-9       Porsche 914-2        Lotus Europa 
+      -0.2127064039        0.2069627690       -2.0916418435        1.0416111572 
+     Ford Pantera L        Ferrari Dino       Maserati Bora          Volvo 142E 
+      -0.0090629212       -0.2109336591       -0.0007045712        0.8182883341 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">resid</span>(fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Mazda RX4       Mazda RX4 Wag          Datsun 710      Hornet 4 Drive 
+      -1.5590059536       -1.5590059536        0.4962884481        0.8437021366 
+  Hornet Sportabout             Valiant          Duster 360           Merc 240D 
+      -0.2144937088        0.6871394963       -0.0184808702        0.1707999694 
+           Merc 230            Merc 280           Merc 280C          Merc 450SE 
+       0.5310868376        1.1842357578        1.1641307770       -0.1863798530 
+         Merc 450SL         Merc 450SLC  Cadillac Fleetwood Lincoln Continental 
+      -0.1835858307       -0.1901703014       -0.0838160203       -0.0584048409 
+  Chrysler Imperial            Fiat 128         Honda Civic      Toyota Corolla 
+      -0.0315760682        0.2253974400        0.1318746631        0.2230111955 
+      Toyota Corona    Dodge Challenger         AMC Javelin          Camaro Z28 
+       0.5565252682       -0.5419825955       -0.5445474113       -0.0187963265 
+   Pontiac Firebird           Fiat X1-9       Porsche 914-2        Lotus Europa 
+      -0.2127064039        0.2069627690       -2.0916418435        1.0416111572 
+     Ford Pantera L        Ferrari Dino       Maserati Bora          Volvo 142E 
+      -0.0090629212       -0.2109336591       -0.0007045712        0.8182883341 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># working residuals</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>fit<span class="sc">$</span>residuals</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Mazda RX4       Mazda RX4 Wag          Datsun 710      Hornet 4 Drive 
+          -3.371136           -3.371136            1.131055            1.427489 
+  Hornet Sportabout             Valiant          Duster 360           Merc 240D 
+          -1.023270            1.266276           -1.000171            1.014693 
+           Merc 230            Merc 280           Merc 280C          Merc 450SE 
+           1.151455            2.016185            1.969147           -1.017520 
+         Merc 450SL         Merc 450SLC  Cadillac Fleetwood Lincoln Continental 
+          -1.016995           -1.018247           -1.003519           -1.001707 
+  Chrysler Imperial            Fiat 128         Honda Civic      Toyota Corolla 
+          -1.000499            1.025727            1.008733            1.025179 
+      Toyota Corona    Dodge Challenger         AMC Javelin          Camaro Z28 
+           1.167495           -1.158206           -1.159821           -1.000177 
+   Pontiac Firebird           Fiat X1-9       Porsche 914-2        Lotus Europa 
+          -1.022880            1.021648           -8.912750            1.720263 
+     Ford Pantera L        Ferrari Dino       Maserati Bora          Volvo 142E 
+          -1.000041           -1.022496           -1.000000            1.397658 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>(y<span class="sc">-</span>pred_p) <span class="sc">/</span> (pred_p<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>pred_p))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Mazda RX4       Mazda RX4 Wag          Datsun 710      Hornet 4 Drive 
+          -3.371136           -3.371136            1.131055            1.427489 
+  Hornet Sportabout             Valiant          Duster 360           Merc 240D 
+          -1.023270            1.266276           -1.000171            1.014693 
+           Merc 230            Merc 280           Merc 280C          Merc 450SE 
+           1.151455            2.016185            1.969147           -1.017520 
+         Merc 450SL         Merc 450SLC  Cadillac Fleetwood Lincoln Continental 
+          -1.016995           -1.018247           -1.003519           -1.001707 
+  Chrysler Imperial            Fiat 128         Honda Civic      Toyota Corolla 
+          -1.000499            1.025727            1.008733            1.025179 
+      Toyota Corona    Dodge Challenger         AMC Javelin          Camaro Z28 
+           1.167495           -1.158206           -1.159821           -1.000177 
+   Pontiac Firebird           Fiat X1-9       Porsche 914-2        Lotus Europa 
+          -1.022880            1.021648           -8.912750            1.720263 
+     Ford Pantera L        Ferrari Dino       Maserati Bora          Volvo 142E 
+          -1.000041           -1.022496           -1.000000            1.397658 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(<span class="fu">resid</span>(fit),<span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        0%        25%        50%        75%       100% 
+-2.0916418 -0.1953611 -0.0137719  0.5049880  1.1842358 </code></pre>
+</div>
+</div>
+<p>Getting deviance:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Residual deviance</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">resid</span>(fit))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.5657591</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Null deviance is residual deviance from Null model</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">resid</span>(<span class="fu">glm</span>(vs<span class="sc">~</span><span class="dv">1</span>,mtcars,<span class="at">family=</span><span class="st">&#39;binomial&#39;</span>))<span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 43.86011</code></pre>
+</div>
+</div>
+<p>Getting log lik:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">logLik</span>(fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&#39;log Lik.&#39; -8.401486 (df=3)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">log</span>(<span class="fu">prod</span>(<span class="fu">ifelse</span>(y,pred_p,<span class="dv">1</span><span class="sc">-</span>pred_p)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -8.401486</code></pre>
+</div>
+</div>
+<p>Getting AIC:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>(<span class="at">AIC =</span> <span class="dv">2</span><span class="sc">*</span><span class="dv">3</span> <span class="sc">-</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">logLik</span>(fit))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&#39;log Lik.&#39; 22.80297 (df=3)</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>Xp <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">cbind</span>(<span class="dv">1</span>,fit<span class="sc">$</span>model[,<span class="sc">-</span><span class="dv">1</span>]))</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">coef</span>(fit)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>yh <span class="ot">&lt;-</span> Xp <span class="sc">%*%</span> b</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> <span class="fu">vcov</span>(fit)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>var.fit <span class="ot">&lt;-</span> <span class="fu">rowSums</span>((Xp <span class="sc">%*%</span> V) <span class="sc">*</span> Xp)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(var.fit)[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        Mazda RX4     Mazda RX4 Wag        Datsun 710    Hornet 4 Drive 
+        0.6500130         0.6500130         0.8835895         0.6366855 
+Hornet Sportabout           Valiant        Duster 360         Merc 240D 
+        1.9371305         1.0340190         3.9245037         1.6766014 
+         Merc 230          Merc 280 
+        0.8386182         0.6885804 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(fit,<span class="at">se.fit=</span><span class="cn">TRUE</span>)<span class="sc">$</span>se.fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        Mazda RX4     Mazda RX4 Wag        Datsun 710    Hornet 4 Drive 
+        0.6500130         0.6500130         0.8835895         0.6366855 
+Hornet Sportabout           Valiant        Duster 360         Merc 240D 
+        1.9371305         1.0340190         3.9245037         1.6766014 
+         Merc 230          Merc 280 
+        0.8386182         0.6885804 </code></pre>
+</div>
+</div>
+<p>Confidence intervals:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>predict_fit <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit,<span class="at">se.fit=</span><span class="cn">TRUE</span>)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>critval <span class="ot">&lt;-</span> <span class="fl">1.96</span> <span class="do">## approx 95% CI</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>upr <span class="ot">&lt;-</span> predict_fit<span class="sc">$</span>fit <span class="sc">+</span> (critval <span class="sc">*</span> predict_fit<span class="sc">$</span>se.fit)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>lwr <span class="ot">&lt;-</span> predict_fit<span class="sc">$</span>fit <span class="sc">-</span> (critval <span class="sc">*</span> predict_fit<span class="sc">$</span>se.fit)</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>estimate <span class="ot">&lt;-</span> predict_fit<span class="sc">$</span>fit</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>estimate2 <span class="ot">&lt;-</span> fit<span class="sc">$</span>family<span class="sc">$</span><span class="fu">linkinv</span>(estimate)</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>upr2 <span class="ot">&lt;-</span> fit<span class="sc">$</span>family<span class="sc">$</span><span class="fu">linkinv</span>(upr)</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>lwr2 <span class="ot">&lt;-</span> fit<span class="sc">$</span>family<span class="sc">$</span><span class="fu">linkinv</span>(lwr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>With logistic regression, there’s no possibility to create a predictive interval because it would be [0,1] if the probability is between 0.05 and 0.95 and [0,0]/[1,1] otherwise.</p>
 </section>
 
 </main>
