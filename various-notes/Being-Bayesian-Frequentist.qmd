@@ -74,17 +74,17 @@ We look at the estimate of the mean of cps21_pos_carbon by province/territory.
 
 cps21_pos_carbon To help reduce greenhouse gas emissions, the federal government should continue the carbon tax.
 
-- Strongly disagree (1)
+-   Strongly disagree (1)
 
-- Somewhat disagree (2)
+-   Somewhat disagree (2)
 
-- Neither agree nor disagree (3)
+-   Neither agree nor disagree (3)
 
-- Somewhat agree (4)
+-   Somewhat agree (4)
 
-- Strongly agree (5)
+-   Strongly agree (5)
 
-- Don't know/ Prefer not to answer (6)
+-   Don't know/ Prefer not to answer (6)
 
 Let's remove (6). Let's treat it as a continuous variable.
 
@@ -108,7 +108,6 @@ results_survey_province <- to_model %>%
 ```
 
 ```{r,warning=FALSE,message=FALSE}
-library(brms)
 to_model$provcode <- as.character(to_model$provcode)
 to_model$cps21_pos_carbon <- as.numeric(to_model$cps21_pos_carbon)
 bayesian_fit <- stan_glmer(cps21_pos_carbon~(1|provcode),
@@ -138,3 +137,5 @@ to_plot |>
 There is no confidence interval for Nunavut as it has one observation. The Bayesian estimate for Yukon, PEI and NT seem more plausible. Of course, with a good sample size, results are very similar.
 
 So that's what they mean above when they say: "classical inference, leading to pure summaries of data which can have limited value as predictions; or Bayesian inference, which in theory can yield valid predictions even with weak data, but relies on additional assumptions". Limited value for prediction for Nunavut for instance.
+
+We also see that the red point is always closer to the center. It's especially true where the sample size is small. That's what is meant by partial pooling.
