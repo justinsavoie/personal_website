@@ -68,7 +68,7 @@ Here, the focus is on the entire data analysis pipeline (minus the substantive t
 
 The full table of contents from that book is illustrative in terms of what data analysis is:
 
-![Alexander: Using data](figures/tswd-toc.png)
+![Alexander: Telling stories with data TOC](figures/tswd-toc.png)
 
 Lastly, what is probably the [most famous data analysis book in R (by Hadley Wickham)](https://r4ds.hadley.nz/preface-2e) drops the analysis/modelling part. This is not to say it's not important. It's very important, and the books suggests a full book on it suggests a full book on it by [Kuhn and Silge](https://r4ds.hadley.nz/preface-2e).
 
