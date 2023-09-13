@@ -68,7 +68,7 @@ Here, the focus is on the entire data analysis pipeline (minus the substantive t
 
 The full table of contents from that book is illustrative in terms of what data analysis is:
 
-![Alexander: Using data](figures/tswd-da.png)
+![Alexander: Using data](figures/tswd-toc.png)
 
 Lastly, what is probably the [most famous data analysis book in R (by Hadley Wickham)](https://r4ds.hadley.nz/preface-2e) drops the analysis/modelling part. This is not to say it's not important. It's very important, and the books suggests a full book on it suggests a full book on it by [Kuhn and Silge](https://r4ds.hadley.nz/preface-2e).
 
@@ -83,5 +83,3 @@ One recent trend is the focus on story telling. The books by *Ismai and Kim*, *A
 If we go back to our first statement, data analysis is the process of **(A) inspecting, (B) cleaning, (C) transforming, and (D) modelling data** with the objective of discovering useful information, drawing conclusions, and supporting decision-making. To do this we need **(I) substantive expertise (II) some knowledge of statistics (III) some knowledge of a programming language (IV) an ability to communicate**.
 
 The book by Wickham is excellent for (III). A large number of resources exists for (II), for example most books quoted above. (I) and (IV) are harder to teach in a single book. (I) in particular will depend on the substantive interest, research questions etc. (IV) is covered in, for example, the books by *Ismai and Kim*, *Alexander* and *Gelman, Hill and Vehtari*. But again it depends on context and audience and is an art as well as a science.
-
-
