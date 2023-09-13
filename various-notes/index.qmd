@@ -8,6 +8,8 @@ editor: visual
 
 ### Notes
 
+5 - [What is data analysis?](data-analysis.html) (2023-09) What various key authors say data analysis is.
+
 4 - [Am I a Bayesian or a Frequentist?](being-bayesian-frequentist.html) (2023-09) A short reflection on the use of simple models in social science.
 
 3 - [Scaling in regression](scaling-in-regression.html) (2023-05) Technical notes and R code about scaling before regression.

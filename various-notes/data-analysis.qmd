@@ -8,4 +8,80 @@ format:
 editor: visual
 ---
 
-Data analysis is the process of inspecting, cleaning, transforming, and modeling data with the objective of discovering useful information, drawing conclusions, and supporting decision-making.
+Data analysis is the process of **(A) inspecting, (B) cleaning, (C) transforming, and (D) modelling data** with the objective of discovering useful information, drawing conclusions, and supporting decision-making. That's a very typical statement but it's also really vague.
+
+I don't think there's any essential difference between data analysis inside and outside the social sciences. It's all about looking at the data, understanding it, modelling it and then doing something with the insight gained. Whether you do this in public policy, in academia, or in marketing, there are many more similarities than differences. In all these contexts, you will ask similar questions about the possibility to generalize from the sample to outside that sample (to the population or to other samples), about causality, about whether you are in fact measuring the right concept, etc.
+
+Let's look at what experts in the field of data analysis have to say about what data analysis is:
+
+Here, the focus is on data analysis in the social sciences using R.
+
+For [Llaudet and Imai](https://press.princeton.edu/books/hardcover/9780691199429/data-analysis-for-social-science):
+
+![Llaudet and Imai: Data Analysis for Social Science](figures/llaudet-imai-what-is-data-analysis.png)
+
+The focus is on (D) modelling. They identify three things we do with data analysis: describe, predict, explain. This is a key threefold distinction that comes up often.
+
+"Describing" is what we get in polls. For example, "56% of Canadians believe this or that. 57% of homeowners believe this or that. In contrast, only 41% of renters believe that same thing". Correlation is also about describing. For example, age is correlated with social media use. That is: younger people use social media more often. It's often said and it is true that correlation does not imply causation. For example: the relationship between ice cream sales and the rate of drowning incidents. In many regions, ice cream sales tend to increase during the summer months. Unfortunately, the number of drowning incidents also tends to rise during this period. But clearly, one does not cause the other. A third factor, warm weather, causes both. For age and social media use, it's more complicated. It depends on what we mean by "cause" and there are many things that lead to or explain or cause social media use. Age likely is one of them.
+
+"Predicting" is what they do [outside social science](https://mlstory.org/). Machine learning is about finding patterns, predicting them, and acting on them. It's more common in engineering and finance than in social science, but it's still sometimes done, for example in election forecasting. Technically, economics is a social science and there economic prediction/forecasting is very common.
+
+"Explaining" is probably the most common thing we do in social science. It's about finding causal effects. "All other things being equal" does attending private school increase student scores. How does the electoral system (e.g., first-past-the-post, proportional representation) influence the nature of party politics and election outcomes? Does economic inequality lead to political instability? Getting at causality is also [notoriously difficult in many cases](http://www.stat.columbia.edu/~gelman/research/published/causalreview4.pdf).
+
+It's worth quoting in full from Llaudet and Imai:
+
+> Figuring out whether you aim to measure, predict, and/or explain a quantity of interest should always precede the analysis and often also precede the data collection. As you will learn, the goals of your research will determine (i) what data you need to collect and how (ii) the statistical methods you use (iii) what you pay attention to in the analysis.
+
+> To measure a quantity of interest such as a population characteristic, we often use survey data, that is, information collected on a sample of individuals from the target population. To analyze the data, we may compute various descriptive statistics, such as mean and median, and create visualizations like histograms and scatter plots. The validity of our conclusions depends on whether the sample is representative of the target population. To measure the proportion of eligible voters in favor of a particular policy, for example, our conclusions will be valid if the sample of voters surveyed is representative of all eligible voters.
+
+> To predict a quantity of interest, we typically use a statisti- cal model such as a linear regression model to summarize the relationship between the predictors and the outcome variable of interest. The stronger the association between the predictors and the outcome variable, the better the predictive model will usu- ally be. To predict the likely winner of an upcoming election, for example, if economic conditions are strongly associated with the electoral outcomes of candidates from the incumbent party we may be able to use the current unemployment rate as our predictor.
+
+> To explain a quantity of interest such as the causal effect of a treatment on an outcome, we need to find or create a situation in which the group of individuals who received the treatment is comparable, in the aggregate, to the group of individuals who did not. In other words, we need to eliminate or control for all confounding variables, which are variables that affect both (i) the likelihood of receiving the treatment and (i) the outcome variable. For example, when estimating the causal effect of attending a private school on student test scores, family wealth is a poten- tial confoundinq variable. Students from wealthier families are more likely to attend a private school and also more likely to receive after-school tutoring, which might have a positive impact on their test scores. To produce valid estimates of causal effects, we may conduct a randomized experiment, which eliminates all confounding variables by assigning the treatment at random. In the current example, we would achieve this by using a lottery to determine which students attend private schools and which do not. Alternatively, if we cannot conduct a randomized experiment and need to rely on observational data instead, we would need to use statistical methods to control for all confounding variables such as family wealth. Otherwise, we would not know what portion of the difference in average test scores between private and public school students was the result of the type of school attended and what portion was the result of family background.
+
+Here is a slightly different take, by [Gelman, Hill and Vehtari](https://avehtari.github.io/ROS-Examples/index.html) on what statistical inference is:
+
+![Gelman, Hill Vehtari: Statistical Inference](figures/ros-statistics.png)
+
+The focus is again on (D) modelling. Here, 1. corresponds directly to Llaudet's "describing" and 2. to "explaining". 3. is interesting and not directly described by Llaudet. It's the idea that often we use proxies. For example, we capture the concept of "democratic health" with something else, we operationalize the concept. But maybe we are not capturing it adequately, maybe our operationalization is faulty. Gelman et al. don't talk about prediction per se. They say all problems are ultimately about predictions.
+
+Here's another take, again by Gelman and colleagues, but in a [more technical book](http://www.stat.columbia.edu/~gelman/book/):
+
+![Gelman, Hill Vehtari: Statistical Inference](figures/bda-bda.png)
+
+What's interesting is that here, again, the focus is exclusively on (D) modelling. It's about setting up a good model, fitting it, evaluating it.
+
+Here's the view taken by [Quan Li](https://academic.oup.com/book/27134) in another preface to a data analysis book:
+
+![Li: Using R for Data Analysis in Social Sciences](figures/Li-da.png)
+
+Here, the definition is not only about (D) modelling. The passages highlighted discuss various aspects of (A)-(D): asking a substantive question, getting some data, writing code to clean and transform the data, using statistical models to ask questions and answer them.
+
+Here's another (visual) view, by [Ismay and Kim](https://moderndive.com/preface.html):
+
+![Ismai and Kim: Modern Dive: Statistical Inference via Data Science](figures/moderndive-da.png)
+
+Here, the focus is on the entire data analysis pipeline (minus the substantive theoretical work beforehand).
+
+[Rohan Alexander](https://tellingstorieswithdata.com/) focuses on the social context in which we use data analysis:
+
+![Alexander: Telling stories with data](figures/tswd-da.png)
+
+The full table of contents from that book is illustrative in terms of what data analysis is:
+
+![Alexander: Using data](figures/tswd-da.png)
+
+Lastly, what is probably the [most famous data analysis book in R (by Hadley Wickham)](https://r4ds.hadley.nz/preface-2e) drops the analysis/modelling part. This is not to say it's not important. It's very important, and the books suggests a full book on it suggests a full book on it by [Kuhn and Silge](https://r4ds.hadley.nz/preface-2e).
+
+![R4DS2](figures/r4ds2-preface.png)
+
+What all this illustrates is that data analysis is really broad. Some books focus on the modelling, some books focus on the social scientific theory, some books focus on the technical aspects of working with data in R.
+
+One recent trend is the focus on story telling. The books by *Ismai and Kim*, *Alexander* and *Gelman, Hill and Vehtari* all emphasize the importance of "telling a good and clear story" with the data. The first sentence of Alexander's preface is:
+
+> This book will help you tell stories with data. It establishes a foundation on which you can build and share knowledge about an aspect of the world that interests you based on data that you observe. Telling stories in small groups around a fire played a critical role in the development of humans and society (Wiessner 2014). Today our stories, based on data, can influence millions.
+
+If we go back to our first statement, data analysis is the process of **(A) inspecting, (B) cleaning, (C) transforming, and (D) modelling data** with the objective of discovering useful information, drawing conclusions, and supporting decision-making. To do this we need **(I) substantive expertise (II) some knowledge of statistics (III) some knowledge of a programming language (IV) an ability to communicate**.
+
+The book by Wickham is excellent for (III). A large number of resources exists for (II), for example most books quoted above. (I) and (IV) are harder to teach in a single book. (I) in particular will depend on the substantive interest, research questions etc. (IV) is covered in, for example, the books by *Ismai and Kim*, *Alexander* and *Gelman, Hill and Vehtari*. But again it depends on context and audience and is an art as well as a science.
+
+
