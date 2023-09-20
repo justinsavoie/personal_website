@@ -93,6 +93,7 @@ df[,c("x")]
 tidyverse
 
 ```{r out.width='70%'}
+# library(tidyverse)
 (df <- tibble(x=c(1,2),y=c(6,7)))
 (df <- df |> mutate(z=c(10,11)))
 df |> select(x)
@@ -222,7 +223,9 @@ ggplot(
 arguments are not named
 
 ```{r  out.width='50%',warning=FALSE}
-ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) + 
+ggplot(penguins, 
+       aes(x = flipper_length_mm,
+           y = body_mass_g)) + 
   geom_point()
 ```
 ]
@@ -332,7 +335,7 @@ ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
 
 ---
 
-## Three variables
+## Three variables (or more!)
 
 ```{r out.width='35%',fig.retina = 2}
 ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +

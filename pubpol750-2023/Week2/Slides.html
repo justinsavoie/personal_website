@@ -4,7 +4,7 @@
     <title>Week 2: Data visualisation</title>
     <meta charset="utf-8" />
     <meta name="author" content="Justin Savoie" />
-    <meta name="date" content="2023-09-19" />
+    <meta name="date" content="2023-09-20" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 ## PUBPOL 750 Data Analysis for Public Policy I
 ### Justin Savoie
 ### MPP-DS McMaster
-### 2023-09-19
+### 2023-09-20
 
 ---
 
@@ -159,6 +159,7 @@ tidyverse
 
 
 ```r
+# library(tidyverse)
 (df &lt;- tibble(x=c(1,2),y=c(6,7)))
 ```
 
@@ -345,7 +346,9 @@ arguments are not named
 
 
 ```r
-ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) + 
+ggplot(penguins, 
+       aes(x = flipper_length_mm,
+           y = body_mass_g)) + 
   geom_point()
 ```
 
@@ -479,7 +482,7 @@ ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
 
 ---
 
-## Three variables
+## Three variables (or more!)
 
 
 ```r
