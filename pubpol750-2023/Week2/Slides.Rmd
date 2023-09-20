@@ -115,7 +115,7 @@ class: inverse, middle, center
 
 ---
 
-```{r out.width='50%', message=FALSE, warning=FALSE,echo=FALSE,fig.retina = 3}
+```{r out.width='50%', message=FALSE, warning=FALSE,echo=FALSE,fig.retina = 2}
 library(palmerpenguins)
 library(ggthemes)
 ggplot(
@@ -137,7 +137,7 @@ ggplot(
 
 ## Empty graph
 
-```{r out.width='50%',fig.retina = 3}
+```{r out.width='30%',fig.retina = 2}
 ggplot(data = mpg)
 ```
 
@@ -145,7 +145,7 @@ ggplot(data = mpg)
 
 ## Adding structure through mapping
 
-```{r out.width='50%',fig.retina = 3}
+```{r out.width='30%',fig.retina = 2}
 ggplot(
   data = penguins,
   mapping = aes(x = flipper_length_mm, y = body_mass_g)
@@ -156,172 +156,200 @@ ggplot(
 
 ## Addings points
 
+```{r out.width='30%',fig.retina = 2}
+ggplot(
+  data = penguins,
+  mapping = aes(x = flipper_length_mm, y = body_mass_g)
+) + geom_point()
+```
+
+---
+
+## Addings colors for groups
+
+```{r out.width='30%',fig.retina = 2}
+ggplot(
+  data = penguins,
+  mapping = aes(x = flipper_length_mm, y = body_mass_g, color = species)
+) + geom_point()
+```
+
+---
+
+## Adding lines of fit
+
+```{r out.width='25%',fig.retina = 2}
+ggplot(data = penguins,
+       mapping = aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  geom_point() + geom_smooth(method = "lm")
+```
+
+---
+
+## The full graph
+
+```{r out.width='25%',fig.retina = 2, message=FALSE,warning=FALSE}
+ggplot(
+  data = penguins,
+  mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(aes(color = species, shape = species)) +
+  geom_smooth(method = "lm") +
+  labs(title = "Body mass and flipper length",
+    subtitle = "Dimensions for Adelie, Chinstrap, and Gentoo Penguins",
+    x = "Flipper length (mm)", y = "Body mass (g)",
+    color = "Species", shape = "Species"
+  ) + scale_color_colorblind()
+```
+
+---
+
+## ggplot2 calls
+
+.pull-left[
+
+arguments are named
+
+```{r out.width='50%',warning=FALSE}
 ggplot(
   data = penguins,
   mapping = aes(x = flipper_length_mm, y = body_mass_g)
 ) +
   geom_point()
-#> Warning: Removed 2 rows containing missing values (`geom_point()`).
-
----
-
-## General graph template
-
-```{r eval=FALSE}
-ggplot(data = <DATA>) + 
-  <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))
-```
-
----
-
-## Adding an aesthetic for color (by car class)
-
-```{r out.width='40%'}
-ggplot(data = mpg) + 
-  geom_point(aes(x=displ,y=hwy,color=class), size=3)
-```
-
----
-
-## Adding an aesthetic for size (by car class)
-
-```{r out.width='40%'}
-ggplot(data = mpg) + 
-  geom_point(aes(x=displ,y=hwy,size=class))
-```
----
-
-## Notice the difference
-
-.pull-left[
-
-```{r out.width='70%',warning=FALSE}
-ggplot(data = mpg) + 
-  geom_point(aes(x=displ,y=hwy,size=class))
 ```
 ]
 .pull-right[
-```{r out.width='70%'}
-ggplot(data = mpg) + 
-  geom_point(aes(x=displ,y=hwy),size=3)
-```
-]
----
 
-## Notice the difference
+arguments are not named
 
-.pull-left[
-```{r out.width='70%'}
-ggplot(data = mpg) + 
-  geom_point(aes(x=displ,y=hwy),size=12)
-```
-]
-.pull-right[
-```{r out.width='70%'}
-ggplot(data = mpg) + 
-  geom_point(aes(x=displ,y=hwy,size=12))
-```
-]
----
-
-## Notice the difference
-
-.pull-left[
-```{r out.width='70%'}
-ggplot(data = mpg) + 
-  geom_point(aes(x=displ,y=hwy,color='class'))
-```
-]
-.pull-right[
-```{r out.width='70%'}
-ggplot(data = mpg) + 
-  geom_point(aes(x=displ,y=hwy,color=class))
+```{r  out.width='50%',warning=FALSE}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) + 
+  geom_point()
 ```
 ]
 
 ---
-## Facets
-```{r out.width='40%'}
-ggplot(data = mpg) +
-  geom_point(aes(x=displ,y=hwy)) +
-  facet_wrap(~drv)
-```
----
-## Facets
-```{r out.width='40%'}
-ggplot(data = mpg) +
-  geom_point(aes(x=displ,y=hwy)) +
-  facet_grid(cols = vars(drv),rows = vars(class))
-```
----
-## Transformations
 
-```{r out.width='40%'}
-ggplot(data = mpg) + 
-  geom_bar(mapping = aes(x = class))
-```
----
-## Transformations
-.pull-left[
-```{r}
-(demo <- tribble(
-  ~cut,         ~freq,
-  "Fair",       1610,
-  "Good",       4906,
-  "Very Good",  12082,
-  "Premium",    13791,
-  "Ideal",      21551
-))
-```
-]
+## Visualizing distributions for categorical variables
 
-.pull-right[
-```{r out.width='60%'}
-ggplot(data = demo) +
-  geom_bar(mapping = aes(x = cut, y = freq),
-           stat = "identity")
+You could reorder with `fct_infreq()`
+
+```{r out.width='35%',fig.retina = 2}
+ggplot(penguins, aes(x = species)) +
+  geom_bar()
 ```
-]
+
 ---
 
-## Transformations
-.pull-left[
-```{r}
-(demo <- tribble(
-  ~age, ~overall,~low.income,~high.income,
-  "18-34",1610,    800, 810,
-  "35-54",4906,    1717, 3189,
-  "55+",12082,   10000, 2082
-))
-```
-]
+## Visualizing distributions for a continuous variable
 
-.pull-right[
-```{r out.width='60%'}
-ggplot(data = demo) +
-  geom_bar(mapping = aes(x = age,
-                         y = overall),
-           stat = "identity")
+```{r out.width='35%',fig.retina = 2}
+ggplot(penguins, aes(x = body_mass_g)) +
+  geom_histogram(binwidth = 200)
 ```
-]
+
 ---
 
-.pull-left[
-```{r out.width='60%'}
-ggplot(data = demo) +
-  geom_bar(mapping = aes(x = age,
-                         y = low.income),
-           stat = "identity")
+## Visualizing distributions using a density
+
+```{r out.width='35%',fig.retina = 2}
+ggplot(penguins, aes(x = body_mass_g)) +
+  geom_density()
 ```
-]
-.pull-right[
-```{r out.width='60%'}
-ggplot(data = demo) +
-  geom_bar(mapping = aes(x = age,
-                         y = high.income),
-           stat = "identity")
+
+---
+
+## Visualizing the relationship between a categorical and a continuous variable
+```{r out.width='35%',fig.retina = 2}
+ggplot(penguins, aes(x = species, y = body_mass_g)) +
+  geom_boxplot()
 ```
-]
+
+---
+
+
+## Visualizing the relationship between a categorical and a continuous variable
+```{r out.width='35%',fig.retina = 2}
+ggplot(penguins, aes(x = body_mass_g, color = species, fill = species)) +
+  geom_density(alpha = 0.5)
+```
+
+---
+
+## Visualizing the relationship between two categorical variables
+```{r out.width='35%',fig.retina = 2}
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar()
+```
+
+---
+
+## Visualizing the relationship between two categorical variables
+```{r out.width='35%',fig.retina = 2}
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar(position = "fill")
+```
+
+---
+
+## Visualizing the relationship between two categorical variables
+
+```{r fig.width = 10,fig.height = 6,fig.retina = 2, echo=FALSE, message=FALSE, warning=TRUE}
+library(haven)
+library(tidyverse)
+library(srvyr)
+df <- read_stata("~/Downloads/dataverse_files_CES2021/2021 Canadian Election Study v1.0.dta")
+df |>
+  group_by(cps21_province, cps21_spend_just_law) |>
+  summarize(n = n()) |>
+  mutate(percentage = n / sum(n) * 100) |>
+  ggplot(aes(x = as_factor(cps21_spend_just_law), y = percentage, fill = as_factor(cps21_province))) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  labs(y = "Percentage",fill="Province",x="How much should the federal government spend on Justice/Law")
+```
+
+---
+
+```{r, fig.width = 12,fig.height = 6,fig.retina = 2, echo=FALSE, message=FALSE, warning=TRUE}
+df |>
+  group_by(cps21_province, cps21_spend_just_law) |>
+  summarize(n = n()) |>
+  mutate(percentage = n / sum(n) * 100) |>
+  ggplot(aes(fill = as_factor(cps21_spend_just_law), y = percentage, x = as_factor(cps21_province),
+         label=round(percentage))) +
+  geom_bar(stat = "identity") +
+  labs(fill = "Answer choice",x="Province",title="How much should the federal government spend on Justice/Law",y="Percentage") +
+  geom_text(position=position_stack(vjust=0.5)) + coord_flip()
+```
+
+---
+
+
+## Two numerical variables
+```{r out.width='35%',fig.retina = 2}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point()
+```
+
+---
+
+## Three variables
+
+```{r out.width='35%',fig.retina = 2}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(aes(color = species, shape = species)) +
+  facet_wrap(~island)
+```
+
+---
+
+## Saving a plot
+
+```{r out.width='30%',fig.retina = 2}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point()
+ggsave(filename = "penguin-plot.png")
+```
+
 ---
 
 ## Problems
@@ -344,72 +372,22 @@ ggplot(data = mpg)) + #<<
 
 class: inverse, middle, center
 
-# Summary (Section 3.10 in R4DS)
-
----
-
-Up to seven parameters. 
-
-```{r, eval=FALSE}
-ggplot(data = <DATA>) + 
-  <GEOM_FUNCTION>(
-     mapping = aes(<MAPPINGS>),
-     stat = <STAT>, 
-     position = <POSITION>
-  ) +
-  <COORDINATE_FUNCTION> +
-  <FACET_FUNCTION>
-```
----
-```{r}
-library(randomNames)
-library(countrycode);set.seed(111)
-demo <- tibble(names=randomNames(250),
-       age=round(runif(250,18,85)),
-       educ_years=round(rnorm(250,14,3)),
-       country=sample(sort(codelist$country.name.en[codelist$continent=="Oceania"]),
-                      250,replace=TRUE))
-```
-```{r echo=FALSE}
-knitr::kable(demo, format = 'html')
-```
----
-```{r out.width='50%'}
-ggplot(demo) +
-  geom_bar(aes(x=country,fill=country)) +
-  coord_flip() + theme(legend.position = "none")
-```
----
-```{r}
-demo_count <- demo %>%
-  group_by(country) %>%
-  count()
-knitr::kable(demo_count, format = 'html')
-```
----
-.pull-left[
-```{r out.width='80%'}
-ggplot(demo) +
-  geom_bar(aes(x=country,fill=country)) +
-  coord_flip() +
-  theme(legend.position = "none")
-```
-]
-.pull-right[
-```{r out.width='80%'}
-ggplot(demo_count) +
-  geom_bar(aes(x=country,y=,n,fill=country),
-           stat='identity') +
-  coord_flip() +
-  theme(legend.position = "none")
-```
-]
-
----
-class: inverse, middle, center
-
 # Exercices
 
-### 3.2.4 3.3.1, 3.5.1, 3.6.1, 3.7.1, 3.8.1, 3.9.1
+### 2.2.5, 2.4.3, 2.5.5
 
-### Solutions: https://jrnold.github.io/r4ds-exercise-solutions/
+### Solutions: https://r4ds-solutions.nhsrcommunity.com/data-visualize.html
+
+---
+
+## Note on making these slides
+
+I use R Markdown (extension for these syntax files rmd) and xaringan to make these slides: https://bookdown.org/yihui/rmarkdown/xaringan.html
+
+RMarkdown is a reporting tool that enables the integration of R code, its output (such as figures and tables), and narrative text within a single document, which can then be exported to various formats including HTML, PDF, and Microsoft Word.
+
+Recently people have started moving to Quarto (extension is qmd). You can read more if you are curious: https://yihui.org/en/2022/04/quarto-r-markdown/
+
+I'll say more about this later in the semester. Tools exists for reporting (e.g., writing reports, decks, etc.)
+
+To get the syntax (the R Markdown code files) for these slides, you can change the url to ".../slides.rmd".
