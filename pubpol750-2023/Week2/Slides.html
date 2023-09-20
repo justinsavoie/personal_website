@@ -197,15 +197,22 @@ df |&gt; select(x)
 
 ---
 
+# The “whole game” of data science
+
+&lt;div class="figure"&gt;
+&lt;img src="images/tidy.png" alt="Source: RFDS2" width="70%" /&gt;
+&lt;p class="caption"&gt;Source: RFDS2&lt;/p&gt;
+&lt;/div&gt;
+
+---
+
 class: inverse, middle, center
 
 # Data visualisation
 
 ---
 
-Let's recreate the following visualization displaying the relationship between flipper lengths and body masses of these penguins, taking into consideration the species of the penguin.
-
-&lt;img src="Slides_files/figure-html/unnamed-chunk-9-1.png" width="50%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-10-1.png" width="50%" /&gt;
 
 ---
 
@@ -216,7 +223,7 @@ Let's recreate the following visualization displaying the relationship between f
 ggplot(data = mpg)
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-10-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-11-1.png" width="50%" /&gt;
 
 ---
 
@@ -224,11 +231,13 @@ ggplot(data = mpg)
 
 
 ```r
-ggplot(data = mpg) +
-  geom_point(aes(x=displ,y=hwy))
+ggplot(
+  data = penguins,
+  mapping = aes(x = flipper_length_mm, y = body_mass_g)
+)
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-11-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-12-1.png" width="50%" /&gt;
 
 ---
 ## General graph template
@@ -249,7 +258,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,color=class), size=3)
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-13-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-14-1.png" width="40%" /&gt;
 
 ---
 
@@ -265,7 +274,7 @@ ggplot(data = mpg) +
 ## Warning: Using size for a discrete variable is not advised.
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-14-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-15-1.png" width="40%" /&gt;
 ---
 
 ## Notice the difference
@@ -278,7 +287,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,size=class))
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-15-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-16-1.png" width="70%" /&gt;
 ]
 .pull-right[
 
@@ -287,7 +296,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy),size=3)
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-16-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-17-1.png" width="70%" /&gt;
 ]
 ---
 
@@ -300,7 +309,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy),size=12)
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-17-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-18-1.png" width="70%" /&gt;
 ]
 .pull-right[
 
@@ -309,7 +318,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,size=12))
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-18-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-19-1.png" width="70%" /&gt;
 ]
 ---
 
@@ -322,7 +331,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,color='class'))
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-19-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-20-1.png" width="70%" /&gt;
 ]
 .pull-right[
 
@@ -331,7 +340,7 @@ ggplot(data = mpg) +
   geom_point(aes(x=displ,y=hwy,color=class))
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-20-1.png" width="70%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-21-1.png" width="70%" /&gt;
 ]
 
 ---
@@ -343,7 +352,7 @@ ggplot(data = mpg) +
   facet_wrap(~drv)
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-21-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-22-1.png" width="40%" /&gt;
 ---
 ## Facets
 
@@ -353,7 +362,7 @@ ggplot(data = mpg) +
   facet_grid(cols = vars(drv),rows = vars(class))
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-22-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-23-1.png" width="40%" /&gt;
 ---
 ## Transformations
 
@@ -363,7 +372,7 @@ ggplot(data = mpg) +
   geom_bar(mapping = aes(x = class))
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-23-1.png" width="40%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-24-1.png" width="40%" /&gt;
 ---
 ## Transformations
 .pull-left[
@@ -399,7 +408,7 @@ ggplot(data = demo) +
            stat = "identity")
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-25-1.png" width="60%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-26-1.png" width="60%" /&gt;
 ]
 ---
 
@@ -434,7 +443,7 @@ ggplot(data = demo) +
            stat = "identity")
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-27-1.png" width="60%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-28-1.png" width="60%" /&gt;
 ]
 ---
 
@@ -447,7 +456,7 @@ ggplot(data = demo) +
            stat = "identity")
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-28-1.png" width="60%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-29-1.png" width="60%" /&gt;
 ]
 .pull-right[
 
@@ -458,7 +467,7 @@ ggplot(data = demo) +
            stat = "identity")
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-29-1.png" width="60%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-30-1.png" width="60%" /&gt;
 ]
 ---
 
@@ -2032,7 +2041,7 @@ ggplot(demo) +
   coord_flip() + theme(legend.position = "none")
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-35-1.png" width="50%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-36-1.png" width="50%" /&gt;
 ---
 
 ```r
@@ -2166,7 +2175,7 @@ ggplot(demo) +
   theme(legend.position = "none")
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-37-1.png" width="80%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-38-1.png" width="80%" /&gt;
 ]
 .pull-right[
 
@@ -2178,7 +2187,7 @@ ggplot(demo_count) +
   theme(legend.position = "none")
 ```
 
-&lt;img src="Slides_files/figure-html/unnamed-chunk-38-1.png" width="80%" /&gt;
+&lt;img src="Slides_files/figure-html/unnamed-chunk-39-1.png" width="80%" /&gt;
 ]
 
 ---
