@@ -30,20 +30,28 @@ class: inverse, center, middle
 
 ---
 
+### Basic visualization using ggplot2
+
 
 ```r
 library(tidyverse)
 library(palmerpenguins)
 library(ggthemes)
+# initializes a ggplot object
 ggplot(penguins,mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
+  # point geom is used to create scatterplot
   geom_point(aes(color = species, shape = species)) +
+  # add a visual line of best fit
   geom_smooth(method = "lm") +
+  # add labels
   labs(
     title = "Body mass and flipper length",
     subtitle = "Dimensions for Adelie, Chinstrap, and Gentoo Penguins",
     x = "Flipper length (mm)", y = "Body mass (g)",
     color = "Species", shape = "Species"
-  ) + scale_color_colorblind()
+  ) + 
+  # change the color palette
+  scale_color_colorblind()
 ```
 
 ---
@@ -53,7 +61,7 @@ ggplot(penguins,mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
 ---
 class: inverse, center, middle
 
-# Basics
+# Coding basics
 
 ---
 
@@ -103,6 +111,59 @@ x12
 
 ---
 
+### Assigning a value the value of something to an object
+
+
+```r
+object_name &lt;- value
+```
+
+
+```r
+x1 &lt;- c(2,4,6)
+print(x1)
+x1
+```
+
+---
+
+### Comments
+
+
+```r
+# you can leave comments using the like this using the #
+# create vector of primes
+primes &lt;- c(2, 3, 5, 7, 11, 13)
+```
+
+**Great advice:** Use comments to explain the why of your code, not the how or the what. Why did you use this model instead of that model. Why did you use binwidth of 2.3 instead of 2.8. If when you code you make a decision that is not fully trivial, it makes sense to write a comment.
+
+In general, if you start using R more frequently, you should try to make things clear and replicable. There's nothing as frustrating as going back in old code when you need it and not understanding or not remebering why you did something.
+
+---
+
+### naming objects
+
+You can give different names to objects
+
+
+```r
+xYUBVChh.1 &lt;- c(1,2,3)
+xyubvchh_1 &lt;- c(1,2,3)
+```
+
+The recommendation is to use snake_case where you use lowercase words with `_`.
+
+These are ok:
+
+
+```r
+x &lt;- c(1,2,3)
+my_vector &lt;- c(1,2,3)
+```
+
+---
+
 ### Functions
 
 
@@ -121,8 +182,8 @@ rnorm(10,mean=100,sd=25)
 ```
 
 ```
-##  [1]  79.07053 159.47706 104.47892 100.93952 109.01844 122.23744 116.01452
-##  [8]  59.38356  91.91033 118.47416
+##  [1] 150.30430  79.63782  94.06066  75.30081  97.15156 106.77197 118.28178
+##  [8]  86.62711 101.97382 101.93134
 ```
 
 
@@ -150,21 +211,23 @@ class: inverse, center, middle
 
 ### Five key verbs (or functions) in dplyr
 
-- It's rare we get the data in the form we need it. We need to transform it first.
+- It's very rare we get the data in the form we need it. We need to transform it first.
 
-- dplyr has verbs (verbs are just functions that do things)
+- dplyr has verbs: verbs are just functions that do things
 
 - These verbs do things on **rows** or on **columns** or on **groups** or on **tables** (or data frames). This week we talk about rows, columns and groups.
 
-- The pipe (it is not a verb) `|&gt;` (it used to be `%&gt;%` so you will see that often), but use `|&gt;` allows to combine verbs.
+- The pipe (it is not a verb) "`|&gt;`" (it used to be `%&gt;%` so you will see that often), but use "`|&gt;`" allows to combine verbs.
 
 ---
 
 ### verbs on rows
 
-`filter()` (keeps some rows)
+`filter()` (keep some rows)
+
 `arrange()` (reorder the rows)
-`distinct()` (keeps only unique rows)
+
+`distinct()` (keep only unique rows)
 
 ---
 
@@ -351,6 +414,8 @@ jan1 &lt;- flights |&gt;
   filter(month == 1 &amp; day == 1)
 ```
 
+---
+
 ### common mistake
 
 
@@ -360,6 +425,8 @@ flights |&gt;
 flights |&gt; 
   filter(month == 1)
 ```
+
+---
 
 ### arrange()
 
@@ -388,7 +455,9 @@ flights |&gt;
 ## #   tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;,
 ## #   hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;
 ```
+
 ---
+
 
 ```r
 flights |&gt; 
@@ -471,6 +540,8 @@ flights |&gt;
 ## # ℹ 214 more rows
 ```
 
+---
+
 ### count()
 
 
@@ -502,8 +573,11 @@ flights |&gt;
 ### verbs on columns
 
 `mutate()` (creates a new variable)
+
 `select()` (keeps only some variables)
+
 `rename()` (renames variables)
+
 `relocate()` (changes the positions of variables)
 
 ---
@@ -676,6 +750,8 @@ flights |&gt;
 ## 10 AA      N3ALAA  LGA    ORD  
 ## # ℹ 336,766 more rows
 ```
+
+---
 
 ### rename()
 
@@ -881,8 +957,9 @@ flights |&gt;
 
 ---
 
-
 ### group_by() and summarize()
+
+.pull-left[
 
 
 ```r
@@ -910,6 +987,9 @@ flights |&gt;
 ## 11    11    NA
 ## 12    12    NA
 ```
+]
+.pull-right[
+
 
 ```r
 x &lt;- c(1,2,3,NA)
@@ -927,6 +1007,8 @@ mean(x,na.rm=TRUE)
 ```
 ## [1] 2
 ```
+]
+
 ---
 
 ### group_by() and summarize()

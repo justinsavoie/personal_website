@@ -26,20 +26,27 @@ class: inverse, center, middle
 
 ---
 
+### Basic visualization using ggplot2
+
 ```{r, eval=FALSE}
 library(tidyverse)
 library(palmerpenguins)
 library(ggthemes)
-
+# initializes a ggplot object
 ggplot(penguins,mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
+  # point geom is used to create scatterplot
   geom_point(aes(color = species, shape = species)) +
+  # add a visual line of best fit
   geom_smooth(method = "lm") +
+  # add labels
   labs(
     title = "Body mass and flipper length",
     subtitle = "Dimensions for Adelie, Chinstrap, and Gentoo Penguins",
     x = "Flipper length (mm)", y = "Body mass (g)",
     color = "Species", shape = "Species"
-  ) + scale_color_colorblind()
+  ) + 
+  # change the color palette
+  scale_color_colorblind()
 ```
 
 ---
@@ -62,7 +69,7 @@ ggplot(penguins,mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
 ---
 class: inverse, center, middle
 
-# Basics
+# Coding basics
 
 ---
 
@@ -88,6 +95,54 @@ x1 <- c(2,4,6)
 x2 <- c(4,5,1)
 x12 <- x1+x2
 x12
+```
+
+---
+
+### Assigning a value the value of something to an object
+
+```{r, eval=FALSE}
+object_name <- value
+```
+
+```{r, eval=FALSE}
+x1 <- c(2,4,6)
+print(x1)
+x1
+```
+
+---
+
+### Comments
+
+```{r}
+# you can leave comments using the like this using the #
+# create vector of primes
+primes <- c(2, 3, 5, 7, 11, 13)
+```
+
+**Great advice:** Use comments to explain the why of your code, not the how or the what. Why did you use this model instead of that model. Why did you use binwidth of 2.3 instead of 2.8. If when you code you make a decision that is not fully trivial, it makes sense to write a comment.
+
+In general, if you start using R more frequently, you should try to make things clear and replicable. There's nothing as frustrating as going back in old code when you need it and not understanding or not remebering why you did something.
+
+---
+
+### naming objects
+
+You can give different names to objects
+
+```{r}
+xYUBVChh.1 <- c(1,2,3)
+xyubvchh_1 <- c(1,2,3)
+```
+
+The recommendation is to use snake_case where you use lowercase words with `_`.
+
+These are ok:
+
+```{r}
+x <- c(1,2,3)
+my_vector <- c(1,2,3)
 ```
 
 ---
@@ -118,21 +173,23 @@ class: inverse, center, middle
 
 ### Five key verbs (or functions) in dplyr
 
-- It's rare we get the data in the form we need it. We need to transform it first.
+- It's very rare we get the data in the form we need it. We need to transform it first.
 
-- dplyr has verbs (verbs are just functions that do things)
+- dplyr has verbs: verbs are just functions that do things
 
 - These verbs do things on **rows** or on **columns** or on **groups** or on **tables** (or data frames). This week we talk about rows, columns and groups.
 
-- The pipe (it is not a verb) `|>` (it used to be `%>%` so you will see that often), but use `|>` allows to combine verbs.
+- The pipe (it is not a verb) "`|>`" (it used to be `%>%` so you will see that often), but use "`|>`" allows to combine verbs.
 
 ---
 
 ### verbs on rows
 
-`filter()` (keeps some rows)
+`filter()` (keep some rows)
+
 `arrange()` (reorder the rows)
-`distinct()` (keeps only unique rows)
+
+`distinct()` (keep only unique rows)
 
 ---
 
@@ -194,6 +251,8 @@ jan1 <- flights |>
 
 ```
 
+---
+
 ### common mistake
 
 ```{r eval=FALSE}
@@ -203,13 +262,17 @@ flights |>
   filter(month == 1)
 ```
 
+---
+
 ### arrange()
 
 ```{r}
 flights |> 
   arrange(year, month, day, dep_time)
 ```
+
 ---
+
 ```{r}
 flights |> 
   arrange(desc(dep_delay))
@@ -232,6 +295,8 @@ flights |>
   distinct(origin, dest)
 ```
 
+---
+
 ### count()
 
 ```{r}
@@ -245,8 +310,11 @@ flights |>
 ### verbs on columns
 
 `mutate()` (creates a new variable)
+
 `select()` (keeps only some variables)
+
 `rename()` (renames variables)
+
 `relocate()` (changes the positions of variables)
 
 ---
@@ -303,6 +371,8 @@ flights |>
 flights |> 
   select(where(is.character))
 ```
+
+---
 
 ### rename()
 ```{r}
@@ -385,8 +455,9 @@ flights |>
 
 ---
 
-
 ### group_by() and summarize()
+
+.pull-left[
 
 ```{r}
 flights |> 
@@ -394,12 +465,17 @@ flights |>
   summarize(
     delay = mean(dep_delay)
   )
+```
+]
+.pull-right[
 
-
+```{r  out.width='50%',warning=FALSE}
 x <- c(1,2,3,NA)
 mean(x)
 mean(x,na.rm=TRUE)
 ```
+]
+
 ---
 
 ### group_by() and summarize()
