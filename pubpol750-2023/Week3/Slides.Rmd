@@ -105,7 +105,7 @@ x12
 object_name <- value
 ```
 
-```{r, eval=FALSE}
+```{r}
 x1 <- c(2,4,6)
 print(x1)
 x1
@@ -136,7 +136,7 @@ xYUBVChh.1 <- c(1,2,3)
 xyubvchh_1 <- c(1,2,3)
 ```
 
-The recommendation is to use snake_case where you use lowercase words with `_`.
+The recommendation is to use "snake case" where you use lowercase words with "`_`" to separate them.
 
 These are ok:
 
@@ -179,7 +179,9 @@ class: inverse, center, middle
 
 - These verbs do things on **rows** or on **columns** or on **groups** or on **tables** (or data frames). This week we talk about rows, columns and groups.
 
-- The pipe (it is not a verb) "`|>`" (it used to be `%>%` so you will see that often), but use "`|>`" allows to combine verbs.
+- For example, on rows it can filter, on columns in can select or create a new column.
+
+- The pipe (it is not a verb) "`|>`" (it used to be `%>%` so you will see that often) allows to combine verbs.
 
 ---
 
@@ -200,13 +202,7 @@ library(nycflights13)
 flights
 ```
 
----
 
-### filter()
-
-```{r}
-filter(flights,month==1,day==1)
-```
 ---
 ### filter()
 
@@ -242,11 +238,16 @@ flights |>
 ### filter()
 
 ```{r eval=FALSE}
-
+ # Prints this to console, doesn't do anything
 flights |> 
   filter(month == 1 & day == 1)
 
+# Creates new jan1 object
 jan1 <- flights |> 
+  filter(month == 1 & day == 1)
+
+# Overwrites flights (note: I'm not running this here)
+flights <- flights |> 
   filter(month == 1 & day == 1)
 
 ```

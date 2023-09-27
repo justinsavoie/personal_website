@@ -153,4 +153,4 @@ ggplot(to_plot,aes(x=Gender,y=n,fill=party)) +
   scale_fill_manual(values=c("darkblue","darkblue","red","orange","darkblue"))
 ```
 
-Optional: if you want to try more data analysis, mutate a new variable called `year_in_office` with `mutate(year_in_office=year(date_ended)-year(date_started))`. Filter parliamentarians before 2000 because those after 2000 might actually have a smaller number of years in office (e.g. all those who were elected in 2015 or 2019). Try to use geom_density() with various facets / colors. Try to use summarise() over `year_in_office` by different groups.
+Optional: if you want to try more data analysis, mutate a new variable called `year_in_office` with `mutate(year_in_office=year(date_ended)-year(date_started))`. Filter parliamentarians before 2000 because those after 2000 might actually have a smaller number of years in office (e.g. all those who were elected in 2015 or 2019). Try to use geom_density() with various facets / colors. Try to use summarise() over `year_in_office` by different groups. Can you find something strange in the density plot? Why is it so "long" to the right? Why could it be like that?
