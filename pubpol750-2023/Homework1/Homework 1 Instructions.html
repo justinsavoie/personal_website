@@ -108,43 +108,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="homework" class="level3">
 <h3 class="anchored" data-anchor-id="homework">Homework</h3>
 <p>Load the three libraries we will need for this assignment. If they are not installed on your computer, install them with <code>install.packages('nameoflibrary')</code>.</p>
-<p>Take a quick look at <code>Parliamentarians.xlsx</code> in Excel or Numbers.</p>
+<p>Take a quick look at <code>Parliamentarians.xlsx</code> in Excel or Numbers. When you load it in R you can also inspect it with `View()</p>
 <p>Change the path of the file. On my computer, <code>Parliamentarians.xlsx</code> is in <code>Downloads</code>. Change this on your computer so it’s wherever the file is.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>Parliamentarians <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"~/Downloads/Parliamentarians.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>parliamentarians <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"~/Downloads/Parliamentarians.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Run the code below to clean the data. It’s fine if this appears very complicated. It should get clearer as the semester advances. Each line has a comment (# are comments) explaining what is going on in the code.</p>
 <p>But really, it’s also OK if you just copy paste this without understanding the details.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter by whether the character string "MP" is in the variable `Type of Parliamentarian`</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Parliamentarians <span class="ot">&lt;-</span> Parliamentarians <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>parliamentarians <span class="ot">&lt;-</span> parliamentarians <span class="sc">|&gt;</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(<span class="st">`</span><span class="at">Type of Parliamentarian</span><span class="st">`</span>, <span class="st">"MP"</span>))</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># create (mutate) variables for start and end date of the parliamentarian</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># str_sub(x,5,14) returns the values between positions 5 and 14</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># e.g. str_sub("abcdefghytr56",3,10) returns "cdefghyt"</span></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># yms() coerces dates-as-string to date format </span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>Parliamentarians <span class="ot">&lt;-</span> Parliamentarians <span class="sc">|&gt;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>parliamentarians <span class="ot">&lt;-</span> parliamentarians <span class="sc">|&gt;</span></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date_started =</span> <span class="fu">ymd</span>(<span class="fu">str_sub</span>(<span class="st">`</span><span class="at">Type of Parliamentarian</span><span class="st">`</span>, <span class="dv">5</span>, <span class="dv">14</span>))) <span class="sc">|&gt;</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date_ended =</span> <span class="fu">str_sub</span>(<span class="st">`</span><span class="at">Type of Parliamentarian</span><span class="st">`</span>, <span class="dv">18</span>, <span class="dv">27</span>))</span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean and extract party and province. These are regular expressions and it's fine if it's not clear. Regular expression extract/replace data based on patterns.</span></span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># If you are curious, take a look at this:</span></span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># https://jfjelstul.github.io/regular-expressions-tutorial/</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>Parliamentarians <span class="ot">&lt;-</span> Parliamentarians <span class="sc">|&gt;</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>parliamentarians <span class="ot">&lt;-</span> parliamentarians <span class="sc">|&gt;</span></span>
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">party =</span> <span class="fu">trimws</span>(<span class="fu">str_extract</span>(<span class="st">`</span><span class="at">Political Affiliation</span><span class="st">`</span>, <span class="st">"[^</span><span class="sc">\\</span><span class="st">()]+"</span>)),</span>
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">province =</span> <span class="fu">str_extract</span>(<span class="st">`</span><span class="at">Province/Territory</span><span class="st">`</span>, <span class="st">"[^</span><span class="sc">\\\r</span><span class="st">]+"</span>))</span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Change format of date to date format</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>Parliamentarians <span class="ot">&lt;-</span> Parliamentarians <span class="sc">|&gt;</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>parliamentarians <span class="ot">&lt;-</span> parliamentarians <span class="sc">|&gt;</span></span>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date_ended =</span> <span class="fu">ymd</span>(date_ended, <span class="at">quiet =</span> <span class="cn">TRUE</span>))</span>
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># If no end date, Parliamentarian is still in HoC so put today as end date.</span></span>
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co"># If you are very curious, look up difference between ifelse() and if_else()</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>Parliamentarians <span class="ot">&lt;-</span> Parliamentarians <span class="sc">|&gt;</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>parliamentarians <span class="ot">&lt;-</span> parliamentarians <span class="sc">|&gt;</span></span>
 <span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date_ended =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(date_ended), <span class="fu">ymd</span>(<span class="fu">today</span>()), date_ended))</span>
 <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Keep only those parties, let's not keep the small parties / indps</span></span>
@@ -152,14 +152,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>                <span class="st">"New Democratic Party"</span>, <span class="st">"Progressive Conservative Party"</span>)</span>
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Keep only variables we need</span></span>
 <span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Delete rows where missing values</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>Parliamentarians <span class="ot">&lt;-</span> Parliamentarians <span class="sc">|&gt;</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>parliamentarians <span class="ot">&lt;-</span> parliamentarians <span class="sc">|&gt;</span></span>
 <span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(party <span class="sc">%in%</span> names_keep) <span class="sc">|&gt;</span></span>
 <span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Name, Gender, party, date_started, date_ended, province) <span class="sc">|&gt;</span></span>
 <span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na.omit</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Output a basic bar chart plotting gender on the x axis and counts on the y axis. You can use this code:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Parliamentarians,<span class="fu">aes</span>(<span class="at">x=</span>Gender)) <span class="sc">+</span></span>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(parliamentarians,<span class="fu">aes</span>(<span class="at">x=</span>Gender)) <span class="sc">+</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Save it using ggsave(). Play with the width and height parameters so that the graph looks decent. I save the figures on my desktop, but you can save them elsewhere by changing the path. You can add axes-labels/title by adding <code>+labs(x="yourxlabel",y="yourylabel",title="yourtitle")</code>.</p>
@@ -168,7 +168,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Output the exact same bar chart, but calculating counts yourself, and then plotting it. Save as figure2.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>to_plot <span class="ot">&lt;-</span> Parliamentarians <span class="sc">|&gt;</span></span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>to_plot <span class="ot">&lt;-</span> parliamentarians <span class="sc">|&gt;</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Gender) <span class="sc">|&gt;</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">count =</span> <span class="fu">n</span>())</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -178,20 +178,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Create a variable called year_period that cuts years in 4 groups (i.e.&nbsp;those MPs that started before 1900, 1950, 2000 and after 2000).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Parliamentarians <span class="ot">&lt;-</span> Parliamentarians <span class="sc">|&gt;</span></span>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>parliamentarians <span class="ot">&lt;-</span> parliamentarians <span class="sc">|&gt;</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">year</span>(date_started),</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">year_period =</span> <span class="fu">cut</span>(year, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">1860</span>, <span class="dv">1900</span>, <span class="dv">1950</span>, <span class="dv">2000</span>, <span class="dv">2025</span>), <span class="at">dig.lab =</span> <span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Plot the number of male and female MPs per time period. Save as figure3 using ggsave().</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Parliamentarians,<span class="fu">aes</span>(<span class="at">x=</span>Gender)) <span class="sc">+</span></span>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(parliamentarians,<span class="fu">aes</span>(<span class="at">x=</span>Gender)) <span class="sc">+</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>year_period) <span class="sc">+</span> </span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1300</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Plot the number of male and female MPs per time period and party. Save as figure4 using ggsave().</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(Parliamentarians,<span class="fu">aes</span>(<span class="at">x=</span>Gender,<span class="at">fill=</span>party)) <span class="sc">+</span></span>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(parliamentarians,<span class="fu">aes</span>(<span class="at">x=</span>Gender,<span class="at">fill=</span>party)) <span class="sc">+</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">cols=</span><span class="fu">vars</span>(party),<span class="at">rows=</span><span class="fu">vars</span>(year_period)) <span class="sc">+</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
@@ -199,7 +199,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Transform the party variable so that all the various “Conservative” parties are together mapped to “Conservative”. Then rerun the last figure. Save as figure5 using ggsave(). You will have to change the five color values to three.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Parliamentarians <span class="ot">&lt;-</span> Parliamentarians <span class="sc">|&gt;</span></span>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>parliamentarians <span class="ot">&lt;-</span> parliamentarians <span class="sc">|&gt;</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">party =</span> <span class="fu">recode</span>(party, </span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                        <span class="st">`</span><span class="at">Conservative Party of Canada</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Conservative"</span>, </span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                        <span class="st">`</span><span class="at">Progressive Conservative Party</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"Conservative"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
