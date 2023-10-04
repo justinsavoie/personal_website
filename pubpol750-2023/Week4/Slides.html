@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Week 4: Importing data and tidy data</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Justin Savoie" />
+    <meta name="date" content="2023-10-03" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Week 4: Importing data and tidy data
+## PUBPOL 750 Data Analysis for Public Policy I
+### Justin Savoie
+### MPP-DS McMaster
+### 2023-10-03
+
+---
+
+
+
+
+class: inverse, center, middle
+
+# Homework 1
+
+Solution code for HW1 posted on the website tomorrow. 
+
+We will discuss it next week.
+
+---
+
+class: inverse, center, middle
+
+# Paths
+
+---
+
+class: inverse, center, middle
+
+# Code style
+
+This is chapter 5 in the book. Optional reading.
+
+---
+
+# Names
+
+- Use lowercase separated with `_`.
+
+- Use names that are easy to understand.
+
+- Be consistent. For example don't have: `dataset_ON`, `dataset_QC` and `datas_BC` if these three objects are three datasets for the three provinces.
+
+---
+
+# Spaces
+
+- Put spaces on either side of mathematical operators apart from `^` (i.e. `+`, `-`, `==`, `&lt;`, ...), and around the assignment operator (`&lt;-`). 
+
+
+```r
+# Strive for
+z &lt;- (a + b)^2 / d
+# Avoid
+z&lt;-( a + b ) ^ 2/d
+```
+
+- Don’t put spaces inside or outside parentheses for regular function calls. Always put a space after a comma.
+
+
+```r
+# Strive for
+mean(x, na.rm = TRUE)
+# Avoid
+mean (x ,na.rm=TRUE)
+```
+
+---
+
+# Spaces
+
+- It’s OK to add extra spaces if it improves alignment.
+
+
+```r
+flights |&gt; 
+  mutate(
+    speed      = distance / air_time,
+    dep_hour   = dep_time %/% 100,
+    dep_minute = dep_time %%  100
+  )
+```
+
+---
+
+# Style
+
+One advice: imitate the code "style" that you see in reputable sources for example in modern R texbooks.
+
+- https://r4ds.hadley.nz
+
+- https://moderndive.com
+
+- https://tellingstorieswithdata.com/
+
+Try to be consistent and coherent.
+
+---
+
+# The pipe (`|&gt;`) 
+
+- We use the pipe `|&gt;` to emphasise a sequence of actions
+
+- The pipe means "THEN"
+
+- `|&gt;` should always have a space before it and should typically
+
+
+```r
+# Strive for 
+flights |&gt;  
+  filter(!is.na(arr_delay), !is.na(tailnum)) |&gt; 
+  count(dest)
+# Avoid
+flights|&gt;filter(!is.na(arr_delay),!is.na(tailnum))|&gt;count(dest)
+```
+---
+
+# The `|&gt;`
+
+- If the function you’re piping into has named arguments (like mutate() or summarize()), put each argument on a new line.
+
+
+```r
+flights |&gt;  
+  group_by(tailnum) |&gt; 
+  summarize(
+    delay = mean(arr_delay, na.rm = TRUE),
+    n = n()
+  )
+```
+
+---
+
+# The `|&gt;`
+
+- Don't write pipes that are too long. The book says 10-15 lines, use judgment.
+
+- Break into smaller tasks.
+
+---
+
+# ggplot2
+
+- Same rules apply to ggplot2 plots.
+
+
+```r
+flights |&gt; 
+  group_by(month) |&gt; 
+  summarize(
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) |&gt; 
+  ggplot(aes(x = month, y = delay)) +
+  geom_point() + 
+  geom_line()
+```
+
+---
+
+class: inverse, center, middle
+
+# Data importing
+---
+
+# Reading a csv
+
+
+```r
+library(tidyverse)
+Parliamentarians_subset100 &lt;- read_csv("https://www.justinsavoie.com/pubpol750-2022/homework1/Parliamentarians_subset100.csv")
+Parliamentarians_subset100 &lt;- read_csv("~/Downloads/Parliamentarians_subset100.csv")
+Parliamentarians_subset100 &lt;- read_csv("/Users/justinsavoie/Downloads/Parliamentarians_subset100.csv")
+Parliamentarians_subset100 &lt;- read_csv("/Users/justinsavoie/Documents/personal_repos/personal_website/pubpol750-2022/Homework1/Parliamentarians_subset100.csv")
+Parliamentarians_subset100 &lt;- read_csv("C:\\Users\\justinsavoie\\Downloads/Parliamentarians_subset100.csv")
+```
+
+# Reading an excel file
+
+
+```r
+library(readxl)
+Parliamentarians_subset100 &lt;- read_excel("~/Downloads/Parliamentarians.xlsx")
+```
+---
+# Reading spss, sas, stata files
+
+```r
+library(haven)
+#read_spss()
+#read_sas()
+#read_stata()
+library(readstata13)
+#readstata13::read.dta13()
+```
+
+---
+
+class: inverse, center, middle
+
+# Tidy data
+---
+
+# Tidy data
+
+(A)
+- Each variable is a column; each column is a variable.
+- Each observation is a row; each row is an observation.
+- Each value is a cell; each cell is a single value.
+
+(B)
+- Put each dataset in a tibble.
+- Put each variable in a column.
+
+---
+
+&lt;img src="images/fig6.1.png" width="90%" /&gt;
+
+---
+
+&lt;img src="images/CES-screencap.png" width="90%" /&gt;
+
+---
+
+# Why tidy data?
+
+- **picking one consistent way of storing data** (and tidyverse functions work well on tidy data)
+
+- works well in R because of vectorization
+
+---
+
+.pull-left[
+
+```r
+table1
+```
+
+```
+## # A tibble: 6 × 4
+##   country      year  cases population
+##   &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Afghanistan  1999    745   19987071
+## 2 Afghanistan  2000   2666   20595360
+## 3 Brazil       1999  37737  172006362
+## 4 Brazil       2000  80488  174504898
+## 5 China        1999 212258 1272915272
+## 6 China        2000 213766 1280428583
+```
+
+```r
+table2
+```
+
+```
+## # A tibble: 12 × 4
+##    country      year type            count
+##    &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;
+##  1 Afghanistan  1999 cases             745
+##  2 Afghanistan  1999 population   19987071
+##  3 Afghanistan  2000 cases            2666
+##  4 Afghanistan  2000 population   20595360
+##  5 Brazil       1999 cases           37737
+##  6 Brazil       1999 population  172006362
+##  7 Brazil       2000 cases           80488
+##  8 Brazil       2000 population  174504898
+##  9 China        1999 cases          212258
+## 10 China        1999 population 1272915272
+## 11 China        2000 cases          213766
+## 12 China        2000 population 1280428583
+```
+]
+.pull-right[
+
+```r
+table3
+```
+
+```
+## # A tibble: 6 × 3
+##   country      year rate             
+##   &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;            
+## 1 Afghanistan  1999 745/19987071     
+## 2 Afghanistan  2000 2666/20595360    
+## 3 Brazil       1999 37737/172006362  
+## 4 Brazil       2000 80488/174504898  
+## 5 China        1999 212258/1272915272
+## 6 China        2000 213766/1280428583
+```
+
+```r
+table4a
+```
+
+```
+## # A tibble: 3 × 3
+##   country     `1999` `2000`
+##   &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt;
+## 1 Afghanistan    745   2666
+## 2 Brazil       37737  80488
+## 3 China       212258 213766
+```
+
+```r
+table4b
+```
+
+```
+## # A tibble: 3 × 3
+##   country         `1999`     `2000`
+##   &lt;chr&gt;            &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Afghanistan   19987071   20595360
+## 2 Brazil       172006362  174504898
+## 3 China       1272915272 1280428583
+```
+]
+---
+# Pivoting
+
+- Pivoting wider
+- Pivoting longer
+---
+# Pivoting wider
+
+
+```r
+table4a
+```
+
+```
+## # A tibble: 3 × 3
+##   country     `1999` `2000`
+##   &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt;
+## 1 Afghanistan    745   2666
+## 2 Brazil       37737  80488
+## 3 China       212258 213766
+```
+
+
+```r
+table4a |&gt;
+  pivot_longer(
+    cols=c(`1999`,`2000`),
+    names_to = 'year',
+    values_to = 'cases'
+  )
+```
+
+```
+## # A tibble: 6 × 3
+##   country     year   cases
+##   &lt;chr&gt;       &lt;chr&gt;  &lt;dbl&gt;
+## 1 Afghanistan 1999     745
+## 2 Afghanistan 2000    2666
+## 3 Brazil      1999   37737
+## 4 Brazil      2000   80488
+## 5 China       1999  212258
+## 6 China       2000  213766
+```
+
+---
+
+```r
+(tidy4a &lt;- table4a |&gt; 
+  pivot_longer(
+    c(`1999`, `2000`),
+    names_to = "year",
+    values_to = "cases"
+  ))
+```
+
+```
+## # A tibble: 6 × 3
+##   country     year   cases
+##   &lt;chr&gt;       &lt;chr&gt;  &lt;dbl&gt;
+## 1 Afghanistan 1999     745
+## 2 Afghanistan 2000    2666
+## 3 Brazil      1999   37737
+## 4 Brazil      2000   80488
+## 5 China       1999  212258
+## 6 China       2000  213766
+```
+
+```r
+(tidy4b &lt;- table4b |&gt; 
+  pivot_longer(
+    c(`1999`, `2000`),
+    names_to = "year",
+    values_to = "population"
+  ))
+```
+
+```
+## # A tibble: 6 × 3
+##   country     year  population
+##   &lt;chr&gt;       &lt;chr&gt;      &lt;dbl&gt;
+## 1 Afghanistan 1999    19987071
+## 2 Afghanistan 2000    20595360
+## 3 Brazil      1999   172006362
+## 4 Brazil      2000   174504898
+## 5 China       1999  1272915272
+## 6 China       2000  1280428583
+```
+---
+# Pivoting wider
+
+
+```r
+head(table2,3)
+```
+
+```
+## # A tibble: 3 × 4
+##   country      year type          count
+##   &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;         &lt;dbl&gt;
+## 1 Afghanistan  1999 cases           745
+## 2 Afghanistan  1999 population 19987071
+## 3 Afghanistan  2000 cases          2666
+```
+
+
+```r
+table2 |&gt;
+    pivot_wider(
+      names_from = type,
+      values_from = count)
+```
+
+```
+## # A tibble: 6 × 4
+##   country      year  cases population
+##   &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Afghanistan  1999    745   19987071
+## 2 Afghanistan  2000   2666   20595360
+## 3 Brazil       1999  37737  172006362
+## 4 Brazil       2000  80488  174504898
+## 5 China        1999 212258 1272915272
+## 6 China        2000 213766 1280428583
+```
+
+---
+
+# Missing values
+
+- Explicit vs Implicit
+
+
+```r
+(stocks &lt;- tibble(
+  year   = c(2015, 2015, 2015, 2015, 2016, 2016, 2016),
+  qtr    = c(   1,    2,    3,    4,    2,    3,    4),
+  return = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+))
+```
+
+```
+## # A tibble: 7 × 3
+##    year   qtr return
+##   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+## 1  2015     1   1.88
+## 2  2015     2   0.59
+## 3  2015     3   0.35
+## 4  2015     4  NA   
+## 5  2016     2   0.92
+## 6  2016     3   0.17
+## 7  2016     4   2.66
+```
+
+---
+
+- Force explicit
+
+
+```r
+stocks |&gt; 
+  pivot_wider(
+    names_from = year,
+    values_from = return)
+```
+
+```
+## # A tibble: 4 × 3
+##     qtr `2015` `2016`
+##   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+## 1     1   1.88  NA   
+## 2     2   0.59   0.92
+## 3     3   0.35   0.17
+## 4     4  NA      2.66
+```
+
+---
+
+
+```r
+stocks |&gt; 
+  pivot_wider(
+    names_from = year,
+    values_from = return
+  ) |&gt;
+  pivot_longer(
+    cols=c(`2015`,`2016`),
+    names_to='year',
+    values_to='return'
+  )
+```
+
+```
+## # A tibble: 8 × 3
+##     qtr year  return
+##   &lt;dbl&gt; &lt;chr&gt;  &lt;dbl&gt;
+## 1     1 2015    1.88
+## 2     1 2016   NA   
+## 3     2 2015    0.59
+## 4     2 2016    0.92
+## 5     3 2015    0.35
+## 6     3 2016    0.17
+## 7     4 2015   NA   
+## 8     4 2016    2.66
+```
+---
+
+
+```r
+stocks |&gt; 
+  pivot_wider(
+    names_from = year,
+    values_from = return
+  ) |&gt;
+  pivot_longer(
+    cols=c(`2015`,`2016`),
+    names_to='year',
+    values_to='return',
+    values_drop_na = TRUE
+  )
+```
+
+```
+## # A tibble: 6 × 3
+##     qtr year  return
+##   &lt;dbl&gt; &lt;chr&gt;  &lt;dbl&gt;
+## 1     1 2015    1.88
+## 2     2 2015    0.59
+## 3     2 2016    0.92
+## 4     3 2015    0.35
+## 5     3 2016    0.17
+## 6     4 2016    2.66
+```
+---
+
+
+```r
+stocks |&gt; 
+  pivot_wider(
+    names_from = year,
+    values_from = return
+  ) |&gt;
+  pivot_longer(
+    cols=c(`2015`,`2016`),
+    names_to='year',
+    values_to='return',
+    values_drop_na = TRUE
+  )
+```
+
+```
+## # A tibble: 6 × 3
+##     qtr year  return
+##   &lt;dbl&gt; &lt;chr&gt;  &lt;dbl&gt;
+## 1     1 2015    1.88
+## 2     2 2015    0.59
+## 3     2 2016    0.92
+## 4     3 2015    0.35
+## 5     3 2016    0.17
+## 6     4 2016    2.66
+```
+
+---
+
+class: inverse, middle, center
+
+# Exercices
+
+### 6.2.1
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
