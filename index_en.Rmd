@@ -30,13 +30,9 @@ In addition to my academic work, I have been involved for four years in industry
 
 Currently, I am behavioral science fellow at [Impact Canada](https://impact.canada.ca/).
 
-My CV is available [here](cv_academic.pdf).
+My CV is available [here](cv_academic.pdf). My Google Scholar page is available [here](https://scholar.google.ca/citations?user=U4l1gLYAAAAJ&hl=en). Various statistical notes [here](various-notes). Teaching material [here](teaching.html).
 
-My Google Scholar page is available [here](https://scholar.google.ca/citations?user=U4l1gLYAAAAJ&hl=en).
-
-Various statistical notes [here](various-notes/).
-
-#### Research
+## Research
 
 ##### Peer-reviewed papers
 
@@ -70,7 +66,7 @@ Lees-Marshment, J., Elder, E., Chant L., Osborne, D., Savoie, J., van der Linden
 
 Lees-Marshment, J., Elder, E., Chant L., Osborne, D., Savoie, J., van der Linden, C. 2018. *Political Parties and Their Customers: The Alignment of Party Policies with Supporter, Target and Undecided Market Preferences* in [Political Marketing and Management in the 2017 New Zealand Election](https://www.palgrave.com/gp/book/9783319942971). Palgrave Pivot
 
-#### Contact
+## Contact
 
 [Twitter justinsavoie](https://twitter.com/justinsavoie)
 
