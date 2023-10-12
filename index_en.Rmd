@@ -22,7 +22,7 @@ Welcome! I am a PhD student in Political Science at the University of Toronto. P
 
 
 
-I am primarily interested in the design and analysis of large-scale surveys and applied computational methods in social science. Some of my work has appeared in the International Journal of Forecasting, PS: Political Science & Politics, the Canadian Journal of Political Science, French Politics, the Journal of Experimental Political Science and the Journal of European Public Policy.
+I am primarily interested in the design and analysis of large-scale surveys and applied computational methods in social and behavioural science. Some of my work has appeared in the International Journal of Forecasting, PS: Political Science & Politics, the Canadian Journal of Political Science, French Politics, the Journal of Experimental Political Science and the Journal of European Public Policy.
 
 My dissertation uses word embeddings and other vector space models to study the evolution and changing meanings of key concepts in Canadian politics.
 
@@ -33,6 +33,8 @@ Currently, I am behavioral science fellow at [Impact Canada](https://impact.cana
 My CV is available [here](cv_academic.pdf).
 
 My Google Scholar page is available [here](https://scholar.google.ca/citations?user=U4l1gLYAAAAJ&hl=en).
+
+Various statistical notes [here](various-notes/).
 
 #### Research
 
