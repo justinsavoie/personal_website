@@ -1,3 +1,10 @@
+---
+title: "Homework 1 code.qmd"
+format: html
+editor: visual
+---
+
+```{r}
 library(readxl)
 library(tidyverse)
 library(lubridate)
@@ -75,6 +82,25 @@ ggplot(parliamentarians,aes(x=Gender,fill=party)) +
   scale_fill_manual(values=c("darkblue","darkblue","red","orange","darkblue"))
 #ggsave("~/Desktop/figure4.png")
 
+# Here's one way to fix the text that does not all appear on the same line for parties
+
+ggplot(parliamentarians,aes(x=Gender,fill=party)) +
+  geom_bar() +
+  facet_grid(cols=vars(party),rows=vars(year_period),labeller = label_wrap_gen(width = 10)) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values=c("darkblue","darkblue","red","orange","darkblue"))
+
+# Here's another way  
+
+parliamentarians <- parliamentarians |> 
+  mutate(party_ = str_wrap(party,10))
+
+ggplot(parliamentarians,aes(x=Gender,fill=party_)) +
+  geom_bar() +
+  facet_grid(cols=vars(party),rows=vars(year_period),labeller = label_wrap_gen(width = 10)) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values=c("darkblue","darkblue","red","orange","darkblue"))
+
 # Recode party variable
 parliamentarians <- parliamentarians |>
   mutate(party = recode(party, 
@@ -111,7 +137,7 @@ ggplot(data=parliamentarians|>filter(Name!='Brecken, Frederick de St Croix'),aes
   geom_density()
 
 ggplot(data=parliamentarians|>filter(Name!='Brecken, Frederick de St Croix'),aes(x=year_in_office,fill=Gender)) +
-  geom_density(alpha=0.6) 
+  geom_density(alpha=0.6)
 
 ggplot(data=parliamentarians|>filter(Name!='Brecken, Frederick de St Croix'),aes(x=year_in_office,fill=party)) +
   geom_density() +
@@ -122,3 +148,4 @@ ggplot(data=parliamentarians|>filter(Name!='Brecken, Frederick de St Croix'),aes
   geom_histogram() +
   facet_grid(cols=vars(party),rows=vars(Gender)) +
   scale_fill_manual(values=c("darkblue","red","orange"))
+```
