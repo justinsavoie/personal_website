@@ -65,6 +65,16 @@ For more info: https://statsandr.com/blog/variable-types-and-examples/
 
 And then you have variations on these: e.g., [Continuous Data with Lower and Upper Bounds](https://www.cambridge.org/core/journals/political-analysis/article/abs/ordered-beta-regression-a-parsimonious-wellfitting-model-for-continuous-data-with-lower-and-upper-bounds/89F4141DA16D4FC217809B5EB45EEE83) Or you could have an ordinal with a "Don't know"...
 ---
+# Variable types
+
+```{r echo=FALSE, out.width = '70%'}
+knitr::include_graphics("images/types2.png")
+```
+
+For more info: https://statsandr.com/blog/variable-types-and-examples/
+
+And then you have variations on these: e.g., [Continuous Data with Lower and Upper Bounds](https://www.cambridge.org/core/journals/political-analysis/article/abs/ordered-beta-regression-a-parsimonious-wellfitting-model-for-continuous-data-with-lower-and-upper-bounds/89F4141DA16D4FC217809B5EB45EEE83) Or you could have an ordinal with a "Don't know"...
+---
 # Transformations
 
 - Convert ordinal to numeric. For example *How much should the government do to reduce the gap between the rich and the poor? [Much less, Somewhat less, About the same as now, Somewhat more, Much more, Don't know]* 
@@ -174,9 +184,9 @@ diamonds |>
 ---
 # Thinking about SD and IQR
 
-- Standard deviation and interquartile range are descriptions of your spread.
+- Standard deviation (sd) and interquartile range are descriptions of your spread.
 
-- SD is the "amount of variation". Variance 
+- sd is the "amount of variation". Variance is the standard deviation squared.
 
 - Imagine in terms of soccer goals:
 
@@ -265,7 +275,7 @@ ggplot(data = diamonds) +
 
 - If it's not continuous, then you can count the data. Plot the counts with a bar chart. Know what the mode is (the most frequent category), know, generally, the frequency of your variables.
 
-- If it's continuous, calculate the min, the max, the mean, the median. Is it flat, is it spiked, is it skewed, is it very spread out?
+- If it's continuous, calculate the min, the max, the mean, the median. Is it flat, is it spiked, is it skewed, is it very spread out? Plot it.
 
 - Are there many missing values? 
 
@@ -285,4 +295,4 @@ class: inverse, center, middle
 
 # Exercices 
 
-### 7.3.4 7.4.1
+### 11.3.3
