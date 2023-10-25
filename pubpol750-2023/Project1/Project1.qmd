@@ -11,7 +11,7 @@ format:
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 ```
 
-## Project 1 - Exploring data from the 2019 Canadian Electio Study
+## Project 1 - Exploring data from the 2019 Canadian Election Study
 
 In this project, we use data from the [2019 Canadian Election Study](http://www.ces-eec.ca/) (CES) to produce an exploratory data analysis. We start with a univariate exploratory data analysis. Then we move to bivariate analysis. Data available [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/8RHLG1) (version 1.1 Stata14), or directly on the class website.
 
