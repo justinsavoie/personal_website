@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.353">
+<meta name="generator" content="quarto-1.3.433">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -3045,7 +3045,7 @@ vertical-align: -.125em;
 
 <p>I use survey data a lot and such data almost always comes with weights. Unfortunately, it’s <a href="https://statmodeling.stat.columbia.edu/2015/07/14/survey-weighting-and-regression-modeling/">not always clear</a> how to use weights. Further see <a href="https://stats.stackexchange.com/questions/11018/recommend-references-on-survey-sample-weighting">here</a> or <a href="https://healthyalgorithms.com/2011/05/24/journal-culture/">here</a>. There is, however, a consensus that for descriptive statistics (in contrast to whatever is done with regression), one should use weights.</p>
 <p>There are <a href="https://statmodeling.stat.columbia.edu/2021/01/17/weights-in-statistics/">different kinds of weights</a>. Thomas Lumley, the author of <code>survey</code>, the main package for the analysis of surveys in R <a href="https://notstatschat.rbind.io/2020/08/04/weights-in-statistics/">calls them</a> precision weights, frequency weights, sampling weights. These different weights will lead to the same estimate. However, they will differ in standard errors and here it’s where it can get complicated. Here, I focus on sampling weights because those are the ones we use in survey data; the ones that “describe how the sample can be scaled up to the population”. I will use <em>2021 Canadian Election Study v1.0.dta</em> available <a href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XBZHKC">here</a> which you can load using <code>haven::read_stata</code>.</p>
-<p>Let’s take the first 3000 rows to have larger standard errors, otherwise some are tiny. There’s a lot of missing data too, some questions were possibly randomized and asked onl to some respondents.</p>
+<p>Let’s take the first 3000 rows to have larger standard errors, otherwise some are tiny. There’s a lot of missing data too, some questions were possibly randomized and asked only to some respondents.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
@@ -3095,8 +3095,8 @@ vertical-align: -.125em;
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">estimate=</span>n<span class="sc">/</span><span class="fu">sum</span>(n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 3
-          cps21_pol_eth     n estimate
-              &lt;dbl+lbl&gt; &lt;int&gt;    &lt;dbl&gt;
+  cps21_pol_eth             n estimate
+  &lt;dbl+lbl&gt;             &lt;int&gt;    &lt;dbl&gt;
 1 1 [Strongly disagree]    22  0.00827
 2 2 [Somewhat disagree]    15  0.00564
 3 3 [Somewhat agree]      261  0.0981 
@@ -3155,8 +3155,8 @@ vertical-align: -.125em;
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">max=</span>estimate<span class="fl">+1.96</span><span class="sc">*</span>se)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 7
-                       cps21_genderid estimate     n    sd     se   min   max
-                            &lt;dbl+lbl&gt;    &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+  cps21_genderid                      estimate     n    sd     se   min   max
+  &lt;dbl+lbl&gt;                              &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 1 1 [A man]                               3.86  1196 0.449 0.0130  3.83  3.88
 2 2 [A woman]                             3.87  1441 0.396 0.0104  3.85  3.89
 3 3 [Non-binary]                          3.82    17 0.393 0.0953  3.64  4.01
@@ -3178,8 +3178,8 @@ vertical-align: -.125em;
 <span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">se=</span>pred.fit<span class="sc">$</span>se.fit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 5
-                                label   min estimate   max     se
-                            &lt;dbl+lbl&gt; &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+  label                                 min estimate   max     se
+  &lt;dbl+lbl&gt;                           &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
 1 1 [A man]                            3.83     3.86  3.88 0.0122
 2 2 [A woman]                          3.85     3.87  3.90 0.0111
 3 3 [Non-binary]                       3.62     3.82  4.02 0.102 
@@ -3197,8 +3197,8 @@ vertical-align: -.125em;
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">survey_mean</span>(cps21_pol_eth))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 3
-                       cps21_genderid  coef  `_se`
-                            &lt;dbl+lbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+  cps21_genderid                       coef  `_se`
+  &lt;dbl+lbl&gt;                           &lt;dbl&gt;  &lt;dbl&gt;
 1 1 [A man]                            3.86 0.0130
 2 2 [A woman]                          3.87 0.0104
 3 3 [Non-binary]                       3.82 0.0925
@@ -3277,8 +3277,8 @@ $se.fit
 <span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">survey_mean</span>(cps21_pol_eth))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 3
-                       cps21_genderid  coef  `_se`
-                            &lt;dbl+lbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+  cps21_genderid                       coef  `_se`
+  &lt;dbl+lbl&gt;                           &lt;dbl&gt;  &lt;dbl&gt;
 1 1 [A man]                            3.86 0.0130
 2 2 [A woman]                          3.87 0.0104
 3 3 [Non-binary]                       3.82 0.0925
@@ -3344,8 +3344,8 @@ $se.fit
 <span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">max=</span>estimate<span class="fl">+1.96</span><span class="sc">*</span>se)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 7
-                       cps21_genderid estimate     n    sd     se   min   max
-                            &lt;dbl+lbl&gt;    &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+  cps21_genderid                      estimate     n    sd     se   min   max
+  &lt;dbl+lbl&gt;                              &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 1 1 [A man]                               3.85  1090 0.448 0.0136  3.83  3.88
 2 2 [A woman]                             3.88  1287 0.400 0.0112  3.85  3.90
 3 3 [Non-binary]                          3.82    17 0.393 0.0953  3.64  4.01
@@ -3366,8 +3366,8 @@ $se.fit
 <span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">max=</span>pred<span class="sc">+</span><span class="fu">qt</span>(<span class="fl">0.975</span>,<span class="dv">2396</span>)<span class="sc">*</span>se)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 5
-                       cps21_genderid  pred     se   min   max
-                            &lt;dbl+lbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+  cps21_genderid                       pred     se   min   max
+  &lt;dbl+lbl&gt;                           &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 1 1 [A man]                            3.85 0.0128  3.83  3.88
 2 2 [A woman]                          3.88 0.0118  3.85  3.90
 3 3 [Non-binary]                       3.82 0.102   3.62  4.02
@@ -3392,8 +3392,8 @@ $se.fit
 <span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">survey_mean</span>(cps21_pol_eth,<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 6
-                       cps21_genderid  coef  `_se`     n `_low` `_upp`
-                            &lt;dbl+lbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+  cps21_genderid                       coef  `_se`     n `_low` `_upp`
+  &lt;dbl+lbl&gt;                           &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;
 1 1 [A man]                            3.85 0.0136  1090   3.83   3.88
 2 2 [A woman]                          3.88 0.0112  1287   3.85   3.90
 3 3 [Non-binary]                       3.82 0.0925    17   3.64   4.00
@@ -3413,8 +3413,8 @@ $se.fit
 <span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">max=</span>estimate<span class="fl">+1.96</span><span class="sc">*</span>se)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 9
-             cps21_genderid estimate     n     wn    sd   wsd     se   min   max
-                  &lt;dbl+lbl&gt;    &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+  cps21_genderid            estimate     n     wn    sd   wsd     se   min   max
+  &lt;dbl+lbl&gt;                    &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 1 1 [A man]                     3.81  1090 662.   0.448 0.504 0.0196  3.77  3.85
 2 2 [A woman]                   3.85  1287 839.   0.400 0.452 0.0156  3.82  3.88
 3 3 [Non-binary]                3.87    17  11.0  0.393 0.361 0.109   3.65  4.08
@@ -3435,8 +3435,8 @@ $se.fit
 <span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">max=</span>pred<span class="sc">+</span><span class="fu">qt</span>(<span class="fl">0.975</span>,<span class="dv">2396</span>)<span class="sc">*</span>se)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 5
-                       cps21_genderid  pred     se   min   max
-                            &lt;dbl+lbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+  cps21_genderid                       pred     se   min   max
+  &lt;dbl+lbl&gt;                           &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 1 1 [A man]                            3.81 0.0139  3.78  3.84
 2 2 [A woman]                          3.85 0.0137  3.82  3.87
 3 3 [Non-binary]                       3.87 0.158   3.56  4.18
@@ -3451,8 +3451,8 @@ $se.fit
 <span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>            <span class="fu">survey_mean</span>(cps21_pol_eth,<span class="at">vartype =</span> <span class="st">&quot;ci&quot;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 6
-                       cps21_genderid  coef  `_se`     n `_low` `_upp`
-                            &lt;dbl+lbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+  cps21_genderid                       coef  `_se`     n `_low` `_upp`
+  &lt;dbl+lbl&gt;                           &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;
 1 1 [A man]                            3.81 0.0223  1090   3.76   3.85
 2 2 [A woman]                          3.85 0.0169  1287   3.81   3.88
 3 3 [Non-binary]                       3.87 0.0850    17   3.70   4.03
@@ -3480,8 +3480,8 @@ the `.groups` argument.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 12 × 8
 # Groups:   cps21_genderid [4]
-      cps21_genderid cps21_pol_eth estimate     wn    wng      se     min    max
-           &lt;dbl+lbl&gt;     &lt;dbl+lbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+   cps21_genderid    cps21_pol_eth estimate     wn    wng      se     min    max
+   &lt;dbl+lbl&gt;         &lt;dbl+lbl&gt;        &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
  1 1 [A man]         1 [Strongly …  0.0129    5.54 669.   0.00436 0.00434 0.0214
  2 1 [A man]         2 [Somewhat …  0.0105    6.82 669.   0.00394 0.00278 0.0182
  3 1 [A man]         3 [Somewhat …  0.132    70.6  669.   0.0131  0.107   0.158 
@@ -3504,8 +3504,8 @@ the `.groups` argument.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 12 × 6
 # Groups:   cps21_genderid [4]
-                    cps21_genderid cps21_pol_eth    coef   `_se`   `_low` `_upp`
-                         &lt;dbl+lbl&gt;     &lt;dbl+lbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;
+   cps21_genderid                  cps21_pol_eth    coef   `_se`   `_low` `_upp`
+   &lt;dbl+lbl&gt;                       &lt;dbl+lbl&gt;       &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;
  1 1 [A man]                       1 [Strongly … 0.0129  0.00543  2.24e-3 0.0235
  2 1 [A man]                       2 [Somewhat … 0.0105  0.00400  2.66e-3 0.0184
  3 1 [A man]                       3 [Somewhat … 0.132   0.0144   1.04e-1 0.161 
@@ -3520,6 +3520,51 @@ the `.groups` argument.</code></pre>
 12 4 [Another gender, please spec… 4 [Strongly … 0.760   0.206    3.56e-1 1.16  </code></pre>
 </div>
 </div>
+<p>“Raking weights” (or iterative proportional fitting) is a method to create weights.</p>
+<p>In short, raking involves:</p>
+<p>Selecting Marginals: First, you identify key demographic (or other relevant) characteristics where you know both the distribution in your sample and the true distribution in the population (e.g., age groups, gender, education, region).</p>
+<p>Adjusting Weights: For each characteristic, you adjust the sample weights so that the weighted distribution matches the known population distribution.</p>
+<p>After the process, each survey respondent will have a weight (or a multiplier) that’s used to make the sample data better resemble the actual population across the specified characteristics.</p>
+<p>I don’t know what the marginals used for raking are. The documentation says: “Marginal values were successively weighted according to province, as well as gender, age group, and education level. All population data were taken from the 2016 Canadian census.”</p>
+<p>By summing the weights over the categories on which the weights are probably created, I can get some marginals.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read_stata</span>(<span class="st">&quot;~/Downloads/dataverse_files_CES2021/2021 Canadian Election Study v1.0.dta&quot;</span>)</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(cps21_genderid) <span class="sc">%&gt;%</span></span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sw=</span><span class="fu">sum</span>(cps21_weight_general_restricted,<span class="at">na.rm=</span><span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(sw<span class="sc">/</span><span class="fu">sum</span>(sw))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 3
+  cps21_genderid                          sw `sw/sum(sw)`
+  &lt;dbl+lbl&gt;                            &lt;dbl&gt;        &lt;dbl&gt;
+1 1 [A man]                           9195.      0.484   
+2 2 [A woman]                         9737.      0.513   
+3 3 [Non-binary]                        45.7     0.00240 
+4 4 [Another gender, please specify:]   14.0     0.000735</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age=</span><span class="fu">cut</span>(cps21_age,<span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">17</span>,<span class="dv">24</span>,<span class="dv">34</span>,<span class="dv">44</span>,<span class="dv">54</span>,<span class="dv">64</span>,<span class="dv">74</span>,<span class="dv">130</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age) <span class="sc">%&gt;%</span></span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sw=</span><span class="fu">sum</span>(cps21_weight_general_restricted,<span class="at">na.rm=</span><span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(sw<span class="sc">/</span><span class="fu">sum</span>(sw))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 3
+  age         sw `sw/sum(sw)`
+  &lt;fct&gt;    &lt;dbl&gt;        &lt;dbl&gt;
+1 (17,24]  1810.       0.0953
+2 (24,34]  3374.       0.178 
+3 (34,44]  3051.       0.161 
+4 (44,54]  3006.       0.158 
+5 (54,64]  3740.       0.197 
+6 (64,74]  2362.       0.124 
+7 (74,130] 1649.       0.0868</code></pre>
+</div>
+</div>
+<p>Let’s use these marginals to create new weights, see if it makes sense.</p>
 <p>A <a href="https://static1.squarespace.com/static/56dcecbd2eeb8186f4568c24/t/5ce178c362f60d0001c3be53/1558280389093/4_Sampling.pdf">nice deck</a> by Prillaman.</p>
 
 </main>

@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="PUBPOL 750 McMaster">
+<meta name="dcterms.date" content="2023-10-24">
+
+<title>Project 1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Project1_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Project1_files/libs/quarto-html/quarto.js"></script>
+<script src="Project1_files/libs/quarto-html/popper.min.js"></script>
+<script src="Project1_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Project1_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Project1_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Project1_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Project1_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Project1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Project1_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Project 1</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>PUBPOL 750 McMaster </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 24, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="project-1---exploring-data-from-the-2019-canadian-electio-study" class="level2">
+<h2 class="anchored" data-anchor-id="project-1---exploring-data-from-the-2019-canadian-electio-study">Project 1 - Exploring data from the 2019 Canadian Electio Study</h2>
+<p>In this project, we use data from the <a href="http://www.ces-eec.ca/">2019 Canadian Election Study</a> (CES) to produce an exploratory data analysis. We start with a univariate exploratory data analysis. Then we move to bivariate analysis. Data available <a href="2019%20Canadian%20Election%20Study%20-%20Phone%20Survey%20v1.1.tab">here</a>, or directly on the class website.</p>
+<p>Section 1 is a code along. You just have to run the code. There’s no code to write. However, there are questions (marked <span style="color: red;">QUESTION</span>: in red) to answer. Answer them directly in the qmd file.</p>
+<p><strong>Do not start a new Quarto file from scratch.</strong> Work from the available Quarto file available on the website. Add inline text to answer the text in the qmd file.</p>
+<p>In Section 2, I ask you to run the an analysis similar to the one in section 1, but on some other variables of your choice. You can pick any variables from the 2019 CES, or from another dataset if you prefer.</p>
+<p>Project 1 is due on November 8. When you are done, knit this Quarto file to html. Submit both the html file and this .qmd (Quarto) file.</p>
+<section id="section-1---exploring-variables-code-along" class="level3">
+<h3 class="anchored" data-anchor-id="section-1---exploring-variables-code-along">Section 1 - Exploring variables (code along)</h3>
+<section id="loading-packages-loading-the-data" class="level4">
+<h4 class="anchored" data-anchor-id="loading-packages-loading-the-data">Loading packages, loading the data</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># The CES data provided is in Stata format, so we need haven</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(haven)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># We need e1071 for kurtosis and skewness</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(e1071)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># We need kableExtra to produce nice html data tables</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in the data, assign to df</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read_stata</span>(<span class="st">"2019 Canadian Election Study - Phone Survey v1.1.dta"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Use the glimpse function on the dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 4,021
+Columns: 275
+$ sample_id              &lt;dbl&gt; 18, 32, 39, 59, 61, 69, 157, 158, 165, 167, 185…
+$ survey_end_CES         &lt;chr&gt; "2019-09-23 15:48:29-06", "2019-09-12 18:02:30-…
+$ survey_end_month_CES   &lt;dbl&gt; 9, 9, 9, 10, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 9, …
+$ survey_end_day_CES     &lt;dbl&gt; 23, 12, 10, 10, 12, 17, 12, 14, 10, 12, 16, 12,…
+$ num_attempts_CES       &lt;dbl&gt; 5, 1, 1, 6, 1, 1, 1, 4, 1, 1, 4, 1, 9, 2, 1, 1,…
+$ interviewer_id_CES     &lt;dbl&gt; 161182, 151152, 161182, 147601, 151152, 2503, 2…
+$ interviewer_gender_CES &lt;chr&gt; "Female", "Male", "Female", "Female", "Male", "…
+$ language_CES           &lt;dbl+lbl&gt; 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2…
+$ phonetype_CES          &lt;dbl+lbl&gt; 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2…
+$ survey_end_PES         &lt;chr&gt; "2019-11-08 14:24:14-07", "", "2019-11-09 13:08…
+$ survey_end_month_PES   &lt;dbl+lbl&gt; 11, NA, 11, NA, 11, 10, 10, 11, NA, 10, 11,…
+$ survey_end_day_PES     &lt;dbl+lbl&gt;  8, NA,  9, NA,  4, 28, 28,  7, NA, 25,  6,…
+$ num_attempts_PES       &lt;dbl+lbl&gt;  4, NA,  4, NA,  3,  1,  3,  3, NA,  0,  2,…
+$ interviewer_id_PES     &lt;dbl+lbl&gt;   2503,     NA, 161182,     NA, 164893,   2…
+$ interviewer_gender_PES &lt;chr&gt; "Female", "", "Female", "", "Female", "Female",…
+$ language_PES           &lt;dbl+lbl&gt;  2, NA,  2, NA,  2,  2,  2,  2, NA,  2,  2,…
+$ phonetype_PES          &lt;dbl+lbl&gt;  2, NA,  2, NA,  2,  2,  2,  2, NA, NA,  2,…
+$ mode_PES               &lt;dbl+lbl&gt;  1, NA,  1, NA,  1,  1,  1,  1, NA,  2,  1,…
+$ phone_type             &lt;dbl+lbl&gt; 2, 2, 2, 3, 2, 2, 2, 3, 2, 3, 3, 3, 3, 2, 2…
+$ weight_CES             &lt;dbl&gt; 0.9019529, 0.9019529, 0.9019529, 1.2334642, 0.9…
+$ weight_PES             &lt;dbl+lbl&gt; 1.030709,       NA, 1.030709,       NA, 1.0…
+$ c1                     &lt;dbl+lbl&gt; 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2…
+$ c2a                    &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+$ c3                     &lt;dbl+lbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+$ q1                     &lt;dbl+lbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+$ q2                     &lt;dbl+lbl&gt; 1963, 1973, 1994, 2000, 1984, 1939, 1999, 1…
+$ q3                     &lt;dbl+lbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2…
+$ q4                     &lt;dbl+lbl&gt;  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,…
+$ q6                     &lt;dbl+lbl&gt; 3, 2, 1, 2, 4, 3, 3, 2, 2, 2, 2, 2, 2, 3, 4…
+$ q7                     &lt;chr&gt; "economie", "Finances", "agriculture", "l'envir…
+$ q8                     &lt;dbl+lbl&gt;  1,  8,  3,  5,  3,  4, -9,  3,  2,  1,  6,…
+$ q8_7_                  &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q9                     &lt;dbl+lbl&gt;  8, 10, 10,  6, 10, 10,  6,  8,  7,  7,  8,…
+$ q10                    &lt;dbl+lbl&gt; 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 3…
+$ q11                    &lt;dbl+lbl&gt; -9, -9,  1,  4,  3,  4,  5,  4,  2, -9,  6,…
+$ q11_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q12                    &lt;dbl+lbl&gt; -9, -9, NA, NA, NA, NA, NA, NA, NA,  1, NA,…
+$ q12_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q13                    &lt;dbl+lbl&gt; 2, 2, 2, 2, 4, 4, 4, 2, 3, 2, 3, 3, 2, 2, 1…
+$ q14                    &lt;dbl+lbl&gt; 60, 70, 70, 75, 10,  0, 50, 65, 50, 70, 15,…
+$ q15                    &lt;dbl+lbl&gt; 40, 55, 60, 40, 10, 30, 20, 25, 80, 10, 50,…
+$ q16                    &lt;dbl+lbl&gt; 40, 40, 55, 85, 90,  0, 70, 75, 10, 40, 20,…
+$ q17                    &lt;dbl+lbl&gt;  40,  10,  50,  80,  49, 100,  40,  80,  50…
+$ q18                    &lt;dbl+lbl&gt; 30, 40, 50, 75, 10, 30, 70, 75,  0,  0,  0,…
+$ q19                    &lt;dbl+lbl&gt; 10, 15, -6, 40,  0,  0, -6,  0,  0, -6, 95,…
+$ q20                    &lt;dbl+lbl&gt; 70, 50, 70, 70, 25,  0, 35, 70, 50, 70, 10,…
+$ q21                    &lt;dbl+lbl&gt; 40, 50, 40, 55, 25, 30, 35, 15, 80, 40, 30,…
+$ q22                    &lt;dbl+lbl&gt; 30, 45, 70, 90, 80,  0, 65, 80, -6, 60, 25,…
+$ q23                    &lt;dbl+lbl&gt;  50,  10,  80,  50,  -9, 100,  -6,  85,  50…
+$ q24                    &lt;dbl+lbl&gt; 70, 40, 60, 70, 40, 30, 50, 77, -6, 40, 10,…
+$ q25                    &lt;dbl+lbl&gt; 70, 15, 30, 50, 20,  0, -6,  5, 10, 40, 98,…
+$ q27_a                  &lt;dbl+lbl&gt; NA,  3,  1, NA,  1,  3,  1,  1,  1,  1,  1,…
+$ q27_b                  &lt;dbl+lbl&gt; 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1…
+$ q27_c                  &lt;dbl+lbl&gt;  3,  3,  1,  3,  1,  3,  3, -8,  1,  3,  1,…
+$ q27_d                  &lt;dbl+lbl&gt;  3,  3,  3,  2,  1,  3,  2,  2,  3,  3,  3,…
+$ q27_e                  &lt;dbl+lbl&gt; 2, 3, 3, 1, 3, 2, 3, 1, 3, 3, 3, 1, 3, 1, 2…
+$ q31                    &lt;dbl+lbl&gt;  2,  3,  1,  3,  1,  2, -9,  1,  3,  3,  2,…
+$ q32                    &lt;dbl+lbl&gt;  3,  3,  1,  1,  2,  2,  1,  1,  3,  3,  2,…
+$ q33                    &lt;dbl+lbl&gt;  1,  2,  1,  1,  3,  2,  2,  1,  2,  1,  6,…
+$ q33_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q34                    &lt;dbl+lbl&gt;  5,  1,  5,  5,  3, -9,  5,  5, -8,  1,  6,…
+$ q34_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q35                    &lt;dbl+lbl&gt;  1,  2,  1,  1,  1,  2,  3,  1,  2,  1,  2,…
+$ q35_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q36                    &lt;dbl+lbl&gt;  2,  1,  2,  2,  2,  1,  5,  2,  1,  3,  1,…
+$ q36_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q37                    &lt;dbl+lbl&gt;  1,  1,  1,  3,  1,  4,  5,  1,  1,  1,  6,…
+$ q37_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q38                    &lt;dbl+lbl&gt;  2,  2,  2,  1,  2,  1,  3,  3,  2,  2,  2,…
+$ q38_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q39                    &lt;dbl+lbl&gt; 3, 1, 3, 1, 3, 2, 3, 1, 3, 3, 3, 3, 3, 3, 2…
+$ q40                    &lt;dbl+lbl&gt; 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 3, 3, 3, 1, 3…
+$ q75                    &lt;dbl+lbl&gt;  3,  3,  3,  5,  4,  4,  2,  4,  3,  4,  4,…
+$ q44                    &lt;dbl+lbl&gt; 3, 3, 4, 2, 6, 5, 2, 5, 5, 5, 6, 2, 3, 5, 1…
+$ q76                    &lt;dbl+lbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 1, 1, 2…
+$ q45                    &lt;dbl+lbl&gt; 2, 1, 1, 1, 1, 2, 2, 1, 2, 1, 1, 2, 1, 2, 2…
+$ q46                    &lt;dbl+lbl&gt;  3,  3,  3,  2,  4,  4,  4,  3,  2,  2,  2,…
+$ q47                    &lt;dbl+lbl&gt; 3, 3, 3, 1, 3, 3, 3, 3, 2, 1, 3, 1, 3, 1, 2…
+$ q48                    &lt;dbl+lbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 4, 1, 1, 3…
+$ q49                    &lt;dbl+lbl&gt; 4, 4, 4, 4, 1, 1, 4, 1, 4, 3, 4, 4, 4, 4, 4…
+$ q52                    &lt;dbl+lbl&gt; 1, 1, 3, 3, 3, 4, 3, 8, 2, 1, 6, 4, 2, 8, 8…
+$ q52_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q53                    &lt;dbl+lbl&gt;  2,  2,  2,  2,  2,  2,  3, NA,  2,  3,  2,…
+$ q54                    &lt;dbl+lbl&gt;  2,  2,  2,  3,  2,  1,  2,  3,  1,  1,  2,…
+$ q59                    &lt;dbl+lbl&gt; 1, 1, 1, 3, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 2…
+$ q60                    &lt;dbl+lbl&gt;  1,  1,  3, NA,  3, -9, NA,  4,  1,  1,  2,…
+$ q60_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q77                    &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+$ q43                    &lt;dbl+lbl&gt;  2,  4,  3,  2,  3,  1,  3,  1,  2,  3,  4,…
+$ q61                    &lt;dbl+lbl&gt;  9,  8,  9,  8, 10,  4,  6, 10,  4,  7, 11,…
+$ q62                    &lt;dbl+lbl&gt;  6,  6, 21, 21, 21,  6, 22, 21,  6,  6,  6,…
+$ q62_22_                &lt;chr&gt; "", "", "", "", "", "", "Beisme", "", "", "", "…
+$ q63                    &lt;dbl+lbl&gt;  1,  3, NA, NA, NA,  3,  4, NA,  2,  2,  1,…
+$ q64                    &lt;dbl+lbl&gt;  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,…
+$ q64_13_                &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q65                    &lt;dbl+lbl&gt;   NA,   NA,   NA,   NA,   NA,   NA,   NA,  …
+$ q66a_1                 &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  1,  0,  1,…
+$ q66a_2                 &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_3                 &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_4                 &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_5                 &lt;dbl+lbl&gt;  0,  0,  1,  0,  0, -9,  1,  1,  0,  0,  0,…
+$ q66a_6                 &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_7                 &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_8                 &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_9                 &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_10                &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_11                &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_12                &lt;dbl+lbl&gt;  0,  1,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_13                &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_14                &lt;dbl+lbl&gt;  1,  0,  0,  0,  0, -9,  0,  0,  0,  0,  0,…
+$ q66a_15                &lt;dbl+lbl&gt;  0,  0,  0,  0,  1, -9,  0,  0,  0,  0,  0,…
+$ q66a_16                &lt;dbl+lbl&gt;  0,  0,  0,  0,  0, -9,  0,  0,  0,  1,  0,…
+$ q66a_17                &lt;dbl+lbl&gt;  0,  0,  0,  1,  0, -9,  1,  0,  0,  0,  0,…
+$ q66a_17_               &lt;chr&gt; "", "", "", "colon français, autochtone, canadi…
+$ q66_1                  &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_3                  &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_4                  &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_5                  &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_6                  &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_7                  &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_8                  &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_9                  &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_10                 &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_11                 &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_12                 &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_13                 &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_14                 &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_15                 &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  1,…
+$ q66_16                 &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_17                 &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_18                 &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, -9, NA,  0,…
+$ q66_18_                &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q67                    &lt;dbl+lbl&gt;  4,  1,  4,  4,  4,  4,  4,  4,  4,  4,  4,…
+$ q67_31_                &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q68                    &lt;dbl+lbl&gt;  1,  1,  6,  9,  1,  4,  6,  1,  8,  1,  1,…
+$ q68_12_                &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ q69                    &lt;dbl+lbl&gt; 104000,  75000,  20000, 120000,  95000,  38…
+$ q70                    &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,  4,…
+$ q71                    &lt;dbl+lbl&gt; 2, 4, 1, 5, 1, 1, 1, 2, 2, 4, 3, 5, 3, 2, 4…
+$ q26a                   &lt;dbl+lbl&gt; 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 1, 1, 1, 2, 2…
+$ q26b                   &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+$ r1                     &lt;dbl+lbl&gt; 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 1, 2, 2, 2, 1…
+$ age                    &lt;dbl&gt; 56, 46, 25, 19, 35, 80, 20, 24, 56, 49, 41, 20,…
+$ age_range              &lt;dbl+lbl&gt; 5, 4, 2, 1, 3, 5, 1, 1, 5, 4, 3, 1, 5, 4, 2…
+$ q71r                   &lt;dbl+lbl&gt; 2, 4, 1, 5, 1, 1, 1, 2, 2, 4, 3, 5, 3, 2, 4…
+$ q70r                   &lt;dbl+lbl&gt;  5,  4,  2,  6,  5,  3,  6,  3,  3,  7,  4,…
+$ q14r                   &lt;dbl+lbl&gt; 3, 4, 4, 4, 1, 1, 3, 4, 3, 4, 1, 2, 3, 3, 5…
+$ q15r                   &lt;dbl+lbl&gt;  2,  3,  3,  2,  1,  2,  1,  2,  4,  1,  3,…
+$ q16r                   &lt;dbl+lbl&gt; 2, 2, 3, 5, 5, 1, 4, 4, 1, 2, 1, 1, 2, 4, 7…
+$ q17r                   &lt;dbl+lbl&gt;  2,  1,  3,  4,  3,  5,  2,  4,  3,  4,  1,…
+$ q18r                   &lt;dbl+lbl&gt;  2,  2,  3,  4,  1,  2,  4,  4,  1,  1,  1,…
+$ q19r                   &lt;dbl+lbl&gt; 1, 1, 7, 2, 1, 1, 7, 1, 1, 7, 5, 2, 2, 1, 7…
+$ q20r                   &lt;dbl+lbl&gt; 4, 3, 4, 4, 2, 1, 2, 4, 3, 4, 1, 1, 3, 3, 3…
+$ q21r                   &lt;dbl+lbl&gt; 2, 3, 2, 3, 2, 2, 2, 1, 4, 2, 2, 2, 3, 1, 7…
+$ q22r                   &lt;dbl+lbl&gt; 2, 3, 4, 5, 4, 1, 4, 4, 7, 3, 2, 1, 2, 5, 7…
+$ q23r                   &lt;dbl+lbl&gt;  3,  1,  4,  3,  6,  5,  7,  5,  3,  7,  1,…
+$ q24r                   &lt;dbl+lbl&gt; 4, 2, 3, 4, 2, 2, 3, 4, 7, 2, 1, 3, 7, 4, 4…
+$ q25r                   &lt;dbl+lbl&gt; 4, 1, 2, 3, 1, 1, 7, 1, 1, 2, 5, 3, 3, 1, 2…
+$ vote                   &lt;dbl+lbl&gt; 11, 11,  1,  4,  3,  4,  5,  4,  2,  1,  6,…
+$ q77eng                 &lt;dbl+lbl&gt; NA, NA, NA,  2, NA, NA, NA, NA, NA, NA, NA,…
+$ q77fr                  &lt;dbl+lbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+$ pc1                    &lt;dbl+lbl&gt;  1, NA,  1, NA,  1,  1,  1,  1, NA,  1,  1,…
+$ p1                     &lt;chr&gt; "l'écologie", "", "laicité", "", "L'environneme…
+$ p2                     &lt;dbl+lbl&gt;  1, NA,  1, NA,  1,  1,  2,  1, NA,  1,  1,…
+$ p3                     &lt;dbl+lbl&gt;  1, NA,  4, NA,  3,  4, NA,  3, NA,  4,  6,…
+$ p3_7_                  &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ p4                     &lt;dbl+lbl&gt;  2, NA,  1, NA,  4,  2,  3,  3, NA,  2,  1,…
+$ p5                     &lt;dbl+lbl&gt;  2, NA,  2, NA,  3,  4,  3,  2, NA,  2,  2,…
+$ p6                     &lt;dbl+lbl&gt;  2, NA,  6, NA,  0,  3,  2,  2, NA,  4,  6,…
+$ p7                     &lt;dbl+lbl&gt;  9, NA,  7, NA,  1,  4,  5,  5, NA,  8,  5,…
+$ p8                     &lt;dbl+lbl&gt;  2, NA,  8, NA,  9,  0,  8,  9, NA,  4,  4,…
+$ p9                     &lt;dbl+lbl&gt;  6, NA,  7, NA,  8,  1,  7,  5, NA,  0,  0,…
+$ p10                    &lt;dbl+lbl&gt;  7, NA,  8, NA,  7, 10,  5,  7, NA,  9,  2,…
+$ p11                    &lt;dbl+lbl&gt;  1, NA,  4, NA,  0,  0, 11,  0, NA,  0,  8,…
+$ p12                    &lt;dbl+lbl&gt;  2, NA,  5, NA,  0,  4,  2,  0, NA,  5,  4,…
+$ p13                    &lt;dbl+lbl&gt;  9, NA,  6, NA,  0,  5,  4,  6, NA,  7,  4,…
+$ p14                    &lt;dbl+lbl&gt;  7, NA,  7, NA,  9,  5,  7,  9, NA,  7,  5,…
+$ p15                    &lt;dbl+lbl&gt;  6, NA,  5, NA,  8,  0,  9,  3, NA,  0,  1,…
+$ p16                    &lt;dbl+lbl&gt;  7, NA,  8, NA, 10,  8, 11,  9, NA,  9,  2,…
+$ p17                    &lt;dbl+lbl&gt;  8, NA,  4, NA,  0,  0, 11,  0, NA,  0,  8,…
+$ p18                    &lt;dbl+lbl&gt;  1, NA,  1, NA,  3,  1,  3,  1, NA,  3,  3,…
+$ p19                    &lt;dbl+lbl&gt;  3, NA,  3, NA,  3, -9,  3,  3, NA,  1,  2,…
+$ p20_a                  &lt;dbl+lbl&gt;  4, NA,  5, NA,  5,  1,  5,  5, NA,  4,  3,…
+$ p20_b                  &lt;dbl+lbl&gt;  5, NA,  4, NA,  5,  3,  3,  5, NA,  2,  4,…
+$ p20_c                  &lt;dbl+lbl&gt;  1, NA,  1, NA,  1,  1,  1,  2, NA,  1,  1,…
+$ p20_d                  &lt;dbl+lbl&gt;  1, NA,  1, NA,  2,  1,  3,  1, NA,  2,  3,…
+$ p20_e                  &lt;dbl+lbl&gt;  3, NA,  5, NA,  5,  4,  5,  5, NA,  5,  5,…
+$ p20_f                  &lt;dbl+lbl&gt;  4, NA,  4, NA,  2,  1,  2,  5, NA,  3,  4,…
+$ p20_g                  &lt;dbl+lbl&gt;  2, NA,  2, NA,  1,  1,  2,  1, NA,  3,  2,…
+$ p20_h                  &lt;dbl+lbl&gt;  5, NA,  4, NA,  5,  1,  4,  5, NA,  2,  4,…
+$ p20_i                  &lt;dbl+lbl&gt;  4, NA,  4, NA,  1,  4,  4,  4, NA,  2,  4,…
+$ p20_j                  &lt;dbl+lbl&gt;  4, NA,  2, NA,  4,  4,  4,  3, NA,  4,  2,…
+$ p20_k                  &lt;dbl+lbl&gt;  4, NA,  4, NA,  3,  3,  4,  5, NA,  3,  4,…
+$ p20_l                  &lt;dbl+lbl&gt;  3, NA,  5, NA,  4,  2,  2,  3, NA,  4,  5,…
+$ p20_m                  &lt;dbl+lbl&gt;  2, NA,  4, NA,  2,  1,  2,  2, NA,  2,  4,…
+$ p20_n                  &lt;dbl+lbl&gt;  4, NA,  4, NA,  1,  1,  3,  3, NA,  1,  4,…
+$ p21_a                  &lt;dbl+lbl&gt;  1, NA,  2, NA,  2,  1,  4,  4, NA,  1,  2,…
+$ p21_b                  &lt;dbl+lbl&gt;  5, NA,  4, NA,  4,  1,  4,  3, NA,  3,  3,…
+$ p22_a                  &lt;dbl+lbl&gt;  2, NA,  1, NA,  2,  2,  2,  1, NA,  2,  2,…
+$ p22_b                  &lt;dbl+lbl&gt;  4, NA,  4, NA,  4,  1,  4,  5, NA,  1,  5,…
+$ p22_c                  &lt;dbl+lbl&gt;  4, NA,  4, NA,  3,  3,  4,  5, NA,  3,  5,…
+$ p23                    &lt;dbl+lbl&gt;  1, NA,  1, NA,  1,  1,  1,  1, NA,  1,  2,…
+$ p24                    &lt;dbl+lbl&gt;  1, NA,  3, NA,  3,  4,  3,  3, NA,  4, NA,…
+$ p24_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ p25_a                  &lt;dbl+lbl&gt;  2, NA,  4, NA,  3,  3,  2,  4, NA,  2,  4,…
+$ p25_b                  &lt;dbl+lbl&gt;  2, NA,  4, NA,  4,  1,  3,  4, NA,  2,  4,…
+$ p25_c                  &lt;dbl+lbl&gt;  1, NA,  1, NA,  1,  1,  1,  2, NA,  1,  2,…
+$ p25_d                  &lt;dbl+lbl&gt;  1, NA,  2, NA,  2,  2,  3,  3, NA,  1,  2,…
+$ p26                    &lt;dbl+lbl&gt;  2, NA,  3, NA,  1,  1,  3,  3, NA,  1,  3,…
+$ p27                    &lt;dbl+lbl&gt;  8, NA,  9, NA, 10,  7,  6,  9, NA,  6,  9,…
+$ p28                    &lt;dbl+lbl&gt;  2, NA,  1, NA,  1,  1,  3,  1, NA,  3,  2,…
+$ p29_a                  &lt;dbl+lbl&gt;  4, NA,  3, NA,  4,  1,  4,  4, NA,  1,  1,…
+$ p29_b                  &lt;dbl+lbl&gt;  1, NA,  1, NA,  3,  1,  1,  1, NA,  1,  1,…
+$ p29_c                  &lt;dbl+lbl&gt;  2, NA,  3, NA,  3,  1,  1,  2, NA,  1,  1,…
+$ p30                    &lt;dbl+lbl&gt;  3, NA,  3, NA,  3,  3,  3,  3, NA,  3,  3,…
+$ p31                    &lt;dbl+lbl&gt;  2, NA,  1, NA,  1,  2,  2,  1, NA,  2,  2,…
+$ p32                    &lt;dbl+lbl&gt;  3, NA,  2, NA,  3,  2,  4,  2, NA,  3,  3,…
+$ p33                    &lt;dbl+lbl&gt;  4, NA,  5, NA,  4,  3,  4,  2, NA,  1,  4,…
+$ p34                    &lt;dbl+lbl&gt;  4, NA,  5, NA,  1,  4,  5,  2, NA,  5,  5,…
+$ p35_a                  &lt;dbl+lbl&gt;  3, NA,  3, NA,  3,  5,  2,  1, NA,  3,  3,…
+$ p35_b                  &lt;dbl+lbl&gt;  3, NA,  2, NA,  1,  5,  2,  1, NA,  1,  3,…
+$ p35_c                  &lt;dbl+lbl&gt;  3, NA,  2, NA,  3,  5,  3,  1, NA,  1,  3,…
+$ p36                    &lt;dbl+lbl&gt;  8, NA,  4, NA,  8, 12,  7,  5, NA,  5,  5,…
+$ p37                    &lt;dbl+lbl&gt;  7, NA,  7, NA,  9, 12,  9,  7, NA,  7,  6,…
+$ p38                    &lt;dbl+lbl&gt;  7, NA,  2, NA,  3, 12,  4,  3, NA,  3,  4,…
+$ p39                    &lt;dbl+lbl&gt;  4, NA,  4, NA,  4, 12, 11,  4, NA,  8,  2,…
+$ p40                    &lt;dbl+lbl&gt;  3, NA,  2, NA,  4, 12,  3,  5, NA,  7,  5,…
+$ p41                    &lt;dbl+lbl&gt;  7, NA, 10, NA, 10, 12,  5,  9, NA, 11,  8,…
+$ p42                    &lt;dbl+lbl&gt;  7, NA,  4, NA,  0, 12,  4,  1, NA,  7,  5,…
+$ p43                    &lt;dbl+lbl&gt;  3, NA,  3, NA,  5,  1,  1,  2, NA,  1,  2,…
+$ p44                    &lt;dbl+lbl&gt;  2, NA,  1, NA,  1,  1,  3,  1, NA,  1,  3,…
+$ p45                    &lt;dbl+lbl&gt;  2, NA,  2, NA,  1,  2,  2,  2, NA,  2,  2,…
+$ p46                    &lt;dbl+lbl&gt;  2, NA,  2, NA, NA,  1,  1,  1, NA,  2,  1,…
+$ p47                    &lt;dbl+lbl&gt; NA, NA, NA, NA,  3,  4,  3,  3, NA, NA,  6,…
+$ p47_7_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ p48                    &lt;dbl+lbl&gt; NA, NA, NA, NA,  1,  1,  2,  2, NA, NA,  2,…
+$ p49                    &lt;dbl+lbl&gt;  6, NA,  7, NA, 12,  7, 11,  6, NA,  2,  7,…
+$ p50                    &lt;dbl+lbl&gt;  1, NA,  6, NA,  6,  5,  6,  6, NA,  1,  2,…
+$ p51                    &lt;dbl+lbl&gt;  2, NA,  2, NA,  1,  2,  1,  2, NA,  2,  2,…
+$ p52                    &lt;chr&gt; "Gestionnaire dans le domaine funéraire", "", "…
+$ p53                    &lt;dbl+lbl&gt;  3, NA, NA, NA,  1, NA, NA, -9, NA,  1,  2,…
+$ p54                    &lt;dbl+lbl&gt;  7, NA,  1, NA,  1,  1,  1,  3, NA,  2,  5,…
+$ p55                    &lt;dbl+lbl&gt;  2, NA,  2, NA,  2,  2,  2,  2, NA,  2,  2,…
+$ p56_1                  &lt;dbl+lbl&gt;  0, NA,  0, NA,  0,  0,  0,  0, NA,  0,  0,…
+$ p56_2                  &lt;dbl+lbl&gt;  1, NA,  1, NA,  1,  1,  1,  1, NA,  1,  1,…
+$ p56_3                  &lt;dbl+lbl&gt;  0, NA,  0, NA,  0,  0,  0,  0, NA,  0,  0,…
+$ p56_4                  &lt;dbl+lbl&gt;  0, NA,  0, NA,  0,  0,  0,  0, NA,  0,  0,…
+$ p56_5                  &lt;dbl+lbl&gt;  0, NA,  0, NA,  0,  0,  0,  0, NA,  0,  0,…
+$ p56_6                  &lt;dbl+lbl&gt;  0, NA,  0, NA,  0,  0,  0,  0, NA,  0,  0,…
+$ p56_7                  &lt;dbl+lbl&gt;  0, NA,  0, NA,  0,  0,  0,  0, NA,  0,  0,…
+$ p56_8                  &lt;dbl+lbl&gt;  0, NA,  0, NA,  0,  0,  0,  0, NA,  0,  0,…
+$ p56_9                  &lt;dbl+lbl&gt;  0, NA,  0, NA,  0,  0,  0,  0, NA,  0,  0,…
+$ p56_9_                 &lt;chr&gt; "", "", "", "", "", "", "", "", "", "", "", "",…
+$ p57                    &lt;dbl+lbl&gt;  5, NA,  5, NA,  5,  5,  5,  5, NA,  3,  1,…
+$ p6r                    &lt;dbl+lbl&gt;  2, NA,  6, NA,  0,  3,  2,  2, NA,  4,  6,…
+$ p7r                    &lt;dbl+lbl&gt;  9, NA,  7, NA,  1,  4,  5,  5, NA,  8,  5,…
+$ p8r                    &lt;dbl+lbl&gt;  2, NA,  8, NA,  9,  0,  8,  9, NA,  4,  4,…
+$ p9r                    &lt;dbl+lbl&gt;  6, NA,  7, NA,  8,  1,  7,  5, NA,  0,  0,…
+$ p10r                   &lt;dbl+lbl&gt;  7, NA,  8, NA,  7, 10,  5,  7, NA,  9,  2,…
+$ p11r                   &lt;dbl+lbl&gt;  1, NA,  4, NA,  0,  0, -9,  0, NA,  0,  8,…
+$ p12r                   &lt;dbl+lbl&gt;  2, NA,  5, NA,  0,  4,  2,  0, NA,  5,  4,…
+$ p13r                   &lt;dbl+lbl&gt;  9, NA,  6, NA,  0,  5,  4,  6, NA,  7,  4,…
+$ p14r                   &lt;dbl+lbl&gt;  7, NA,  7, NA,  9,  5,  7,  9, NA,  7,  5,…
+$ p15r                   &lt;dbl+lbl&gt;  6, NA,  5, NA,  8,  0,  9,  3, NA,  0,  1,…
+$ p16r                   &lt;dbl+lbl&gt;  7, NA,  8, NA, 10,  8, -9,  9, NA,  9,  2,…
+$ p17r                   &lt;dbl+lbl&gt;  8, NA,  4, NA,  0,  0, -9,  0, NA,  0,  8,…
+$ p36r                   &lt;dbl+lbl&gt;  8, NA,  4, NA,  8, -5,  7,  5, NA,  5,  5,…
+$ p37r                   &lt;dbl+lbl&gt;  7, NA,  7, NA,  9, -5,  9,  7, NA,  7,  6,…
+$ p38r                   &lt;dbl+lbl&gt;  7, NA,  2, NA,  3, -5,  4,  3, NA,  3,  4,…
+$ p39r                   &lt;dbl+lbl&gt;  4, NA,  4, NA,  4, -5, -9,  4, NA,  8,  2,…
+$ p40r                   &lt;dbl+lbl&gt;  3, NA,  2, NA,  4, -5,  3,  5, NA,  7,  5,…
+$ p41r                   &lt;dbl+lbl&gt;  7, NA, 10, NA, 10, -5,  5,  9, NA, -9,  8,…
+$ p42r                   &lt;dbl+lbl&gt;  7, NA,  4, NA,  0, -5,  4,  1, NA,  7,  5,…
+$ feduid                 &lt;dbl&gt; 24015, 24046, 24059, 24011, 24027, 24045, 24037…
+$ fedname                &lt;chr&gt; "Bourassa", "Manicouagan", "Québec", "Beloeil--…</code></pre>
+</div>
+</div>
+<p><span style="color: red;">QUESTION</span>: How many individuals are there in the dataset? How many variables? What are the column types present in the data (they are between “&lt;&gt;” in the output of the glimpse() function? What is a dbl+lbl? You can read the first section of <a href="https://cran.r-project.org/web/packages/labelled/vignettes/intro_labelled.html.">this document</a> (up until section <em>Variable labels</em>).</p>
+</section>
+<section id="univariate-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="univariate-analysis">Univariate analysis</h4>
+<p>Let’s look at the distribution of age.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>age)) <span class="sc">+</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Project1_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption class="figure-caption">Histogram age</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Let’s calculate the number of values for which age is not missing, the mean and the median.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sample_size_age <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sample_size_age=</span><span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(age))) <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(sample_size_age)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># we could also use the tidyverse to get the mean and median but since it's simple</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># let's just use the compact way</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>my_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(df<span class="sc">$</span>age,<span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>my_median <span class="ot">&lt;-</span> <span class="fu">median</span>(df<span class="sc">$</span>age,<span class="at">na.rm=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s redo our histogram, but adding a vertical line where the median is. We can add a caption to programmatically indicate the sample size.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>age)) <span class="sc">+</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth=</span><span class="dv">1</span>,<span class="at">fill=</span><span class="st">"white"</span>,<span class="at">color=</span><span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">x=</span><span class="st">"Age"</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">y=</span><span class="st">"Count (in survey)"</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">title=</span><span class="st">"Age distribution in Canada"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># You can read on ?paste0 and ?format</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption=</span><span class="fu">paste0</span>(<span class="st">"Data from CES 2019; n = "</span>,<span class="fu">format</span>(sample_size_age,<span class="at">big.mark   =</span> <span class="st">","</span>))</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="fu">aes</span>(<span class="at">xintercept=</span>my_mean),<span class="at">linetype=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> my_mean<span class="dv">-2</span>, <span class="at">y =</span> <span class="dv">90</span>, <span class="at">label =</span> <span class="st">"mean"</span>,<span class="at">angle =</span> <span class="dv">90</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p><span style="color: red;">QUESTION</span>: In your own words, how would you describe the distribution of age?</p>
+<p>In the data, there’s a variable called age_range. Let’s look at it with group_by and count.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(age_range) <span class="sc">|&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 2
+# Groups:   age_range [5]
+  age_range                   n
+  &lt;dbl+lbl&gt;               &lt;int&gt;
+1 1 [(1) 18-24 years old]   256
+2 2 [(2) 25-34 years old]   561
+3 3 [(3) 35-44 years old]   694
+4 4 [(4) 45-54 years old]   728
+5 5 [(5) 55+ years old]    1782</code></pre>
+</div>
+</div>
+<p>Let’s print the first five values of age_range. We see age_range is a labelled_double. That means the variable is a number, but it has a label associated with it. It’s similar to a factor: it’s a number with a label associated with it.</p>
+<p>You can convert it to a factor like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>age_range <span class="ot">&lt;-</span> <span class="fu">as_factor</span>(df<span class="sc">$</span>age_range)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s look at the possible levels age_range can take.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(df<span class="sc">$</span>age_range)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "(-9) Don't know"     "(-8) Refused"        "(-7) Skipped"       
+[4] "(1) 18-24 years old" "(2) 25-34 years old" "(3) 35-44 years old"
+[7] "(4) 45-54 years old" "(5) 55+ years old"  </code></pre>
+</div>
+</div>
+<p><span style="color: red;">QUESTION</span>: How many missing values are there? (go back to the count() above ) How many Don’t know’s, Refused, Skipped? Why do you think this is the case? People could refuse to answer, it’s an option, so why are there none?</p>
+<p>Now, plot age_range.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>age_range)) <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Now, imagine that these are not the groups you want. Rather, you want 18-34, 35-54, 55+. Recode the groups using the following code. You are using the <code>cut()</code> function.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_group=</span><span class="fu">cut</span>(age,<span class="at">breaks=</span><span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>,<span class="dv">17</span>,<span class="dv">34</span>,<span class="dv">54</span>,<span class="cn">Inf</span>),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">label=</span><span class="fu">c</span>(<span class="st">"0-17"</span>,<span class="st">"18-34"</span>,<span class="st">"35-54"</span>,<span class="st">"55+"</span>)),</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_group=</span><span class="fu">droplevels</span>(age_group))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Plot this using a bar graph.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>age_group)) <span class="sc">+</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>You can add labels with the count number like this.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> age_group)) <span class="sc">+</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">after_stat</span>(count)), <span class="at">stat =</span> <span class="st">"count"</span>, <span class="at">vjust =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">"white"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Let’s drop the empty levels from the age_range factor. You can use the <code>recode()</code> function if you want to recode (e.g.&nbsp;clean) them.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_range =</span> <span class="fu">droplevels</span>(age_range))</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_range=</span><span class="fu">recode</span>(age_range,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"(1) 18-24 years old"</span><span class="ot">=</span><span class="st">"18-24"</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"(2) 25-34 years old"</span><span class="ot">=</span><span class="st">"25-34"</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"(3) 35-44 years old"</span><span class="ot">=</span><span class="st">"35-44"</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"(4) 45-54 years old"</span><span class="ot">=</span><span class="st">"45-54"</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"(5) 55+ years old"</span><span class="ot">=</span><span class="st">"55+"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>That can be plotted too.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>age_range)) <span class="sc">+</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">""</span>,<span class="at">y=</span><span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Lastly, instead of visualizing age with a graph, let’s use a table to get all the summary statistics. Use <code>kable()</code> to output these numbers.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>age_summary <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_age =</span> <span class="fu">mean</span>(age, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">sd_age =</span> <span class="fu">sd</span>(age, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">min_age =</span> <span class="fu">min</span>(age, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">max_age =</span> <span class="fu">max</span>(age, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">median_age =</span> <span class="fu">median</span>(age, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">skew_age =</span> <span class="fu">skewness</span>(age, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">kurtosis_age =</span> <span class="fu">kurtosis</span>(age, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_age =</span>  <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(age))</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>age_summary <span class="sc">|&gt;</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">format =</span> <span class="st">"simple"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">mean_age</th>
+<th style="text-align: center;">sd_age</th>
+<th style="text-align: left;">min_age</th>
+<th style="text-align: left;">max_age</th>
+<th style="text-align: left;">median_age</th>
+<th style="text-align: center;">skew_age</th>
+<th style="text-align: left;">kurtosis_age</th>
+<th style="text-align: left;">n_age</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">50.89033</td>
+<td style="text-align: center;">16.83581</td>
+<td style="text-align: left;">18</td>
+<td style="text-align: left;">100</td>
+<td style="text-align: left;">51</td>
+<td style="text-align: center;">-0.0053535</td>
+<td style="text-align: left;">-0.871748</td>
+<td style="text-align: left;">4021</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>age_summary <span class="sc">|&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>() <span class="sc">|&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">format =</span> <span class="st">"simple"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">mean_age</td>
+<td style="text-align: right;">50.8903258</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sd_age</td>
+<td style="text-align: right;">16.8358082</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">min_age</td>
+<td style="text-align: right;">18.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">max_age</td>
+<td style="text-align: right;">100.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">median_age</td>
+<td style="text-align: right;">51.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">skew_age</td>
+<td style="text-align: right;">-0.0053535</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">kurtosis_age</td>
+<td style="text-align: right;">-0.8717480</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">n_age</td>
+<td style="text-align: right;">4021.0000000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><span style="color: red;">QUESTION</span>: What’s the mean/sd/min/max/median/skewnewss/kurtosis? Interpret the skewness and kurtosis?</p>
+<p><span style="color: red;">QUESTION</span>: <code>t()</code> function stands for transpose. What does <code>t()</code> do in practice?</p>
+<p>Now, let’s look at the variable household income.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(df<span class="sc">$</span>q69)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+     -9       0   60000   80331  120000 2120000 </code></pre>
+</div>
+</div>
+<p>Looking at the codebook, we see that -8 and -9 should be coded as NA.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hincome=</span><span class="fu">ifelse</span>(q69 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">8</span>,<span class="sc">-</span><span class="dv">9</span>), <span class="cn">NA</span>, q69))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>hincome)) <span class="sc">+</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="dv">5000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>It’s sort of annoying that the data is all clustered to the left because of those “1%” rich outliers. Let’s zoom in. Let’s also pick bins of 1000.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>hincome)) <span class="sc">+</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="dv">1000</span>) <span class="sc">+</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">500000</span>)) <span class="sc">+</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks=</span><span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">500000</span>,<span class="at">by=</span><span class="dv">100000</span>),<span class="at">labels=</span><span class="fu">c</span>(<span class="st">"0"</span>,<span class="st">"100k"</span>,<span class="st">"200k"</span>,<span class="st">"300k"</span>,<span class="st">"400k"</span>,<span class="st">"500k"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p><span style="color: red;">QUESTION</span>: What do you notice? What’s the shape of the distribution? Why the weird spikes?</p>
+<p><span style="color: red;">QUESTION</span>: By copy and pasting the code above for the summary table using <code>kable()</code> try to replicate the statistical analysis but on household income instead of age. Comment very briefly.</p>
+<p><span style="color: red;">QUESTION</span>: Now on to another variable. Check q11 and q12 in the codebook. What are those variables?</p>
+<p>Take a look at these three frequency tables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(q11) <span class="sc">|&gt;</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 13 × 2
+# Groups:   q11 [13]
+   q11                                                                  n
+   &lt;dbl+lbl&gt;                                                        &lt;int&gt;
+ 1 -9 [(-9) Don't know / Undecided]                                   923
+ 2 -8 [(-8) Refused]                                                  235
+ 3  1 [(1) Liberal (Grits)]                                           909
+ 4  2 [(2) Conservatives (Tory, PCs, Conservative Party of Canada)]   980
+ 5  3 [(3) NDP (New Democratic Party, New Democrats, NDPers)]         405
+ 6  4 [(4) Bloc Québécois (BQ, PQ, Bloc, Parti Québécois)]             98
+ 7  5 [(5) Green Party (Greens)]                                      287
+ 8  6 [(6) People's Party]                                             49
+ 9  7 [(7) Other]                                                      24
+10  8 [(8) Will not vote]                                               1
+11  9 [(9) None of these]                                              17
+12 10 [(10) Will spoil ballet]                                          9
+13 NA                                                                  84</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(q12) <span class="sc">|&gt;</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 11 × 2
+# Groups:   q12 [11]
+   q12                                                                  n
+   &lt;dbl+lbl&gt;                                                        &lt;int&gt;
+ 1 -9 [(-9) Don't know]                                               424
+ 2  1 [(1) Liberal (Grits)]                                           156
+ 3  2 [(2) Conservatives (Tory, PCs, Conservative Party of Canada)]    97
+ 4  3 [(3) NDP (New Democratic Party, New Democrats, NDPers)]          81
+ 5  4 [(4) Bloc Québécois (BQ, PQ, Bloc, Parti Québécois)]             17
+ 6  5 [(5) Green Party (Greens)]                                       70
+ 7  6 [(6) People's Party]                                             10
+ 8  7 [(7) Other]                                                      18
+ 9  8 [(8) Will not vote]                                               1
+10  9 [(9) None of these]                                              49
+11 NA                                                                3098</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(q11,q12) <span class="sc">|&gt;</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="sc">|&gt;</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> q11,<span class="at">values_from =</span> n)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 11 × 14
+# Groups:   q12 [11]
+   q12          `-9`  `-8`   `1`   `2`   `3`   `4`   `5`   `6`   `7`   `8`   `9`
+   &lt;dbl+lbl&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
+ 1 -9 [(-9) D…   424    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+ 2  1 [(1) Li…   156    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+ 3  2 [(2) Co…    97    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+ 4  3 [(3) ND…    81    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+ 5  4 [(4) Bl…    17    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+ 6  5 [(5) Gr…    70    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+ 7  6 [(6) Pe…    10    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+ 8  7 [(7) Ot…    18    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+ 9  8 [(8) Wi…     1    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+10  9 [(9) No…    49    NA    NA    NA    NA    NA    NA    NA    NA    NA    NA
+11 NA             NA   235   909   980   405    98   287    49    24     1    17
+# ℹ 2 more variables: `10` &lt;int&gt;, `NA` &lt;int&gt;</code></pre>
+</div>
+</div>
+<p>So, given this, if we want to merge these two variables, we should start with q12, and if q12 is NA, then put q11. This can be done using the <code>coalesce()</code> function. Think of two columns in excel. Column A and column B. <code>coalesce(a,b)</code> creates a new variable equal to a if a is not missing and equal to b if b is missing.<br>
+<br>
+Specifically, we are coalescing q12 and q11 so that when q12 is missing q11 is used. Equivalently, we could check if q11 = “(-9) Don’t know / Undecided” and put values from q12 in using the <code>ifelse()</code> function.<br>
+<br>
+In other words, for those who said “(-9) Don’t know / Undecided”, we want to plug in their answer to the follow asking “Is there a party you are leaning to?”</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">vote_coalesced =</span> <span class="fu">coalesce</span>(q12,q11))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><span style="color: red;">QUESTION</span>: This returns an error message. It’s not the end of the world, nothing breaks but we should understand why. Can you identify why? You can print the labels by doing <code>df$q11</code> and <code>df$q12</code>.</p>
+<p>Let’s clean this variable. You can use what we call a named vector with the recode function.</p>
+<p>Recode is neat. If for instance you wanted to remove the Refused and Skipped, you could replace the “OTH” there by NA.</p>
+<p>Note that in recode, the syntax is “old value”=“new value”. This is different than usually. Usually (e.g.&nbsp;using mutate) syntax is “new value”=“old value”.<br>
+<br>
+When you use a function for the first time, make sure you read the help file or copy paste code using that function from a trusted resource (e.g.&nbsp;a stackoverflow answer with a lot of up votes).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">vote_coalesced=</span><span class="fu">as_factor</span>(vote_coalesced))</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>my_cleaning_mapping <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"(-9) Don't know"</span><span class="ot">=</span><span class="st">"DK"</span>,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(-8) Refused"</span><span class="ot">=</span><span class="st">"OTH"</span>,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(-7) Skipped"</span><span class="ot">=</span><span class="st">"OTH"</span>,</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(1) Liberal (Grits)"</span><span class="ot">=</span><span class="st">"LIB"</span>, </span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(2) Conservatives (Tory, PCs, Conservative Party of Canada)"</span><span class="ot">=</span><span class="st">"CONS"</span>, </span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(3) NDP (New Democratic Party, New Democrats, NDPers)"</span><span class="ot">=</span><span class="st">"NDP"</span>,</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(4) Bloc Québécois (BQ, PQ, Bloc, Parti Québécois)"</span><span class="ot">=</span><span class="st">"BQ"</span>, </span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(5) Green Party (Greens)"</span><span class="ot">=</span><span class="st">"GRN"</span>,</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(6) People's Party"</span><span class="ot">=</span><span class="st">"PPC"</span>,</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(7) Other"</span><span class="ot">=</span><span class="st">"OTH"</span>, </span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(8) Will not vote"</span><span class="ot">=</span><span class="st">"OTH"</span>,</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(9) None of these"</span><span class="ot">=</span><span class="st">"OTH"</span>,</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(10) Will spoil ballet"</span><span class="ot">=</span><span class="st">"OTH"</span>, </span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(-9) Don't know / Undecided"</span><span class="ot">=</span><span class="st">"DK"</span>)</span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">vote_clean=</span><span class="fu">recode</span>(vote_coalesced,<span class="sc">!!!</span>my_cleaning_mapping)</span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>When you are going to plot this, it’s nice if OTH and DK are at the end. You can set the factor levels like this.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">vote_clean =</span> <span class="fu">factor</span>(vote_clean,<span class="at">levels=</span><span class="fu">c</span>(<span class="st">"LIB"</span>, <span class="st">"CONS"</span>, <span class="st">"NDP"</span>, <span class="st">"BQ"</span>, <span class="st">"GRN"</span>, <span class="st">"PPC"</span>,<span class="st">"OTH"</span>,<span class="st">"DK"</span>))</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Plot this.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>party_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"LIB"</span><span class="ot">=</span><span class="st">"red"</span>,</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"CONS"</span><span class="ot">=</span><span class="st">"darkblue"</span>,</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"NDP"</span><span class="ot">=</span><span class="st">"orange"</span>,</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"BQ"</span><span class="ot">=</span><span class="st">"lightblue"</span>,</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"GRN"</span><span class="ot">=</span><span class="st">"darkgreen"</span>,</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"PPC"</span><span class="ot">=</span><span class="st">"purple"</span>,</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"DK"</span><span class="ot">=</span><span class="st">"darkgrey"</span>,</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"OTH"</span><span class="ot">=</span><span class="st">"grey"</span>)</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(vote_clean) <span class="sc">|&gt;</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> n <span class="sc">/</span> <span class="fu">sum</span>(n)) <span class="sc">|&gt;</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> vote_clean, <span class="at">y =</span> prop, <span class="at">fill =</span> vote_clean)) <span class="sc">+</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values=</span>party_colors) <span class="sc">+</span></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.35</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p><span style="color: red;">QUESTION</span> Given what you know about the 2019 election (or using Wikipedia), does this distribution appear reasonable?</p>
+<p>Up to now, we’ve looked at two continuous variable (age and household income) and one nominal categorical variable (vote intention).</p>
+<p>Let’s look at another categorical variable, this time an ordered categorical variable.</p>
+<p>Q46 asks: Do you strongly agree, somewhat agree, somewhat disagree, or strongly disagree with the following statement: “Justin Trudeau kept the election promises he made in 2015.”</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>q46)) <span class="sc">+</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Let’s clean it like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>q46 <span class="ot">&lt;-</span> <span class="fu">as_factor</span>(df<span class="sc">$</span>q46)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>my_cleaning_mapping <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(-9) Don't know"</span><span class="ot">=</span><span class="st">"Don't know"</span>,</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(-8) Refused"</span><span class="ot">=</span><span class="cn">NA</span>,</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(-7) Skipped"</span><span class="ot">=</span><span class="cn">NA</span>,</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(1) Strongly agree"</span><span class="ot">=</span><span class="st">"Strongly agree"</span>, </span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(2) Somewhat agree"</span><span class="ot">=</span><span class="st">"Somewhat agree"</span>,</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(3) Somewhat disagree"</span><span class="ot">=</span><span class="st">"Somewhat disagree"</span>,</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"(4) Strongly disagree"</span><span class="ot">=</span><span class="st">"Strongly disagree"</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">q46=</span><span class="fu">recode</span>(q46,<span class="sc">!!!</span>my_cleaning_mapping),</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">q46=</span><span class="fu">factor</span>(q46,<span class="at">levels=</span><span class="fu">c</span>(<span class="st">"Strongly disagree"</span>,<span class="st">"Somewhat disagree"</span>,</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"Somewhat agree"</span>,<span class="st">"Strongly agree"</span>,<span class="st">"Don't know"</span>)),</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">q46=</span><span class="fu">droplevels</span>(q46))</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">q46 =</span> <span class="fu">recode</span>(q46, <span class="sc">!!!</span>my_cleaning_mapping),</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>         <span class="at">q46 =</span> <span class="fu">factor</span>(q46, <span class="at">levels=</span><span class="fu">c</span>(<span class="st">"Strongly disagree"</span>, <span class="st">"Somewhat disagree"</span>,</span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"Somewhat agree"</span>, <span class="st">"Strongly agree"</span>, <span class="st">"Don't know"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s plot it again.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>q46)) <span class="sc">+</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Note that in the social science, an ordinal categorical variable is often be converted to numeric. Here, you would have Strongly disagree becomes 1, Somewhat disagree becomes 2, Somewhat agree becomes 3. Strongly agree becomes 4. Note, “lowest / disagree” always come first: we want the numeric scale from “less/disagree” to “more/agree. You also have to decide what to do with the DK. You could drop them (put NAs or code them as 2.5 (middle of scale).</p>
+<p>Up to now, we did univariate analysis on age, household income, vote intention and q46 (a question asking if Trudeau held his promises).</p>
+</section>
+<section id="bivariate-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="bivariate-analysis">Bivariate analysis</h4>
+<p>Now, let’s do bivariate analysis. We will cover this more in the next weeks.</p>
+<p>When doing bivariate analysis, you look at the distribution of two variables against each other. Bivariate analysis will be different depending on variable type. This is discussed in the book. You can have:</p>
+<p>1 - two continuous variables</p>
+<p>2 - one continuous variable and one categorical variable</p>
+<p>3 - two categorical variables</p>
+<p>Let’s explore the three possibilities in turn.</p>
+</section>
+<section id="two-continuous-variables" class="level4">
+<h4 class="anchored" data-anchor-id="two-continuous-variables">1 - two continuous variables</h4>
+<p>This is, in a way, the simplest case. We’ve all seen scatterplots. In the book, they look at carat and price.</p>
+<p>Let’s plot age on x and household income on y.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>age,<span class="at">y=</span>hincome)) <span class="sc">+</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>All the points are clustered on top of each other and we don’t see much. You can use “alpha” to play with the opacity. Where many points overlap the color will be darker. Where not many points overlap the color will be lighter. This way, you see where the density is.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>age,<span class="at">y=</span>hincome)) <span class="sc">+</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha=</span><span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>In the social sciences, we often ask questions of the type: “who’s richer, the young or the old”. One (extremely naive) way to ask this question is to fit a linear model where income = b0 + b1 * age + error. You’ll see details of this in the sequel to this class. In other words, you ask: when age increases, does household income increase or decrease (or stays the same). You can fit that straight line using a linear model “lm” smooth.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>age,<span class="at">y=</span>hincome)) <span class="sc">+</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha=</span><span class="fl">0.1</span>) <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">method=</span><span class="st">"lm"</span>, <span class="at">se=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>This suggests that income decreases with age. But, you can notice that this fit is terrible. Looking at the data, it actually seems that income first increases and then decreases with age.</p>
+<p>Fitting a straight line is what we call a linear model of degree 1.</p>
+<p>We can fit, instead, a local regression. The idea is that instead of having one straightline, you have many local straightlines so the line “moves”. This captures non-linearities.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df,<span class="fu">aes</span>(<span class="at">x=</span>age,<span class="at">y=</span>hincome)) <span class="sc">+</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha=</span><span class="fl">0.1</span>) <span class="sc">+</span> <span class="fu">geom_smooth</span>(<span class="at">se=</span><span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>This seems more reasonable, though this statistical model still seems to be poor in the sense that you probably do not explain a lot of the variation in household income using only one variable (age). For now, that’s enough for two continuous variables. More on this next semester.</p>
+</section>
+<section id="one-continuous-variable-and-one-categorical-variable" class="level4">
+<h4 class="anchored" data-anchor-id="one-continuous-variable-and-one-categorical-variable">2 - one continuous variable and one categorical variable</h4>
+<p>One good way to visualize the relation between one continuous variable and one categorical variable is the boxplot.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> df, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> vote_clean, <span class="at">y =</span> hincome)) <span class="sc">+</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Above, we see the outliers really well, but the bottom is a bit clustered and hard to read. Let’s try to transform the y axis using a square root transformation.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> df, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> vote_clean, <span class="at">y =</span> hincome)) <span class="sc">+</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_sqrt</span>(<span class="at">breaks=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">25000</span>,<span class="dv">50000</span>,<span class="dv">100000</span>,<span class="dv">500000</span>,<span class="dv">1000000</span>,<span class="dv">2000000</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Better, we still hard to read. Let’s just cut off the rich above 250,000 so we see clearly the distribution of the normal folks.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> df, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> vote_clean, <span class="at">y =</span> hincome)) <span class="sc">+</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">250000</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p><span style="color: red;">QUESTION</span> How would you interpret these findings from those three boxplots?</p>
+</section>
+<section id="two-categorical-variables" class="level4">
+<h4 class="anchored" data-anchor-id="two-categorical-variables">3 - two categorical variables</h4>
+<p>In the book, they use geom_count().</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> df) <span class="sc">+</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_count</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> vote_clean, <span class="at">y =</span> q46))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>This is interesting in the sense that we that many liberals think Trudeau held is promises and many conservatives think he did not.</p>
+<p>In the social sciences, what we usually want to know is: “how many % of liberals think he did”, “how many % of conservatives think he did” etc. The simplest way to do this is as follow:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(vote_clean,q46) <span class="sc">|&gt;</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>() <span class="sc">|&gt;</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(vote_clean) <span class="sc">|&gt;</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">percent=</span><span class="dv">100</span><span class="sc">*</span>n<span class="sc">/</span><span class="fu">sum</span>(n)) <span class="sc">|&gt;</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>q46,<span class="at">y=</span>percent,<span class="at">fill=</span>vote_clean)) <span class="sc">+</span> </span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">position=</span><span class="st">"dodge"</span>,<span class="at">stat=</span><span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label=</span><span class="fu">round</span>(percent)),<span class="at">position=</span><span class="fu">position_dodge</span>(<span class="at">width=</span><span class="fl">0.9</span>),<span class="at">vjust=</span><span class="sc">-</span><span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project1_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p><span style="color: red;">QUESTION</span> If you focus on the NDP, the Conservatives and the Liberal only (ignore the other parties/choices), for each party, how many % of respondents agree Trudeau his promises (agree = strongly agree + somewhat agree)?</p>
+</section>
+</section>
+<section id="section-2---your-turn" class="level3">
+<h3 class="anchored" data-anchor-id="section-2---your-turn">Section 2 - Your turn</h3>
+<p>Pick two variables of your choice. The variables can be in this dataset, or they can be in another dataset of your choice. The variables can be continuous or categorical.</p>
+<p>Describe in a few words the variables you picked.</p>
+<p>Make three figures. The first two figures are univariate analyses of your two variables (bar chart if categorical, histogram if continuous). Add informative figure captions (see R4DS 29.6.2). There’s also an example above in the first figure in this document.</p>
+<p>The third figure should depict the two variables together (bivariate analysis). This is not something we’ve explicitly covered in the class yet but you should be able to adapt the code from above.</p>
+<p>If you two variables are continuous, you can use geom_point() and identify x and y.</p>
+<p>If your two variables are categorical, you can imitate the analysis above where we breakdown q46 by vote.</p>
+<p>If one variable is continuous and one variable is categorical you can replicate the boxplot analysis.</p>
+<p>Very succinctly, comment each figure.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
