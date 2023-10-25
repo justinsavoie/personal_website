@@ -496,4 +496,4 @@ If your two variables are categorical, you can imitate the analysis above where 
 
 If one variable is continuous and one variable is categorical you can replicate the boxplot analysis.
 
-Very succinctly, comment each figure.
+Very succinctly, comment each figure. Try to make the figures as aesthetically pleasing as possible.
