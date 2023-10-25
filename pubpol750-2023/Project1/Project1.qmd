@@ -2,7 +2,9 @@
 title: "Project 1"
 author: "PUBPOL 750 McMaster"
 date: "`r Sys.Date()`"
-output: html_document
+format:
+  html:
+    embed-resources: true
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +13,7 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 ## Project 1 - Exploring data from the 2019 Canadian Electio Study
 
-In this project, we use data from the [2019 Canadian Election Study](http://www.ces-eec.ca/) (CES) to produce an exploratory data analysis. We start with a univariate exploratory data analysis. Then we move to bivariate analysis. Data available [here](2019 Canadian Election Study - Phone Survey v1.1.tab), or directly on the class website.
+In this project, we use data from the [2019 Canadian Election Study](http://www.ces-eec.ca/) (CES) to produce an exploratory data analysis. We start with a univariate exploratory data analysis. Then we move to bivariate analysis. Data available [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/8RHLG1) (version 1.1 Stata14), or directly on the class website.
 
 Section 1 is a code along. You just have to run the code. There's no code to write. However, there are questions (marked [QUESTION]{style="color: red;"}: in red) to answer. Answer them directly in the qmd file.
 
@@ -37,6 +39,8 @@ library(e1071)
 library(kableExtra)
 # Read in the data, assign to df
 df <- read_stata("2019 Canadian Election Study - Phone Survey v1.1.dta")
+# To convert numeric value labels to factor
+library(labelled)
 ```
 
 Use the glimpse function on the dataset.
@@ -45,7 +49,7 @@ Use the glimpse function on the dataset.
 glimpse(df)
 ```
 
-[QUESTION]{style="color: red;"}: How many individuals are there in the dataset? How many variables? What are the column types present in the data (they are between "\<\>" in the output of the glimpse() function? What is a dbl+lbl? You can read the first section of [this document](https://cran.r-project.org/web/packages/labelled/vignettes/intro_labelled.html.) (up until section *Variable labels*).
+[QUESTION]{style="color: red;"}: How many individuals are there in the dataset? How many variables? What are the column types present in the data (they are between "\<\>" in the output of the glimpse() function? What is a dbl+lbl? You can read the first section of [this document](https://cran.r-project.org/web/packages/labelled/vignettes/intro_labelled.html) (up until section *Variable labels*).
 
 #### Univariate analysis
 
@@ -101,7 +105,7 @@ Let's print the first five values of age_range. We see age_range is a labelled_d
 You can convert it to a factor like this:
 
 ```{r}
-df$age_range <- as_factor(df$age_range)
+df$age_range <- to_factor(df$age_range)
 ```
 
 Let's look at the possible levels age_range can take.
@@ -265,7 +269,7 @@ When you use a function for the first time, make sure you read the help file or 
 ```{r}
 
 df <- df |>
-  mutate(vote_coalesced=as_factor(vote_coalesced))
+  mutate(vote_coalesced=to_factor(vote_coalesced))
 
 my_cleaning_mapping <- c("(-9) Don't know"="DK",
   "(-8) Refused"="OTH",
@@ -335,7 +339,7 @@ Let's clean it like this:
 
 ```{r}
 
-df$q46 <- as_factor(df$q46)
+df$q46 <- to_factor(df$q46)
 
 my_cleaning_mapping <- c(
   "(-9) Don't know"="Don't know",
