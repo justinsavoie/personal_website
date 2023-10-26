@@ -1,0 +1,188 @@
+---
+title: "Complex Surveys: A Guide to Analysis Using R by Thomas Lumley"
+author: "Justin Savoie"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    number-sections: true
+editor: visual
+---
+
+These are my notes from the book. I don't distinguish between direct quotes from the book and my own comments. For illustrative purposes, I replicate some of the analysis using the package using basic algebra. This is a work in progress. 
+
+# Basic Tools
+
+## Goals of inference
+
+### Population or process
+
+Most of statistics is model-bused (think regression,MRP). The analysis of complex survey samples, in contrast, is usually design-based. The model represents the process; can be generalized to other situations. The goal of the design-based analysis is to estimate features of the fixed population.
+
+### Probability samples
+
+The fundamental statistical concept in design-based inference is the probability sample or random sample. "Taking a random sample" of 1000 individuals means a sampling procedure when any subset of 1000people from the population is equally likely to be selected.
+
+A stratified random sample is still a probability sample (e.g., taking a simple random sample of 20 people from each state).
+
+What makes aprobability sample is the procedure for taking samples from a population.
+
+- Every individual in the population must have a non-zero probability of ending up in the sample (written $\pi_i$ for individual $i$)
+- The probability $\pi_i$ must be known for every individual
+- Every pair of individuals in the sample must have a non-zero probability of both ending up in the sample ($\pi_{ij}$)
+- The probability $\pi_{ij}$ must be known for every pair that does end up in the sample.
+
+The first two properties are necessary in order to get valid population estimates; the last two are necessary to work out the accuracy of the estimates. If individuals were sampled independently of each other the first two properties would guarantee the last two (which is the case in the surveys I work with).
+
+### Sampling weights
+
+The fundamental statistical idea behind all of design-based inference is that an individual sampled with a sampling probability of $\pi_i$ represents $1/\pi_i$ individuals in the population. The value $1/\pi_i$ is called the sampling weight.
+
+Given a sample of size n,the (Horvitz-Thompson) estimator $\hat{T}_X$ for the population total $T_X$ of $X$ is $$\hat{T}_X=\sum_{i=1}^{n}\frac{1}{\pi_i}X_i$$
+
+The variance estimate is
+
+$$\mathrm{var}[\hat{T}_X] = \sum_{i,j} \left( \frac{X_i X_j}{\pi_{ij}} - \frac{X_i}{\pi_i} \frac{X_j}{\pi_j} \right)$$
+Knowing the formula for the variance estimator is less important to the applied user, but it is useful to note two things. The first is that the formula applies to any design, however complicated, where $\pi_i$ and $\pi_ij$ are known for the sampled observations. The second is that the formula depends on the pairwise sampling probabilities $\pi_ij$, not just on the sampling weights; this is how correlations in the sampling design enter the computations. 
+
+Statisticians use the term ‘weight’ to mean at least three different things.
+
+1. sampling weights: A sampling weight of 1000 means that the observation represents 1000 individuals in the population.
+
+2. precision weights: A precision (or inverse-variance) weight of 1000 means that the observation has 1000 times lower variance than an observation with a weight of 1.
+
+3. frequency weights: A frequency weight of 1000 means that the sample contains 1000 identical observations and space is being saved by using only one record in the data set to represent them.
+
+In this book, weights are always sampling weights. They'll all produce the same point estimates but not same standard errors.
+
+### Design effects
+
+A complex survey will not have the same standard errors for estimates as a simple random sample of the same size, but many sample size calculations are only conveniently available for simple random samples. 
+
+The design effect was defined by Kish (1965) as the ratio of a variance of an estimate in a complex sample to the variance of the same estimate in a simple random sample.
+
+Design effects are greater than 1.0 when the sample is not simple random, implying that a larger sample size is needed.
+
+## An introduction to the data
+
+The book uses some datasets. I think they are all available through the survey package.
+
+## Obtaining the software
+
+The book uses R.
+
+## Using R
+
+R is very nice, really!
+
+# Simple and stratified sampling
+
+## Analyzing simple random samples
+
+The Horvitz-Thompson estimator of the population total of a variable X is
+
+$$\hat{T}_X=\sum_{i=1}^{n}\frac{1}{\pi_i}X_i$$
+
+A sampling weight $\pi_i$ is a value assigned to each unit in a sample, representing the number of units in the total population that the sampled unit represents. Let's say there are 31 million Canadian adults. Let's say, implausibly, that income is a normal centered at 50k with sd of 5k.
+
+```{r}
+weight <- 31000000/1000
+population <- rnorm(31000000,50000,5000)
+sample <- sample(population,1000)
+
+(T_hat_X <- (31000000/1000)*sum(sample))
+```
+
+Which is a ok estimate of that true number
+
+```{r}
+(T_X <- sum(population))
+```
+
+The variance of this Horvitz-Thompson estimator is
+
+$$\mathrm{var}[\bar{X}] = \frac{N - n}{N} \times N^2 \times \frac{\mathrm{var}[X]}{n}$$
+```{r}
+(var_T_hat_X <- ((31000000-1000)/31000000)*31000000^2*(var(sample)/1000))
+```
+
+For illustration purposes, you can get this estimator using simulations
+
+```{r}
+get_sum_one_sample <- function() (31000000/1000)*sum(sample(population,1000))
+var(replicate(100000,get_sum_one_sample()))
+```
+
+The standard error of our estimator
+
+```{r}
+sqrt(var_T_hat_X)
+```
+
+The first term in the variance formula is the inite population correction. When the population is large, you can drop it.
+
+The population mean of X can be estimated by dividing the estimated total by the population size, N
+
+```{r}
+(mu_x <- T_hat_X / 31000000)
+```
+
+The variance estimate is obtained by dividing the variance estimate for the total by $N^2$ (get the square root for standard error)
+
+```{r}
+sqrt(var_T_hat_X / 31000000^2)
+```
+
+Which is equal to getting the standard error of the mean with the usual formula
+
+```{r}
+sd(sample)/sqrt(1000)
+```
+
+The Horvitz-Thompson estimator of the population size is the sum of the sampling weights, in large surveys where the population size is known, the sampling weights are adjusted so that the estimated population size equals the true sample size.
+
+### Confidence intervals
+
+Confidence intervals for estimates are computed by using a Normal distribution for the estimate, ie, for a 95% confidence interval adding and subtracting 1.96 standard errors.
+
+### Describing the sample to R
+
+The Academic Performance Index is computed for all California schools based on standardised testing of students. The data sets contain information for all schools with at least 100 students and for various probability samples of the data. `?apisrs` for more info.
+
+```{r}
+library(survey)
+data(api)
+dim(apisrs)
+```
+
+The variable fpc in this data set contains the number 6194, the number of schools in California. `id=~1` says that individual schools were sampled. `fpc=~fpc` says that the variable called fpc in the data set contains the population size.
+
+```{r}
+srs_design <- svydesign(id=~1,fpc=~fpc,data=apisrs)
+```
+
+We can replicate the estimates and standard errors by hand:
+
+```{r}
+svytotal(~enroll, srs_design)
+(6194/200)*sum(apisrs$enroll)
+(svytotal_SE <- sqrt( ((6194-200)/6194)*6194^2*(var(apisrs$enroll)/200)) )
+svymean(~enroll, srs_design)
+mean(apisrs$enroll)
+sqrt(svytotal_SE^2 / (6194^2))
+```
+
+If the population size is not specified it is necessary to specify the sampling probabilities or sampling weights. If we have the sampling weight but not the population, the standard error are slightly larger.
+
+```{r}
+svytotal(~stype, srs_design)
+(svytotal_SE_E <- sqrt( ((6194-200)/6194)*6194^2*(var(as.numeric(apisrs$stype=="E"))/200)) )
+(svytotal_SE_H <- sqrt( ((6194-200)/6194)*6194^2*(var(as.numeric(apisrs$stype=="H"))/200)) )
+(svytotal_SE_M <- sqrt( ((6194-200)/6194)*6194^2*(var(as.numeric(apisrs$stype=="M"))/200)) )
+svymean(~stype, srs_design)
+sqrt(svytotal_SE_E^2 / (6194^2))
+sqrt(svytotal_SE_H^2 / (6194^2))
+sqrt(svytotal_SE_M^2 / (6194^2))
+```
+
+## Stratified sampling

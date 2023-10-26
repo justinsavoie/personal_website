@@ -8,6 +8,8 @@ editor: visual
 
 ### Notes
 
+5 - [Notes from Lumley's Complex Surveys book](Lumley-Complex-Surveys.html) (2023-10) Notes and R code for illustrative purposes. Work in progress.
+
 5 - [What is data analysis?](data-analysis.html) (2023-09) What various key authors say data analysis is.
 
 4 - [Am I a Bayesian or a Frequentist?](being-bayesian-frequentist.html) (2023-09) A short reflection on the use of simple models in social science.
