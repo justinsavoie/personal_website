@@ -9,7 +9,7 @@ format:
 editor: visual
 ---
 
-These are my notes from the book. I don't distinguish between direct quotes from the book and my own comments. For illustrative purposes, I replicate some of the analysis using the package using basic algebra. This is a work in progress. 
+These are my notes from the book. I don't distinguish between direct quotes from the book and my own comments. For illustrative purposes, I replicate some of the analysis using the package using basic algebra. This is a work in progress.
 
 # Basic Tools
 
@@ -27,10 +27,10 @@ A stratified random sample is still a probability sample (e.g., taking a simple 
 
 What makes aprobability sample is the procedure for taking samples from a population.
 
-- Every individual in the population must have a non-zero probability of ending up in the sample (written $\pi_i$ for individual $i$)
-- The probability $\pi_i$ must be known for every individual
-- Every pair of individuals in the sample must have a non-zero probability of both ending up in the sample ($\pi_{ij}$)
-- The probability $\pi_{ij}$ must be known for every pair that does end up in the sample.
+-   Every individual in the population must have a non-zero probability of ending up in the sample (written $\pi_i$ for individual $i$)
+-   The probability $\pi_i$ must be known for every individual
+-   Every pair of individuals in the sample must have a non-zero probability of both ending up in the sample ($\pi_{ij}$)
+-   The probability $\pi_{ij}$ must be known for every pair that does end up in the sample.
 
 The first two properties are necessary in order to get valid population estimates; the last two are necessary to work out the accuracy of the estimates. If individuals were sampled independently of each other the first two properties would guarantee the last two (which is the case in the surveys I work with).
 
@@ -42,22 +42,21 @@ Given a sample of size n,the (Horvitz-Thompson) estimator $\hat{T}_X$ for the po
 
 The variance estimate is
 
-$$\mathrm{var}[\hat{T}_X] = \sum_{i,j} \left( \frac{X_i X_j}{\pi_{ij}} - \frac{X_i}{\pi_i} \frac{X_j}{\pi_j} \right)$$
-Knowing the formula for the variance estimator is less important to the applied user, but it is useful to note two things. The first is that the formula applies to any design, however complicated, where $\pi_i$ and $\pi_ij$ are known for the sampled observations. The second is that the formula depends on the pairwise sampling probabilities $\pi_ij$, not just on the sampling weights; this is how correlations in the sampling design enter the computations. 
+$$\mathrm{var}[\hat{T}_X] = \sum_{i,j} \left( \frac{X_i X_j}{\pi_{ij}} - \frac{X_i}{\pi_i} \frac{X_j}{\pi_j} \right)$$ Knowing the formula for the variance estimator is less important to the applied user, but it is useful to note two things. The first is that the formula applies to any design, however complicated, where $\pi_i$ and $\pi_ij$ are known for the sampled observations. The second is that the formula depends on the pairwise sampling probabilities $\pi_ij$, not just on the sampling weights; this is how correlations in the sampling design enter the computations.
 
-Statisticians use the term ‘weight’ to mean at least three different things.
+Statisticians use the term 'weight' to mean at least three different things.
 
-1. sampling weights: A sampling weight of 1000 means that the observation represents 1000 individuals in the population.
+1.  sampling weights: A sampling weight of 1000 means that the observation represents 1000 individuals in the population.
 
-2. precision weights: A precision (or inverse-variance) weight of 1000 means that the observation has 1000 times lower variance than an observation with a weight of 1.
+2.  precision weights: A precision (or inverse-variance) weight of 1000 means that the observation has 1000 times lower variance than an observation with a weight of 1.
 
-3. frequency weights: A frequency weight of 1000 means that the sample contains 1000 identical observations and space is being saved by using only one record in the data set to represent them.
+3.  frequency weights: A frequency weight of 1000 means that the sample contains 1000 identical observations and space is being saved by using only one record in the data set to represent them.
 
 In this book, weights are always sampling weights. They'll all produce the same point estimates but not same standard errors.
 
 ### Design effects
 
-A complex survey will not have the same standard errors for estimates as a simple random sample of the same size, but many sample size calculations are only conveniently available for simple random samples. 
+A complex survey will not have the same standard errors for estimates as a simple random sample of the same size, but many sample size calculations are only conveniently available for simple random samples.
 
 The design effect was defined by Kish (1965) as the ratio of a variance of an estimate in a complex sample to the variance of the same estimate in a simple random sample.
 
@@ -102,6 +101,7 @@ Which is a ok estimate of that true number
 The variance of this Horvitz-Thompson estimator is
 
 $$\mathrm{var}[\bar{X}] = \frac{N - n}{N} \times N^2 \times \frac{\mathrm{var}[X]}{n}$$
+
 ```{r}
 (var_T_hat_X <- ((31000000-1000)/31000000)*31000000^2*(var(sample)/1000))
 ```
@@ -186,3 +186,19 @@ sqrt(svytotal_SE_M^2 / (6194^2))
 ```
 
 ## Stratified sampling
+
+Stratified sampling involves dividing the population up into groups called strata and drawing a separate probability sample from each one. Since a stratified sample is just a set of simple random samples from each stratum, the Horvitz-Thompson estimator of the total is just the sum of the estimated totals in each stratum and its variance is the sum of the estimated variances in each stratum.
+
+## Replicate Weights
+
+The standard error of a mean or any other population summary is, by definition, the standard deviation of that estimated summary across many independent samples of data.
+
+```{r}
+population <- rnorm(1000000)
+draw_1000 <- function(){sample(population,1000)}
+sample1 <- draw_1000()
+sd(sample1)/sqrt(1000)
+sd(replicate(1000,mean(draw_1000())))
+```
+
+The replicate-weight approach to estimating standard errors computes the standard deviation of the estimated summary across many partially independent subsets of the one sample, and extrapolates from this to the standard deviation between completely independent samples.
