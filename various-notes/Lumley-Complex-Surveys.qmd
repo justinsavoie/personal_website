@@ -189,6 +189,34 @@ sqrt(svytotal_SE_M^2 / (6194^2))
 
 Stratified sampling involves dividing the population up into groups called strata and drawing a separate probability sample from each one. Since a stratified sample is just a set of simple random samples from each stratum, the Horvitz-Thompson estimator of the total is just the sum of the estimated totals in each stratum and its variance is the sum of the estimated variances in each stratum.
 
+```{r}
+strat_design <- svydesign(id=~1,strata=~stype,fpc=~fpc,data=apistrat)
+svytotal(~enroll,strat_design)
+```
+
+Off because use of stratas (treating like random sample)
+
+```{r}
+(6194/200)*sum(apistrat$enroll)
+```
+
+Of course, this is ugly and impossible to read but the point is that it works: total is just the sum of the estimated totals in each stratum and its variance is the sum of the estimated variances in each stratum
+
+```{r}
+(apistrat$fpc[apistrat$stype=="E"][1]/sum(apistrat$stype=="E")) *
+  sum(apistrat$enroll[apistrat$stype=="E"]) +
+(apistrat$fpc[apistrat$stype=="H"][1]/sum(apistrat$stype=="H")) *
+  sum(apistrat$enroll[apistrat$stype=="H"]) +
+(apistrat$fpc[apistrat$stype=="M"][1]/sum(apistrat$stype=="M")) *
+  sum(apistrat$enroll[apistrat$stype=="M"])
+
+sqrt( ((apistrat$fpc[apistrat$stype=="E"][1]-sum(apistrat$stype=="E"))/apistrat$fpc[apistrat$stype=="E"][1])*apistrat$fpc[apistrat$stype=="E"][1]^2*(var(apistrat$enroll[apistrat$stype=="E"])/sum(apistrat$stype=="E")) +
+   ((apistrat$fpc[apistrat$stype=="H"][1]-sum(apistrat$stype=="H"))/apistrat$fpc[apistrat$stype=="H"][1])*apistrat$fpc[apistrat$stype=="H"][1]^2*(var(apistrat$enroll[apistrat$stype=="H"])/sum(apistrat$stype=="H")) +
+     ((apistrat$fpc[apistrat$stype=="M"][1]-sum(apistrat$stype=="M"))/apistrat$fpc[apistrat$stype=="M"][1])*apistrat$fpc[apistrat$stype=="M"][1]^2*(var(apistrat$enroll[apistrat$stype=="M"])/sum(apistrat$stype=="M")))
+
+
+```
+
 ## Replicate Weights
 
 The standard error of a mean or any other population summary is, by definition, the standard deviation of that estimated summary across many independent samples of data.
@@ -201,4 +229,54 @@ sd(sample1)/sqrt(1000)
 sd(replicate(1000,mean(draw_1000())))
 ```
 
-The replicate-weight approach to estimating standard errors computes the standard deviation of the estimated summary across many partially independent subsets of the one sample, and extrapolates from this to the standard deviation between completely independent samples.
+The replicate-weight approach to estimating standard errors computes the standard deviation of the estimated summary across many partially independent subsets of the one sample, and extrapolates from this to the standard deviation between completely independent samples. Replicate weight methods require more computation than using the Horvitz- Thompson estimator but are easier to generalize to statistics other than the mean and total (at least for software designers). Are given as example: Balanced repeated replication, Fay's method, jackkknife and bootstrap.
+
+An example with the bootstrap: take a sample of observations (or clusters) with replacement from each stratum and the sampling weight is multiplied by the number of times the observation appears in this sample.
+
+```{r}
+strat_design <- svydesign(id=~1,strata=~stype,fpc=~fpc,data=apistrat)
+svymean(~enroll,strat_design)
+
+enroll_E <- apistrat$enroll[apistrat$stype=="E"]
+fpc_E <- apistrat$fpc[apistrat$stype=="E"][1]
+enroll_H <- apistrat$enroll[apistrat$stype=="H"]
+fpc_H <- apistrat$fpc[apistrat$stype=="H"][1]
+enroll_M <- apistrat$enroll[apistrat$stype=="M"]
+fpc_M <- apistrat$fpc[apistrat$stype=="M"][1]
+
+draw1 <- function() {(fpc_E*mean(sample(enroll_E,length(enroll_E),replace=TRUE)) +
+  fpc_H*mean(sample(enroll_H,length(enroll_H),replace=TRUE)) +
+  fpc_M*mean(sample(enroll_M,length(enroll_M),replace=TRUE))) /
+  sum(fpc_E+fpc_H+fpc_M)}
+
+draws1000 <- replicate(1000,draw1())
+mean(draws1000);sd(draws1000)
+
+```
+
+Very close. I love the bootstrap, it's so intuitive.
+
+### Specifying replicate weights to R
+
+Replicate-weight approach: computes the standard deviation of the estimated summary across many partially independent subsets of the one sample, and extrapolate from this to the standard deviation between completely independent samples. Let's skip for now.
+
+### Creating replicate weights to R
+
+```{r}
+boot_design <- as.svrepdesign(strat_design,type='bootstrap',replicates=1000)
+svymean(~enroll,boot_design)
+```
+
+But we've already done something similar by hand, above.
+
+Again, the most obvious advantage of designs with replicate weights in the survey package is that it is possible to compute standard errors for differences between subpopulations for arbitrary statistics; to perform an analysis that has not been implemented in the survey package.
+
+Using replicate weights (or the bootstrap as I show) it is only necessary to write code to compute the weighted point estimates; this code is re-run on all the sets of replicate weights to estimate standard errors, which is usually easier than writing code for the linearization standard error estimates.
+
+There are other notes, for example, the bootstrap is straightforward only when all the strata are large.
+
+## Other population summaries
+
+Estimators, such as the median or a regression coefficient, are obtained by solving equations that can be written as population totals or means. Standard errors for these estimates can be obtained with replicate weights. Alternatively we can use linearization, dicussed in Appendix. 
+
+### Quantiles
