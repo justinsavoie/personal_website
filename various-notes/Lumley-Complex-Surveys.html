@@ -3155,7 +3155,15 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
   <li><a href="#describing-the-sample-to-r" id="toc-describing-the-sample-to-r" class="nav-link" data-scroll-target="#describing-the-sample-to-r"><span class="header-section-number">2.1.2</span> Describing the sample to R</a></li>
   </ul></li>
   <li><a href="#stratified-sampling" id="toc-stratified-sampling" class="nav-link" data-scroll-target="#stratified-sampling"><span class="header-section-number">2.2</span> Stratified sampling</a></li>
-  <li><a href="#replicate-weights" id="toc-replicate-weights" class="nav-link" data-scroll-target="#replicate-weights"><span class="header-section-number">2.3</span> Replicate Weights</a></li>
+  <li><a href="#replicate-weights" id="toc-replicate-weights" class="nav-link" data-scroll-target="#replicate-weights"><span class="header-section-number">2.3</span> Replicate Weights</a>
+  <ul class="collapse">
+  <li><a href="#specifying-replicate-weights-to-r" id="toc-specifying-replicate-weights-to-r" class="nav-link" data-scroll-target="#specifying-replicate-weights-to-r"><span class="header-section-number">2.3.1</span> Specifying replicate weights to R</a></li>
+  <li><a href="#creating-replicate-weights-to-r" id="toc-creating-replicate-weights-to-r" class="nav-link" data-scroll-target="#creating-replicate-weights-to-r"><span class="header-section-number">2.3.2</span> Creating replicate weights to R</a></li>
+  </ul></li>
+  <li><a href="#other-population-summaries" id="toc-other-population-summaries" class="nav-link" data-scroll-target="#other-population-summaries"><span class="header-section-number">2.4</span> Other population summaries</a>
+  <ul class="collapse">
+  <li><a href="#quantiles" id="toc-quantiles" class="nav-link" data-scroll-target="#quantiles"><span class="header-section-number">2.4.1</span> Quantiles</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -3255,14 +3263,14 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>(T_hat_X <span class="ot">&lt;-</span> (<span class="dv">31000000</span><span class="sc">/</span><span class="dv">1000</span>)<span class="sc">*</span><span class="fu">sum</span>(sample))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 1.543904e+12</code></pre>
+<pre><code>[1] 1.547244e+12</code></pre>
 </div>
 </div>
 <p>Which is a ok estimate of that true number</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(T_X <span class="ot">&lt;-</span> <span class="fu">sum</span>(population))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 1.550015e+12</code></pre>
+<pre><code>[1] 1.549989e+12</code></pre>
 </div>
 </div>
 <p>The variance of this Horvitz-Thompson estimator is</p>
@@ -3270,7 +3278,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(var_T_hat_X <span class="ot">&lt;-</span> ((<span class="dv">31000000-1000</span>)<span class="sc">/</span><span class="dv">31000000</span>)<span class="sc">*</span><span class="dv">31000000</span><span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>(<span class="fu">var</span>(sample)<span class="sc">/</span><span class="dv">1000</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.515338e+19</code></pre>
+<pre><code>[1] 2.261206e+19</code></pre>
 </div>
 </div>
 <p>For illustration purposes, you can get this estimator using simulations</p>
@@ -3278,14 +3286,14 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>get_sum_one_sample <span class="ot">&lt;-</span> <span class="cf">function</span>() (<span class="dv">31000000</span><span class="sc">/</span><span class="dv">1000</span>)<span class="sc">*</span><span class="fu">sum</span>(<span class="fu">sample</span>(population,<span class="dv">1000</span>))</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">var</span>(<span class="fu">replicate</span>(<span class="dv">100000</span>,<span class="fu">get_sum_one_sample</span>()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.402203e+19</code></pre>
+<pre><code>[1] 2.414016e+19</code></pre>
 </div>
 </div>
 <p>The standard error of our estimator</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(var_T_hat_X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 5015314161</code></pre>
+<pre><code>[1] 4755214030</code></pre>
 </div>
 </div>
 <p>The first term in the variance formula is the inite population correction. When the population is large, you can drop it.</p>
@@ -3293,21 +3301,21 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(mu_x <span class="ot">&lt;-</span> T_hat_X <span class="sc">/</span> <span class="dv">31000000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 49803.35</code></pre>
+<pre><code>[1] 49911.09</code></pre>
 </div>
 </div>
 <p>The variance estimate is obtained by dividing the variance estimate for the total by <span class="math inline">\(N^2\)</span> (get the square root for standard error)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(var_T_hat_X <span class="sc">/</span> <span class="dv">31000000</span><span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 161.7843</code></pre>
+<pre><code>[1] 153.394</code></pre>
 </div>
 </div>
 <p>Which is equal to getting the standard error of the mean with the usual formula</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(sample)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 161.7869</code></pre>
+<pre><code>[1] 153.3965</code></pre>
 </div>
 </div>
 <p>The Horvitz-Thompson estimator of the population size is the sum of the sampling weights, in large surveys where the population size is known, the sampling weights are adjusted so that the estimated population size equals the true sample size.</p>
@@ -3430,11 +3438,16 @@ stypeM 0.165 0.0259</code></pre>
 <pre><code>         total     SE
 enroll 3687178 114642</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Off because use of stratas (treating like random sample)</span></span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>(<span class="dv">6194</span><span class="sc">/</span><span class="dv">200</span>)<span class="sc">*</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>enroll)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Off because use of stratas (treating like random sample)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>(<span class="dv">6194</span><span class="sc">/</span><span class="dv">200</span>)<span class="sc">*</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>enroll)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 4624967</code></pre>
 </div>
+</div>
+<p>Of course, this is ugly and impossible to read but the point is that it works: total is just the sum of the estimated totals in each stratum and its variance is the sum of the estimated variances in each stratum</p>
+<div class="cell">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>(apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>][<span class="dv">1</span>]<span class="sc">/</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>)) <span class="sc">*</span></span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>(apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>]) <span class="sc">+</span></span>
 <span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>(apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>][<span class="dv">1</span>]<span class="sc">/</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>)) <span class="sc">*</span></span>
@@ -3444,12 +3457,9 @@ enroll 3687178 114642</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 3687178</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Of course, this is ugly and impossible but the point is that it works:</span></span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="co"># variance is the sum of the estimated variances in each stratum</span></span>
-<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>( ((apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>][<span class="dv">1</span>]<span class="sc">-</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>))<span class="sc">/</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>][<span class="dv">1</span>])<span class="sc">*</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>][<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>(<span class="fu">var</span>(apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>])<span class="sc">/</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>   ((apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>][<span class="dv">1</span>]<span class="sc">-</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>))<span class="sc">/</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>][<span class="dv">1</span>])<span class="sc">*</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>][<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>(<span class="fu">var</span>(apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>])<span class="sc">/</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>)) <span class="sc">+</span></span>
-<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>     ((apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>][<span class="dv">1</span>]<span class="sc">-</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>))<span class="sc">/</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>][<span class="dv">1</span>])<span class="sc">*</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>][<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>(<span class="fu">var</span>(apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>])<span class="sc">/</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>( ((apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>][<span class="dv">1</span>]<span class="sc">-</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>))<span class="sc">/</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>][<span class="dv">1</span>])<span class="sc">*</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>][<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>(<span class="fu">var</span>(apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>])<span class="sc">/</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>   ((apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>][<span class="dv">1</span>]<span class="sc">-</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>))<span class="sc">/</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>][<span class="dv">1</span>])<span class="sc">*</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>][<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>(<span class="fu">var</span>(apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>])<span class="sc">/</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>     ((apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>][<span class="dv">1</span>]<span class="sc">-</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>))<span class="sc">/</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>][<span class="dv">1</span>])<span class="sc">*</span>apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>][<span class="dv">1</span>]<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>(<span class="fu">var</span>(apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>])<span class="sc">/</span><span class="fu">sum</span>(apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 114641.7</code></pre>
 </div>
@@ -3464,14 +3474,70 @@ enroll 3687178 114642</code></pre>
 <span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>sample1 <span class="ot">&lt;-</span> <span class="fu">draw_1000</span>()</span>
 <span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(sample1)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.03175105</code></pre>
+<pre><code>[1] 0.03203508</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(<span class="fu">replicate</span>(<span class="dv">1000</span>,<span class="fu">mean</span>(<span class="fu">draw_1000</span>())))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.03158996</code></pre>
+<pre><code>[1] 0.03165653</code></pre>
 </div>
 </div>
-<p>The replicate-weight approach to estimating standard errors computes the standard deviation of the estimated summary across many partially independent subsets of the one sample, and extrapolates from this to the standard deviation between completely independent samples.</p>
+<p>The replicate-weight approach to estimating standard errors computes the standard deviation of the estimated summary across many partially independent subsets of the one sample, and extrapolates from this to the standard deviation between completely independent samples. Replicate weight methods require more computation than using the Horvitz- Thompson estimator but are easier to generalize to statistics other than the mean and total (at least for software designers). Are given as example: Balanced repeated replication, Fay’s method, jackkknife and bootstrap.</p>
+<p>An example with the bootstrap: take a sample of observations (or clusters) with replacement from each stratum and the sampling weight is multiplied by the number of times the observation appears in this sample.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>strat_design <span class="ot">&lt;-</span> <span class="fu">svydesign</span>(<span class="at">id=</span><span class="sc">~</span><span class="dv">1</span>,<span class="at">strata=</span><span class="sc">~</span>stype,<span class="at">fpc=</span><span class="sc">~</span>fpc,<span class="at">data=</span>apistrat)</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="fu">svymean</span>(<span class="sc">~</span>enroll,strat_design)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         mean     SE
+enroll 595.28 18.509</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>enroll_E <span class="ot">&lt;-</span> apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>]</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>fpc_E <span class="ot">&lt;-</span> apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;E&quot;</span>][<span class="dv">1</span>]</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>enroll_H <span class="ot">&lt;-</span> apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>]</span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>fpc_H <span class="ot">&lt;-</span> apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;H&quot;</span>][<span class="dv">1</span>]</span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>enroll_M <span class="ot">&lt;-</span> apistrat<span class="sc">$</span>enroll[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>]</span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>fpc_M <span class="ot">&lt;-</span> apistrat<span class="sc">$</span>fpc[apistrat<span class="sc">$</span>stype<span class="sc">==</span><span class="st">&quot;M&quot;</span>][<span class="dv">1</span>]</span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>draw1 <span class="ot">&lt;-</span> <span class="cf">function</span>() {(fpc_E<span class="sc">*</span><span class="fu">mean</span>(<span class="fu">sample</span>(enroll_E,<span class="fu">length</span>(enroll_E),<span class="at">replace=</span><span class="cn">TRUE</span>)) <span class="sc">+</span></span>
+<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>  fpc_H<span class="sc">*</span><span class="fu">mean</span>(<span class="fu">sample</span>(enroll_H,<span class="fu">length</span>(enroll_H),<span class="at">replace=</span><span class="cn">TRUE</span>)) <span class="sc">+</span></span>
+<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a>  fpc_M<span class="sc">*</span><span class="fu">mean</span>(<span class="fu">sample</span>(enroll_M,<span class="fu">length</span>(enroll_M),<span class="at">replace=</span><span class="cn">TRUE</span>))) <span class="sc">/</span></span>
+<span id="cb68-11"><a href="#cb68-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>(fpc_E<span class="sc">+</span>fpc_H<span class="sc">+</span>fpc_M)}</span>
+<span id="cb68-12"><a href="#cb68-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-13"><a href="#cb68-13" aria-hidden="true" tabindex="-1"></a>draws1000 <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">1000</span>,<span class="fu">draw1</span>())</span>
+<span id="cb68-14"><a href="#cb68-14" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(draws1000);<span class="fu">sd</span>(draws1000)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 596.2623</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 19.09889</code></pre>
+</div>
+</div>
+<p>Very close. I love the bootstrap, it’s so intuitive.</p>
+<section id="specifying-replicate-weights-to-r" class="level3" data-number="2.3.1">
+<h3 data-number="2.3.1" class="anchored" data-anchor-id="specifying-replicate-weights-to-r"><span class="header-section-number">2.3.1</span> Specifying replicate weights to R</h3>
+<p>Replicate-weight approach: computes the standard deviation of the estimated summary across many partially independent subsets of the one sample, and extrapolate from this to the standard deviation between completely independent samples. Let’s skip for now.</p>
+</section>
+<section id="creating-replicate-weights-to-r" class="level3" data-number="2.3.2">
+<h3 data-number="2.3.2" class="anchored" data-anchor-id="creating-replicate-weights-to-r"><span class="header-section-number">2.3.2</span> Creating replicate weights to R</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>boot_design <span class="ot">&lt;-</span> <span class="fu">as.svrepdesign</span>(strat_design,<span class="at">type=</span><span class="st">&#39;bootstrap&#39;</span>,<span class="at">replicates=</span><span class="dv">1000</span>)</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a><span class="fu">svymean</span>(<span class="sc">~</span>enroll,boot_design)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         mean     SE
+enroll 595.28 18.678</code></pre>
+</div>
+</div>
+<p>But we’ve already done something similar by hand, above.</p>
+<p>Again, the most obvious advantage of designs with replicate weights in the survey package is that it is possible to compute standard errors for differences between subpopulations for arbitrary statistics; to perform an analysis that has not been implemented in the survey package.</p>
+<p>Using replicate weights (or the bootstrap as I show) it is only necessary to write code to compute the weighted point estimates; this code is re-run on all the sets of replicate weights to estimate standard errors, which is usually easier than writing code for the linearization standard error estimates.</p>
+<p>There are other notes, for example, the bootstrap is straightforward only when all the strata are large.</p>
+</section>
+</section>
+<section id="other-population-summaries" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="other-population-summaries"><span class="header-section-number">2.4</span> Other population summaries</h2>
+<p>Estimators, such as the median or a regression coefficient, are obtained by solving equations that can be written as population totals or means. Standard errors for these estimates can be obtained with replicate weights. Alternatively we can use linearization, dicussed in Appendix.</p>
+<section id="quantiles" class="level3" data-number="2.4.1">
+<h3 data-number="2.4.1" class="anchored" data-anchor-id="quantiles"><span class="header-section-number">2.4.1</span> Quantiles</h3>
+</section>
 </section>
 </section>
 

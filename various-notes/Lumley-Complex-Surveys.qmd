@@ -277,6 +277,6 @@ There are other notes, for example, the bootstrap is straightforward only when a
 
 ## Other population summaries
 
-Estimators, such as the median or a regression coefficient, are obtained by solving equations that can be written as population totals or means. Standard errors for these estimates can be obtained with replicate weights. Alternatively we can use linearization, dicussed in Appendix. 
+Estimators, such as the median or a regression coefficient, are obtained by solving equations that can be written as population totals or means. Standard errors for these estimates can be obtained with replicate weights. Alternatively we can use linearization, dicussed in Appendix.
 
 ### Quantiles
