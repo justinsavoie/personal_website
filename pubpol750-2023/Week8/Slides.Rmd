@@ -22,7 +22,7 @@ library(tidyverse)
 class: inverse, center, middle
 
 # Administrative note
-### Linear regression next week (Week 9). Functions and loops in week 11.   
+### Linear regression next week (Week 9). Functions and loops in Week 11.   
 
 ---
 
