@@ -1,0 +1,268 @@
+---
+title: "Week 8: Transforming data: more tricks"
+subtitle: "PUBPOL 750 Data Analysis for Public Policy I"
+author: "Justin Savoie"
+institute: "MPP-DS McMaster"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: '16:9'
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(tidyverse)
+```
+
+class: inverse, center, middle
+
+# Administrative note
+### Linear regression next week (Week 9). Functions and loops in week 11.   
+
+---
+
+# Data wrangling ?
+
+- `dplyr` verbs (e.g., select(), filter(), group(), mutate() etc.) perform specific tasks on data frames
+
+- Data wrangling can also involve fixing messy strings, dates; joining data from different sources
+
+---
+
+# Plan for today
+
+- Binding data frames
+
+- Mutating joins
+
+- Dealing with character strings
+
+- Dealing with dates
+
+- Worked example
+
+---
+
+# Binding (columsn or rows) means appending new lines or new columns
+
+## Binding rows with `bind_rows()`
+
+- Bind any number of data frames by row, making a longer result.
+
+```{r }
+
+df1 <- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"))
+df2 <- tibble(age=c(55,30,12),name=c("Hillary","Anna","Luis"))
+(df <- bind_rows(df1,df2))
+```
+
+---
+
+```{r eval=FALSE}
+df1 <- read_csv("mydata1.csv")
+df2 <- read_csv("mydata2.csv")
+df <- bind_rows(df1,df2)
+```
+
+- Sometimes, you can use a loop to read in numerous csvs. We'll cover this in week 11. Think of data for 338 ridings.
+
+- For `bind_rows()` columns names have to be the same; or if they are not it's simply to create a new column.
+
+```{r}
+df1 <- tibble(age1=c(25,29,22),name1=c("Justin","Ian","Rosaline"))
+df2 <- tibble(age2=c(55,30,12),name2=c("Hillary","Anna","Luis"))
+(df <- bind_rows(df1,df2))
+```
+
+- In this case you would have to rename the columns.
+
+---
+
+## Binding columns with `bind_cols()`
+
+- Bind any number of data frames by column, making a wider result.
+
+```{r}
+
+df1 <- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"))
+df2 <- tibble(income=c(55,30,12),name=c("Justin","Ian","Rosaline"))
+(df <- bind_cols(df1,df2 |> select(-name)))
+```
+
+---
+
+```{r}
+(df <- bind_cols(df1,df2))
+```
+
+---
+
+# Joins
+
+Instead of "stacking", with a bind, joins "joins" on one or more columns. If you have riding names in two different datasets, you can join them.
+
+- `inner_join()`: includes all rows in x and y.
+
+- `left_join()`: includes all rows in x.
+
+- `right_join()`: includes all rows in y.
+
+- `full_join()`: includes all rows in x or y.
+
+FYI: the notion of 'joins' are a fundamental aspect of SQL (Structured Query Language, is a standardized programming language that is used to manage and manipulate relational databases; SQL is a dominant language for interacting with databases) and are used extensively. They allow you to combine rows from two or more tables based on a related column between them, enabling the construction of complex queries over relational data.
+
+---
+
+```{r}
+df1;df2
+left_join(df1,df2,by="name")
+```
+
+---
+
+```{r}
+left_join(df1,df2,by="name")
+left_join(df1,df2)
+```
+
+---
+
+```{r}
+df1 <- tibble(age=c(25,29,22,23),name=c("Justin","Ian","Rosaline","Jack"))
+df2 <- tibble(income=c(55,30,12),name=c("Justin","Ian","Rosaline"))
+left_join(df1,df2,by='name')
+```
+
+---
+
+```{r}
+inner_join(df1,df2,by='name')
+```
+
+---
+
+```{r}
+left_join(df1,df2,by='name')
+right_join(df2,df1,by='name')
+```
+
+---
+
+```{r}
+full_join(df1,df2,by='name')
+```
+
+---
+
+```{r}
+df1 <- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"))
+(df2 <- tibble(income=c(55,30,12,33),name=c("Justin","Ian","Rosaline","Justin")))
+left_join(df1,df2,by='name')
+```
+
+---
+
+```{r}
+df1 <- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"),last=c("Savoie","Smith","Azevedo"))
+df2 <- tibble(income=c(55,30,12,33),name=c("Justin","Ian","Rosaline","Justin"),last=c("Savoie","Smith","Azevedo","Gajevic"))
+left_join(df1,df2,c("name"="name","last"="last"))
+```
+
+---
+
+# Dealing with character strings
+
+- Very useful when dealing with text
+
+- Cryptic at first
+
+
+
+- replacing, substituting, extracting with `stringr` package
+
+---
+
+```{r}
+my_string <- c("Justin Savoie (2019)","Daniel Ortega (2019)", "Natalia Burina (2019)")
+str_replace(my_string,"\\(2019\\)","") %>% trimws()
+my_string <- c("POL2517-U","POL2517-V","POL2699-S")
+str_sub(my_string,4,-1)
+str_sub(my_string,4,7)
+my_string <- c("Justin Savoie (2019)","Daniel Ortega (2017)", "Natalia Burina (2018)")
+str_extract(my_string,"(?<=\\().+?(?=\\))")
+str_replace(my_string,"\\((?<=\\().+?(?=\\))\\)","") %>% trimws()
+# https://stackoverflow.com/questions/8613237/extract-info-inside-all-parenthesis-in-r
+```
+
+---
+
+```{r}
+my_string <- c("justin savoie","micheal Gillet","daniela Smith-jones")
+str_to_title(my_string)
+str_length(my_string)
+str_count(my_string,"j")
+```
+
+Honestly, this is the kind of thing you "ChatGPT", "Google" or "ask-a-data-analyst-friend" when you need it. At least you know these tools exist: when you can **logically** explain in your mind what you want to do, it's doable.
+
+---
+
+# Dates and times
+
+```{r}
+library(lubridate)
+today()
+now()+60
+today()+1
+```
+
+---
+
+```{r}
+adate <- "2022-06-01"
+ymd(adate)
+lubridate::dmy("26-06-19")
+adatetime <- "2001-10-10 02:30:30"
+ymd_hms(adatetime)
+
+as.numeric(ymd_hms(adatetime))
+
+```
+
+---
+
+```{r}
+(my_data <- tibble(year=c("2022","2023"),
+       month=c("6","1"),
+       day=c("14","22")))
+
+my_data |>
+  mutate(date_string = paste0(year,"-",month,"_",day),
+         date=lubridate::as_date(date_string))
+```
+
+---
+
+```{r}
+to_plot <- tibble(date=c("2019-01-01","2019-03-01","2020-01-01","2020-06-01"),value=rnorm(4,10,3))
+ggplot(to_plot,aes(x=date,y=value)) + geom_point()
+```
+---
+```{r}
+to_plot <- to_plot |> mutate(date=ymd(date))
+ggplot(to_plot,aes(x=date,y=value)) + geom_point() + geom_line() +
+  scale_x_date(breaks = as_date(c("2019-01-01","2019-03-01","2020-01-01","2020-06-01")),
+               labels=c("Jan 2019","March 2019","Jan 2020","June 202")) +
+  theme(axis.text.x = element_text(angle=45)) + scale_y_continuous(limits=c(0,30))
+```
+
+---
+
+# A worked example
+
+See Script Code Example November 8

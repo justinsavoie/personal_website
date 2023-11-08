@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Week 8: Transforming data: more tricks</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Justin Savoie" />
+    <meta name="date" content="2023-11-07" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Week 8: Transforming data: more tricks
+]
+.subtitle[
+## PUBPOL 750 Data Analysis for Public Policy I
+]
+.author[
+### Justin Savoie
+]
+.institute[
+### MPP-DS McMaster
+]
+.date[
+### 2023-11-07
+]
+
+---
+
+
+
+
+class: inverse, center, middle
+
+# Administrative note
+### Linear regression next week (Week 9). Functions and loops in week 11.   
+
+---
+
+# Data wrangling ?
+
+- `dplyr` verbs (e.g., select(), filter(), group(), mutate() etc.) perform specific tasks on data frames
+
+- Data wrangling can also involve fixing messy strings, dates; joining data from different sources
+
+---
+
+# Plan for today
+
+- Binding data frames
+
+- Mutating joins
+
+- Dealing with character strings
+
+- Dealing with dates
+
+- Worked example
+
+---
+
+# Binding (columsn or rows) means appending new lines or new columns
+
+## Binding rows with `bind_rows()`
+
+- Bind any number of data frames by row, making a longer result.
+
+
+```r
+df1 &lt;- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"))
+df2 &lt;- tibble(age=c(55,30,12),name=c("Hillary","Anna","Luis"))
+(df &lt;- bind_rows(df1,df2))
+```
+
+```
+## # A tibble: 6 × 2
+##     age name    
+##   &lt;dbl&gt; &lt;chr&gt;   
+## 1    25 Justin  
+## 2    29 Ian     
+## 3    22 Rosaline
+## 4    55 Hillary 
+## 5    30 Anna    
+## 6    12 Luis
+```
+
+---
+
+
+```r
+df1 &lt;- read_csv("mydata1.csv")
+df2 &lt;- read_csv("mydata2.csv")
+df &lt;- bind_rows(df1,df2)
+```
+
+- Sometimes, you can use a loop to read in numerous csvs. We'll cover this in week 11. Think of data for 338 ridings.
+
+- For `bind_rows()` columns names have to be the same; or if they are not it's simply to create a new column.
+
+
+```r
+df1 &lt;- tibble(age1=c(25,29,22),name1=c("Justin","Ian","Rosaline"))
+df2 &lt;- tibble(age2=c(55,30,12),name2=c("Hillary","Anna","Luis"))
+(df &lt;- bind_rows(df1,df2))
+```
+
+```
+## # A tibble: 6 × 4
+##    age1 name1     age2 name2  
+##   &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;  
+## 1    25 Justin      NA &lt;NA&gt;   
+## 2    29 Ian         NA &lt;NA&gt;   
+## 3    22 Rosaline    NA &lt;NA&gt;   
+## 4    NA &lt;NA&gt;        55 Hillary
+## 5    NA &lt;NA&gt;        30 Anna   
+## 6    NA &lt;NA&gt;        12 Luis
+```
+
+- In this case you would have to rename the columns.
+
+---
+
+## Binding columns with `bind_cols()`
+
+- Bind any number of data frames by column, making a wider result.
+
+
+```r
+df1 &lt;- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"))
+df2 &lt;- tibble(income=c(55,30,12),name=c("Justin","Ian","Rosaline"))
+(df &lt;- bind_cols(df1,df2 |&gt; select(-name)))
+```
+
+```
+## # A tibble: 3 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+```
+
+---
+
+
+```r
+(df &lt;- bind_cols(df1,df2))
+```
+
+```
+## New names:
+## • `name` -&gt; `name...2`
+## • `name` -&gt; `name...4`
+```
+
+```
+## # A tibble: 3 × 4
+##     age name...2 income name...4
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;   
+## 1    25 Justin       55 Justin  
+## 2    29 Ian          30 Ian     
+## 3    22 Rosaline     12 Rosaline
+```
+
+---
+
+# Joins
+
+Instead of "stacking", with a bind, joins "joins" on one or more columns. If you have riding names in two different datasets, you can join them.
+
+- `inner_join()`: includes all rows in x and y.
+
+- `left_join()`: includes all rows in x.
+
+- `right_join()`: includes all rows in y.
+
+- `full_join()`: includes all rows in x or y.
+
+FYI: the notion of 'joins' are a fundamental aspect of SQL (Structured Query Language, is a standardized programming language that is used to manage and manipulate relational databases; SQL is a dominant language for interacting with databases) and are used extensively. They allow you to combine rows from two or more tables based on a related column between them, enabling the construction of complex queries over relational data.
+
+---
+
+
+```r
+df1;df2
+```
+
+```
+## # A tibble: 3 × 2
+##     age name    
+##   &lt;dbl&gt; &lt;chr&gt;   
+## 1    25 Justin  
+## 2    29 Ian     
+## 3    22 Rosaline
+```
+
+```
+## # A tibble: 3 × 2
+##   income name    
+##    &lt;dbl&gt; &lt;chr&gt;   
+## 1     55 Justin  
+## 2     30 Ian     
+## 3     12 Rosaline
+```
+
+```r
+left_join(df1,df2,by="name")
+```
+
+```
+## # A tibble: 3 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+```
+
+---
+
+
+```r
+left_join(df1,df2,by="name")
+```
+
+```
+## # A tibble: 3 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+```
+
+```r
+left_join(df1,df2)
+```
+
+```
+## Joining with `by = join_by(name)`
+```
+
+```
+## # A tibble: 3 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+```
+
+---
+
+
+```r
+df1 &lt;- tibble(age=c(25,29,22,23),name=c("Justin","Ian","Rosaline","Jack"))
+df2 &lt;- tibble(income=c(55,30,12),name=c("Justin","Ian","Rosaline"))
+left_join(df1,df2,by='name')
+```
+
+```
+## # A tibble: 4 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+## 4    23 Jack         NA
+```
+
+---
+
+
+```r
+inner_join(df1,df2,by='name')
+```
+
+```
+## # A tibble: 3 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+```
+
+---
+
+
+```r
+left_join(df1,df2,by='name')
+```
+
+```
+## # A tibble: 4 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+## 4    23 Jack         NA
+```
+
+```r
+right_join(df2,df1,by='name')
+```
+
+```
+## # A tibble: 4 × 3
+##   income name       age
+##    &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt;
+## 1     55 Justin      25
+## 2     30 Ian         29
+## 3     12 Rosaline    22
+## 4     NA Jack        23
+```
+
+---
+
+
+```r
+full_join(df1,df2,by='name')
+```
+
+```
+## # A tibble: 4 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    29 Ian          30
+## 3    22 Rosaline     12
+## 4    23 Jack         NA
+```
+
+---
+
+
+```r
+df1 &lt;- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"))
+(df2 &lt;- tibble(income=c(55,30,12,33),name=c("Justin","Ian","Rosaline","Justin")))
+```
+
+```
+## # A tibble: 4 × 2
+##   income name    
+##    &lt;dbl&gt; &lt;chr&gt;   
+## 1     55 Justin  
+## 2     30 Ian     
+## 3     12 Rosaline
+## 4     33 Justin
+```
+
+```r
+left_join(df1,df2,by='name')
+```
+
+```
+## # A tibble: 4 × 3
+##     age name     income
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;dbl&gt;
+## 1    25 Justin       55
+## 2    25 Justin       33
+## 3    29 Ian          30
+## 4    22 Rosaline     12
+```
+
+---
+
+
+```r
+df1 &lt;- tibble(age=c(25,29,22),name=c("Justin","Ian","Rosaline"),last=c("Savoie","Smith","Azevedo"))
+df2 &lt;- tibble(income=c(55,30,12,33),name=c("Justin","Ian","Rosaline","Justin"),last=c("Savoie","Smith","Azevedo","Gajevic"))
+left_join(df1,df2,c("name"="name","last"="last"))
+```
+
+```
+## # A tibble: 3 × 4
+##     age name     last    income
+##   &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;    &lt;dbl&gt;
+## 1    25 Justin   Savoie      55
+## 2    29 Ian      Smith       30
+## 3    22 Rosaline Azevedo     12
+```
+
+---
+
+# Dealing with character strings
+
+- Very useful when dealing with text
+
+- Cryptic at first
+
+
+
+- replacing, substituting, extracting with `stringr` package
+
+---
+
+
+```r
+my_string &lt;- c("Justin Savoie (2019)","Daniel Ortega (2019)", "Natalia Burina (2019)")
+str_replace(my_string,"\\(2019\\)","") %&gt;% trimws()
+```
+
+```
+## [1] "Justin Savoie"  "Daniel Ortega"  "Natalia Burina"
+```
+
+```r
+my_string &lt;- c("POL2517-U","POL2517-V","POL2699-S")
+str_sub(my_string,4,-1)
+```
+
+```
+## [1] "2517-U" "2517-V" "2699-S"
+```
+
+```r
+str_sub(my_string,4,7)
+```
+
+```
+## [1] "2517" "2517" "2699"
+```
+
+```r
+my_string &lt;- c("Justin Savoie (2019)","Daniel Ortega (2017)", "Natalia Burina (2018)")
+str_extract(my_string,"(?&lt;=\\().+?(?=\\))")
+```
+
+```
+## [1] "2019" "2017" "2018"
+```
+
+```r
+str_replace(my_string,"\\((?&lt;=\\().+?(?=\\))\\)","") %&gt;% trimws()
+```
+
+```
+## [1] "Justin Savoie"  "Daniel Ortega"  "Natalia Burina"
+```
+
+```r
+# https://stackoverflow.com/questions/8613237/extract-info-inside-all-parenthesis-in-r
+```
+
+---
+
+
+```r
+my_string &lt;- c("justin savoie","micheal Gillet","daniela Smith-jones")
+str_to_title(my_string)
+```
+
+```
+## [1] "Justin Savoie"       "Micheal Gillet"      "Daniela Smith-Jones"
+```
+
+```r
+str_length(my_string)
+```
+
+```
+## [1] 13 14 19
+```
+
+```r
+str_count(my_string,"j")
+```
+
+```
+## [1] 1 0 1
+```
+
+Honestly, this is the kind of thing you "ChatGPT", "Google" or "ask-a-data-analyst-friend" when you need it. At least you know these tools exist: when you can **logically** explain in your mind what you want to do, it's doable.
+
+---
+
+# Dates and times
+
+
+```r
+library(lubridate)
+today()
+```
+
+```
+## [1] "2023-11-07"
+```
+
+```r
+now()+60
+```
+
+```
+## [1] "2023-11-07 20:46:35 EST"
+```
+
+```r
+today()+1
+```
+
+```
+## [1] "2023-11-08"
+```
+
+---
+
+
+```r
+adate &lt;- "2022-06-01"
+ymd(adate)
+```
+
+```
+## [1] "2022-06-01"
+```
+
+```r
+lubridate::dmy("26-06-19")
+```
+
+```
+## [1] "2019-06-26"
+```
+
+```r
+adatetime &lt;- "2001-10-10 02:30:30"
+ymd_hms(adatetime)
+```
+
+```
+## [1] "2001-10-10 02:30:30 UTC"
+```
+
+```r
+as.numeric(ymd_hms(adatetime))
+```
+
+```
+## [1] 1002681030
+```
+
+---
+
+
+```r
+(my_data &lt;- tibble(year=c("2022","2023"),
+       month=c("6","1"),
+       day=c("14","22")))
+```
+
+```
+## # A tibble: 2 × 3
+##   year  month day  
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+## 1 2022  6     14   
+## 2 2023  1     22
+```
+
+```r
+my_data |&gt;
+  mutate(date_string = paste0(year,"-",month,"_",day),
+         date=lubridate::as_date(date_string))
+```
+
+```
+## # A tibble: 2 × 5
+##   year  month day   date_string date      
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;date&gt;    
+## 1 2022  6     14    2022-6_14   2022-06-14
+## 2 2023  1     22    2023-1_22   2023-01-22
+```
+
+---
+
+
+```r
+to_plot &lt;- tibble(date=c("2019-01-01","2019-03-01","2020-01-01","2020-06-01"),value=rnorm(4,10,3))
+ggplot(to_plot,aes(x=date,y=value)) + geom_point()
+```
+
+![](Slides_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
+---
+
+```r
+to_plot &lt;- to_plot |&gt; mutate(date=ymd(date))
+ggplot(to_plot,aes(x=date,y=value)) + geom_point() + geom_line() +
+  scale_x_date(breaks = as_date(c("2019-01-01","2019-03-01","2020-01-01","2020-06-01")),
+               labels=c("Jan 2019","March 2019","Jan 2020","June 202")) +
+  theme(axis.text.x = element_text(angle=45)) + scale_y_continuous(limits=c(0,30))
+```
+
+![](Slides_files/figure-html/unnamed-chunk-20-1.png)&lt;!-- --&gt;
+
+---
+
+# A worked example
+
+See Script Code Example November 8
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
