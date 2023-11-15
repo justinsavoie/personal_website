@@ -17,12 +17,15 @@ date: 2023-11-15
 
 - It quantifies the average effect of changes in independent variables on a dependent variable.
 
+- It can be used for prediction, description or causal explanation.
+
 ---
 
 ## The Simple Linear Regression Model
 
 $$Y = \beta_0 + \beta_1X_1 + \epsilon$$
 
+- Models the relationship between a dependent variable and one independent variable in a linear way 
 - $Y$ is the dependent variable
 - $X_1$ is the independent variable
 - $\beta_0$ is the intercept
@@ -70,8 +73,14 @@ f
 ```
 
 <div style="font-size: 30px;">
-For example, for an income of 50,000\$, the predicted value for life satisfaction is 3.37. Of course, it's not because you have an income of 50,000\$ that your life satisfaction is 3.37. That's why there's error $ϵ$ in the model. (*This is made up data. The true relation would not be as clear.*)
+For example, for an income of 50,000\$, the predicted value for life satisfaction is 3.37. Of course, it's not because you have an income of 50,000\$ that your life satisfaction is 3.37. That's why there's error $ϵ$ in the model. 
+
+*This is made up data. The true relation would not be as clear.*
+
+Typically, $Y = \beta_0 + \beta_1X_1 + \epsilon$ will be used for the general model. $y = b_0 + b_1x_1 + \epsilon$ refers to the estimated regression equation based on sample data.
+
 </div>
+
 
 ---
 
@@ -82,7 +91,10 @@ f +
 ```
 
 <div style="font-size: 30px;">
-The error (or the residual) is the distance between the prediction (i.e. the line of best fit) and the true observed value. The residuals are the distance measure by the black lines.
+The residual is the distance between the prediction (i.e. the line of best fit) and the true observed value. The residuals are shown with the black lines.
+
+"error" and "residuals" are sometimes used interchangeably but there's a subtle difference.  The "residual" is the observed difference when you fit the line. The "error" is the equivalent in the theoretical model, but it's unobservable. 
+
 </div>
 
 ---
@@ -136,6 +148,7 @@ In contrast, this is NOT the best model of the form $y=b0+b1+ϵ$ because it does
 
 ---
 
+## In R
 
 ```{r}
 #| echo: true
@@ -196,6 +209,8 @@ ggplot(df,aes(x=community,y=satisfaction)) +
   scale_y_continuous(breaks = seq(0,10,0.5))
 
 ```
+
+Key: treat everything as numbers (0 and 1).
 
 ---
 
@@ -266,7 +281,7 @@ Perhaps, we could have: $$life\_satisfaction = \beta_0 + \beta_1*income + \beta_
 
 ---
 
-<div style="font-size: 28px;">
+<div style="font-size: 25px;">
 
 In our example, we can have: $$life\_satisfaction = \beta_0 + \beta_1*income + \beta_2*communityurban + \\ \beta_3*educationCollegeTradeSchool + \beta_3*educationUniversity + ... +\epsilon$$
 
@@ -278,14 +293,14 @@ summary(fit<-lm(satisfaction~income+community+education,df))
 </div>
 
 ::: aside
-where $\beta_0$=1.18, $\beta_1$=0.52 ...
+where $b_0$=1.18, $b_1$=0.52 ... Coefficients indicate expected change in the dependent variable for a one-unit change in that variable, holding all other variables constant.
 :::
 
 ---
 
 <div style="font-size: 32px;">
 
-For multiple linear regression, we can plot the marginal effect, that is the average effect, when one holds the non-focal variables constant.
+For multiple linear regression, we can plot the marginal effect, that is the average effect, holding all other variables constant.
 
 </div>
 

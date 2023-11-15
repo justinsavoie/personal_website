@@ -1,6 +1,8 @@
+library(tidyverse)
+library(haven)
 df <- read_stata("~/Downloads/DC 2021 v1.dta")
 
-# I want to know if income is predictive of satisfaction with democracy
+# I want to model the relationship between income (independent variable) and satisfaction with democracy (dependent variable)
 
 table(df$dc21_democratic_sat)
 table(as_factor(df$dc21_democratic_sat))
@@ -62,9 +64,38 @@ plot(ggeffect(lm_fit,terms = "university"))
 
 to_model$democratic_sat_numeric_binary <- as.numeric(to_model$democratic_sat_numeric>2)
 
+ggplot(to_model,aes(x=income_numeric,y=democratic_sat_numeric_binary)) +
+  geom_jitter(alpha=0.2) + geom_smooth(method = "lm")
+
 lm_fit <- lm(democratic_sat_numeric_binary~income_numeric+age_in_years+university,to_model)
 summary(lm_fit)
 
 plot(ggeffect(lm_fit,terms = "income_numeric"))
 
 plot(ggeffect(lm_fit,terms = "university"))
+
+# Categorical predictor
+
+to_model$dc21_education
+
+to_model <- to_model |>
+  mutate(education3=recode(as_factor(dc21_education),
+                          "No schooling"="HS or below",
+                            "Some elementary school"="HS or below",
+                            "Completed elementary school"="HS or below",
+                            "Some secondary/ high school"="HS or below",
+                            "Completed secondary/ high school"="HS or below",
+                            "Some technical, community college, CEGEP, College Classique"="College or Trade",
+                            "Completed technical, community college, CEGEP, College Classique"="College or Trade",
+                            "Some university"="College or Trade",
+                            "Bachelor's degree"="University",
+                            "Master's degree"="University",
+                            "Professional degree or doctorate"="University"))
+
+lm(democratic_sat_numeric~education3,to_model)
+
+to_model <- to_model |>
+  mutate(educationCOLLEGE=as.numeric(education3=="College or Trade"),
+         educationUniversity=as.numeric(education3=="University"))
+
+lm(democratic_sat_numeric~educationCOLLEGE+educationUniversity,to_model)

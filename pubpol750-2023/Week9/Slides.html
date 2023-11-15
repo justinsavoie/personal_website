@@ -413,12 +413,14 @@ Justin Savoie
 <li><p>Linear regression is a statistical method used to model the relationship between a dependent variable and one or more independent variables.</p></li>
 <li><p>It’s a fundamental tool in data analysis in all social science.</p></li>
 <li><p>It quantifies the average effect of changes in independent variables on a dependent variable.</p></li>
+<li><p>It can be used for prediction, description or causal explanation.</p></li>
 </ul>
 </section>
 <section id="the-simple-linear-regression-model" class="slide level2">
 <h2>The Simple Linear Regression Model</h2>
 <p><span class="math display">\[Y = \beta_0 + \beta_1X_1 + \epsilon\]</span></p>
 <ul>
+<li>Models the relationship between a dependent variable and one independent variable in a linear way</li>
 <li><span class="math inline">\(Y\)</span> is the dependent variable</li>
 <li><span class="math inline">\(X_1\)</span> is the independent variable</li>
 <li><span class="math inline">\(\beta_0\)</span> is the intercept</li>
@@ -431,14 +433,17 @@ Justin Savoie
 
 
 <img data-src="Slides_files/figure-revealjs/unnamed-chunk-1-1.png" width="960" class="r-stretch"><div style="font-size: 30px;">
-<p>For example, for an income of 50,000$, the predicted value for life satisfaction is 3.37. Of course, it’s not because you have an income of 50,000$ that your life satisfaction is 3.37. That’s why there’s error <span class="math inline">\(ϵ\)</span> in the model. (<em>This is made up data. The true relation would not be as clear.</em>)</p>
+<p>For example, for an income of 50,000$, the predicted value for life satisfaction is 3.37. Of course, it’s not because you have an income of 50,000$ that your life satisfaction is 3.37. That’s why there’s error <span class="math inline">\(ϵ\)</span> in the model.</p>
+<p><em>This is made up data. The true relation would not be as clear.</em></p>
+<p>Typically, <span class="math inline">\(Y = \beta_0 + \beta_1X_1 + \epsilon\)</span> will be used for the general model. <span class="math inline">\(y = b_0 + b_1x_1 + \epsilon\)</span> refers to the estimated regression equation based on sample data.</p>
 </div>
 </section>
 <section class="slide level2">
 
 
 <img data-src="Slides_files/figure-revealjs/unnamed-chunk-2-1.png" width="960" class="r-stretch"><div style="font-size: 30px;">
-<p>The error (or the residual) is the distance between the prediction (i.e.&nbsp;the line of best fit) and the true observed value. The residuals are the distance measure by the black lines.</p>
+<p>The residual is the distance between the prediction (i.e.&nbsp;the line of best fit) and the true observed value. The residuals are shown with the black lines.</p>
+<p>“error” and “residuals” are sometimes used interchangeably but there’s a subtle difference. The “residual” is the observed difference when you fit the line. The “error” is the equivalent in the theoretical model, but it’s unobservable.</p>
 </div>
 </section>
 <section id="estimation-methods-fyi" class="slide level2">
@@ -464,8 +469,8 @@ Justin Savoie
 <p>In contrast, this is NOT the best model of the form <span class="math inline">\(y=b0+b1+ϵ\)</span> because it does not minimizes the square residual.</p>
 </div>
 </section>
-<section class="slide level2">
-
+<section id="in-r" class="slide level2">
+<h2>In R</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">lm</span>(satisfaction<span class="sc">~</span>income,df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -516,7 +521,8 @@ F-statistic: 263.5 on 1 and 98 DF,  p-value: &lt; 2.2e-16</code></pre>
 <section id="binary-independent-variable" class="slide level2">
 <h2>Binary Independent Variable</h2>
 
-<img data-src="Slides_files/figure-revealjs/unnamed-chunk-8-1.png" width="960" class="r-stretch"></section>
+<img data-src="Slides_files/figure-revealjs/unnamed-chunk-8-1.png" width="960" class="r-stretch"><p>Key: treat everything as numbers (0 and 1).</p>
+</section>
 <section class="slide level2">
 
 <div style="font-size: 32px;">
@@ -595,7 +601,7 @@ F-statistic: 2.317 on 2 and 97 DF,  p-value: 0.104</code></pre>
 </section>
 <section class="slide level2">
 
-<div style="font-size: 28px;">
+<div style="font-size: 25px;">
 <p>In our example, we can have: <span class="math display">\[life\_satisfaction = \beta_0 + \beta_1*income + \beta_2*communityurban + \\ \beta_3*educationCollegeTradeSchool + \beta_3*educationUniversity + ... +\epsilon\]</span></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">summary</span>(fit<span class="ot">&lt;-</span><span class="fu">lm</span>(satisfaction<span class="sc">~</span>income<span class="sc">+</span>community<span class="sc">+</span>education,df))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -626,12 +632,12 @@ F-statistic: 66.27 on 4 and 95 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 
 <aside><div>
-<p>where <span class="math inline">\(\beta_0\)</span>=1.18, <span class="math inline">\(\beta_1\)</span>=0.52 …</p>
+<p>where <span class="math inline">\(b_0\)</span>=1.18, <span class="math inline">\(b_1\)</span>=0.52 … Coefficients indicate expected change in the dependent variable for a one-unit change in that variable, holding all other variables constant.</p>
 </div></aside></section>
 <section class="slide level2">
 
 <div style="font-size: 32px;">
-<p>For multiple linear regression, we can plot the marginal effect, that is the average effect, when one holds the non-focal variables constant.</p>
+<p>For multiple linear regression, we can plot the marginal effect, that is the average effect, holding all other variables constant.</p>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="fu">library</span>(ggeffects)</span>
