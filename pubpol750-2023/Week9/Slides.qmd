@@ -1,0 +1,436 @@
+---
+title: "Linear regression"
+subtitle: "PUBPOL 750 Data Analysis for Public Policy I: Week 9"
+author: "Justin Savoie"
+institute: "MPP-DS McMaster"
+format:
+  revealjs: 
+    slide-number: true
+date: 2023-11-15
+---
+
+## Introduction to Linear Regression
+
+- Linear regression is a statistical method used to model the relationship between a dependent variable and one or more independent variables. 
+
+- It's a fundamental tool in data analysis in all social science.
+
+- It quantifies the average effect of changes in independent variables on a dependent variable.
+
+---
+
+## The Simple Linear Regression Model
+
+$$Y = \beta_0 + \beta_1X_1 + \epsilon$$
+
+- $Y$ is the dependent variable
+- $X_1$ is the independent variable
+- $\beta_0$ is the intercept
+- $\beta_1$ is the slope coefficient
+- $\epsilon$ represents the error term
+- Here, it's a _simple_ linear regression because there is one independent variable, $X_1$
+
+---
+
+```{r}
+library(tidyverse)
+set.seed(222)
+income <- runif(100,0,10)
+satisfaction <- abs(1+income*0.5+rnorm(100))
+df <- tibble(income,satisfaction)
+fit <- lm(satisfaction~income,df)
+df <- df |> mutate(fit=predict(fit,df))
+eq <- paste0("life_satisfaction = ",unname(round(fit$coefficients[1],2))," + ",
+       unname(round(fit$coefficients[2],2)),"*income + ϵ")
+f <- df |>
+  ggplot(aes(x=income,y=satisfaction)) + 
+  geom_point() + geom_smooth(method="lm") +
+  geom_point(aes(x = 5, y = 3.37), color = "red", size = 5) +
+  labs(x='Income x 10,000$',y="Life satisfaction",
+       title='Reported life satisfaction as a function of income',
+       subtitle='Survey data: income {0-100k}; life satisfaction {0-8}') +
+  theme_bw() +
+  annotate("text",x=2,y=6,label = eq,size=5) +
+  annotate("text",x=2,y=7.5,label = "Y == B[0] + B[1]*X + ϵ", parse=TRUE,size=5) +
+  annotate("text",x=2,y=6.9,label = "life_satisfaction == B[0] + B[1]*income + ϵ", parse=TRUE,size=5) +
+  annotate("text",x=1.65,y=6.3,label = "intercept",color="red",size=3) +
+  annotate("text",x=2.5,y=6.3,label = "slope",color="red",size=3) +
+  
+  geom_segment(aes(x = 1.55, y = 5.75, xend = 0, yend = 0.9), 
+               arrow = arrow(length = unit(0.2, "inches")), 
+               color = "red") +
+  geom_segment(aes(x = 2.3, y = 5.75, xend = 6.25, yend = 4), 
+               arrow = arrow(length = unit(0.2, "inches")), 
+               color = "red") +
+  geom_segment(aes(x = 6, y = 1, xend = 5.1, yend = 3), 
+               arrow = arrow(length = unit(0.2, "inches")), 
+               color = "red") +
+  annotate("text",x=6.5,y=0.7,label = "Best guess of life satisfaction\nat income = 50,000$",color="black",size=5)
+f
+```
+
+<div style="font-size: 30px;">
+For example, for an income of 50,000\$, the predicted value for life satisfaction is 3.37. Of course, it's not because you have an income of 50,000\$ that your life satisfaction is 3.37. That's why there's error $ϵ$ in the model. (*This is made up data. The true relation would not be as clear.*)
+</div>
+
+---
+
+```{r}
+f +
+  #geom_point(aes(x=income,y=fit),alpha=0.2,size=4) +
+  geom_segment(aes(xend = income, yend = fit))
+```
+
+<div style="font-size: 30px;">
+The error (or the residual) is the distance between the prediction (i.e. the line of best fit) and the true observed value. The residuals are the distance measure by the black lines.
+</div>
+
+---
+
+## Estimation Methods (FYI)
+
+<div style="font-size: 32px;">
+
+The most common method for estimating the coefficients of a linear regression model is Ordinary Least Squares (OLS). This method *minimizes the sum of the squared differences between the observed values and the values predicted by the model: the sum of the squared residuals.
+
+</div>
+
+::: aside
+*Why the sum of the squared differences? Mathematical simplicity, good statistical properties under certain conditions, and the convenience it offers for hypothesis testing and interval estimation. But it could instead be the sum of the absolute values of residuals if we wanted. But in practice it's always sum of the squared residuals. 
+:::
+
+---
+
+```{r}
+df |>
+  ggplot(aes(x=income,y=satisfaction)) + 
+  geom_point() + geom_smooth(method="lm",se=FALSE) +
+  labs(x='Income x 10,000$',y="Life satisfaction",
+       title='Reported life satisfaction as a function of income',
+       subtitle='Survey data: income {0-100k}; life satisfaction {0-8}') +
+  theme_bw() +
+  geom_segment(aes(xend = income, yend = fit))
+```
+
+<div style="font-size: 30px;">
+This is the best model of the form $y=b0+b1+ϵ$ because it minimizes the square of the residual. 
+</div>
+
+---
+
+```{r}
+df <- df |> mutate(fit_bad = 3 + income*0.25)
+df |>
+  ggplot(aes(x=income,y=satisfaction)) + 
+  geom_point() + geom_line(aes(x=income,y=fit_bad),color="blue") +
+  labs(x='Income x 10,000$',y="Life satisfaction",
+       title='Reported life satisfaction as a function of income',
+       subtitle='Survey data: income {0-100k}; life satisfaction {0-8}') +
+  theme_bw() +
+  geom_segment(aes(xend = income, yend = fit_bad))
+```
+
+<div style="font-size: 30px;">
+In contrast, this is NOT the best model of the form $y=b0+b1+ϵ$ because it does not minimizes the square residual. 
+</div>
+
+---
+
+
+```{r}
+#| echo: true
+lm(satisfaction~income,df)
+```
+
+<div style="font-size: 32px;">
+
+On average, when income increases by 1, satisfaction increases by 0.52. On average, when income is 0, satisfaction is 0.93.
+
+</div>
+
+```{r}
+f
+```
+
+---
+
+<div style="font-size: 30px;">
+
+```{r}
+#| echo: true
+#| #| output-location: slide
+lm_fit <- lm(satisfaction~income,df)
+summary(lm_fit)
+```
+
+The standard error is the uncertainty around the estimate. When it's small you have more confidence in the estimate. We usually say it's statisticaly significant if Pr(>|t|) (the "p-value") is below 0.05. The p-value is the probability of obtaining an estimate at least as extreme as the estimate actually observed, if there was no effect. We can get a confidence interval around the estimate by adding +- 1.96 * the standard error.
+
+</div>
+
+---
+
+## Binary Independent Variable
+
+```{r}
+set.seed(223)
+df$community <- sapply(
+  scales::rescale(
+    c(scale(df$satisfaction)),
+    c(0.25,0.75)),
+  function(x){rbinom(1,1,x)})
+
+df$community <- ifelse(df$community,"rural","urban")
+educ_levels <- c("HS or below","College Trade School","University")
+df$education <- factor(sample(c(educ_levels),100,replace=TRUE),educ_levels)
+
+ggplot(df,aes(x=community,y=satisfaction)) +
+  geom_point() +
+  stat_summary(fun.data = "mean_cl_normal", geom = "errorbar", 
+               width = 0.2, color = "red") +
+  stat_summary(fun = "mean", geom = "point", 
+               shape = 18, size = 3, color = "red")  +
+  labs(x='Community type',y="Life satisfaction",
+       title='Reported life satisfaction as a function of Community type',
+       subtitle='Survey data: community type {rural,urban}; life satisfaction {0-8}') +
+  theme_bw() +
+  scale_y_continuous(breaks = seq(0,10,0.5))
+
+```
+
+---
+
+<div style="font-size: 32px;">
+
+```{r}
+#| echo: true
+#| #| output-location: slide
+lm_fit <- lm(satisfaction~community,df)
+summary(lm_fit)
+```
+
+</div>
+
+::: aside
+
+4.08 is the average for rural community. 4.08-0.81=3.27 is the average for urban community. 
+
+4.08+-1.96*0.28 =[3.53,4.62] is the confidence interval around rural community. It's not as straightforward to get the other but you can get it with the predict function: `predict(lm_fit,newdata=tibble(community=c("rural","urban")),se=TRUE)` get you the standard error which you multiply by 1.96.
+
+:::
+
+---
+
+```{r}
+ggplot(df,aes(x=education,y=satisfaction)) +
+  geom_point() +
+  stat_summary(fun.data = "mean_cl_normal", geom = "errorbar", 
+               width = 0.2, color = "red") +
+  stat_summary(fun = "mean", geom = "point", 
+               shape = 18, size = 3, color = "red")  +
+  labs(x='Education level',y="Life satisfaction",
+       title='Reported life satisfaction as a function of education level',
+       subtitle='Survey data: education level {HS or below,College Trade School,University}; life satisfaction {0-8}') +
+  theme_bw() +
+  scale_y_continuous(breaks = seq(0,10,0.5))
+
+```
+
+---
+
+<div style="font-size: 32px;">
+
+```{r}
+#| echo: true
+lm_fit <- lm(satisfaction~education,df)
+summary(lm_fit)
+```
+
+</div>
+
+::: aside
+
+Group averages are 3.09, 3.09+0.6=3.69, 3.09+0.92=4.01.
+
+When a **categorical** predictor is included (e.g., here we have three groups) then we have two additional predictors (the intercept is the "base/reference" effect for the first category). 
+
+:::
+
+---
+
+## The Multiple Linear Regression Model
+
+$$Y = \beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_3X_3 + ... +\epsilon$$
+In practice, linear regression will have multiple predictors. Life satisfaction will be modelled as a function of multiple factors. 
+
+Perhaps, we could have: $$life\_satisfaction = \beta_0 + \beta_1*income + \beta_2*physical\_health + \\ \beta_3*mental\_health + \beta_4*quality\_of\_infrastructures + ... +\epsilon$$
+
+---
+
+<div style="font-size: 28px;">
+
+In our example, we can have: $$life\_satisfaction = \beta_0 + \beta_1*income + \beta_2*communityurban + \\ \beta_3*educationCollegeTradeSchool + \beta_3*educationUniversity + ... +\epsilon$$
+
+```{r}
+#| echo: true
+summary(fit<-lm(satisfaction~income+community+education,df))
+```
+
+</div>
+
+::: aside
+where $\beta_0$=1.18, $\beta_1$=0.52 ...
+:::
+
+---
+
+<div style="font-size: 32px;">
+
+For multiple linear regression, we can plot the marginal effect, that is the average effect, when one holds the non-focal variables constant.
+
+</div>
+
+```{r}
+#| echo: true
+library(ggeffects)
+plot(ggeffect(fit,terms = "income"))
+```
+
+---
+
+## Why Have Multiple Predictors?
+
+```{r}
+# Create a dataset
+set.seed(123)  # For reproducible results
+group_1 <- data.frame(
+  x = ((1:30)/10),
+  y = 7.5 + ((1:30)/10)*0.5+rnorm(30,0,0.5),
+  group = "A"
+)
+
+group_2 <- data.frame(
+  x = ((31:60)/10),
+  y = 4.0 + ((31:60)/10)*0.5+rnorm(30,0,0.5),
+  group = "B"
+)
+
+group_3 <- data.frame(
+  x = ((61:100)/10),
+  y = 1.0 + ((61:100)/10)*0.5+rnorm(40,0,0.5),
+  group = "C"
+)
+
+data <- tibble(rbind(group_1, group_2, group_3))
+
+fit <- lm(y~x,data)
+
+eq <- paste0("life_satisfaction = ",round(unname(coef(fit))[1],2), round(unname(coef(fit))[2],2),"*income")
+
+# Plot the data
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(aes(color=group)) +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("Illustration of Simpson's Paradox") +
+  labs(x='Income x 10,000$',y="Life satisfaction",
+       title='Reported life satisfaction as a function of income',
+       subtitle='Survey data: income {0-100k}; life satisfaction {0-8}',
+       color='Groups in society') +
+  theme_bw() +
+  annotate("text",x=7.5,y=8.5,label=eq,size=4,fontface="bold")
+
+```
+
+---
+
+```{r}
+fit <- lm(y~x+group,data)
+data <- data |> mutate(fit=predict(fit))
+
+eq <- paste0("life_satisfaction = ",round(unname(coef(fit))[1],2),"",
+             round(unname(coef(fit)[3]),2) ,"*groupB",
+               round(unname(coef(fit)[4]),2) ,"*groupC+",
+             round(unname(coef(fit)[2]),2),"*income")
+
+ggplot(data, aes(x = x, y = y,color=group)) +
+  geom_point() +
+  geom_line(aes(y=fit)) +
+  ggtitle("Illustration of Simpson's Paradox") +
+  labs(x='Income x 10,000$',y="Life satisfaction",
+       title='Reported life satisfaction as a function of income',
+       subtitle='Survey data: income {0-100k}; life satisfaction {0-8}',
+       color='Groups in society') +
+  theme_bw() +
+  annotate("text",x=6.5,y=8.5,label=eq,size=4,fontface="bold")
+```
+
+---
+
+## Binary Dependent Variable
+
+<div style="font-size: 32px;">
+
+- We can still fit a linear regression model if the dependent variable is binary. This is called the **linear probability model**.
+- Here, everything is interpreted as probabilities. It's the probability of being satisfied (where being satisfied means answer 5 or more).
+
+</div>
+
+```{r}
+df <- df |> 
+  mutate(satisfaction_yes = as.numeric(satisfaction>5))
+ggplot(df,aes(x=income,y=satisfaction_yes)) + 
+  geom_point() + geom_smooth(method="lm",se=FALSE) +
+  theme_bw() + labs(x='Income x 10,000$',y="Life satisfaction [Yes]",
+       title='Reported life satisfaction as a function of income',
+       subtitle='Survey data: income {0-100k}; life satisfaction {No (0),Yes (1)}')
+```
+
+---
+
+<div style="font-size: 28px;">
+
+```{r}
+#| echo: true
+summary(lm(satisfaction_yes~income,df))
+```
+
+</div>
+
+---
+
+## Assumptions of Linear Regression (FYI)*
+
+<div style="font-size: 20px;">
+1. Validity. The data you are analyzing should map to the research question you are trying to answer. This sounds obvious but is often overlooked or ignored because it can be inconvenient.
+2. Representativeness. A regression model is fit to data and is used to make inferences about a larger population, hence the implicit assumption in interpreting regression coefficients is that the sample is representative of the population.
+3. Additivity and linearity. Its deterministic component is a linear function of the separate predictors: i.e., that it *actually makes sense* to model it like this: $y = \beta_0+\beta_1*X_1+\beta_2*X_2 ...$
+4. Independence of errors. If you have repeated observations on some individuals, then this is violated and you will have to use other (related) models.
+5. Equal variance of errors (also called heteroscedasticity). If life satisfaction is much more variable for people with high income than people with low income.
+6. Normality of errors. The distribution of the error term is relevant when predicting individual data points. 
+</div>
+
+::: aside
+*For more information: [Gelman, Hill, Vehtari, p.154](https://users.aalto.fi/~ave/ROS.pdf). This isn't important for this course but if ever you run one at work or for a research paper you should read about this.
+:::
+
+---
+
+## When to Use Regression?
+
+<div style="font-size: 30px;">
+- Linear regression can be used for prediction: as a machine simple learning model  
+- Linear regression can be used for description: for group summaries or correlation
+- Linear regression can be used for data summary: you have several independent variables and you look at how they each affect the dependent variable
+- Linear regression can sometimes be used for the causal analysis of the effect of x on y: $$y = \beta_0+\beta_1*x + controls ... $$
+</div>
+
+---
+
+## For More Information
+
+- [YaRrr! The Pirate’s Guide to R, Chapter 15: Regression](https://bookdown.org/ndphillips/YaRrr/regression.html)
+- [Modern Dive, Chapters 5-6](https://moderndive.com/5-regression.html)
+- [Regression and Other Stories, Chapters 6-12: Regression](https://users.aalto.fi/~ave/ROS.pdf)
+- [Telling Stories with Data, Chapter 14: Causality from observational data](https://tellingstorieswithdata.com/14-causality_from_obs.html)
+- [Regression and Other Stories, Chapters 20: Observational studies with all confounders assumed to be measured](https://users.aalto.fi/~ave/ROS.pdf)
+- [Marginal effects, marginal means, etc.](https://www.andrewheiss.com/blog/2022/05/20/marginalia/)
+- [The Linear Probability Model](https://bookdown.org/sarahwerth2024/CategoricalBook/linear-probability-models-r.html)
