@@ -24,6 +24,7 @@ date: 2023-11-15
 ## The Simple Linear Regression Model
 
 $$Y = \beta_0 + \beta_1X_1 + \epsilon$$
+<div style="font-size: 35px;">
 
 - Models the relationship between a dependent variable and one independent variable in a linear way 
 - $Y$ is the dependent variable
@@ -32,6 +33,8 @@ $$Y = \beta_0 + \beta_1X_1 + \epsilon$$
 - $\beta_1$ is the slope coefficient
 - $\epsilon$ represents the error term
 - Here, it's a _simple_ linear regression because there is one independent variable, $X_1$
+
+</div>
 
 ---
 
