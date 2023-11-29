@@ -1,0 +1,247 @@
+---
+title: "Week 11: Functions, loops"
+subtitle: "PUBPOL 750 Data Analysis for Public Policy I"
+author: "Justin Savoie"
+institute: "MPP-DS McMaster"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: '16:9'
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(tidyverse)
+```
+
+class: inverse, center, middle
+
+# Becoming more efficient: functions and loop
+
+---
+
+# Becoming more efficient with functions and loop
+
+- Automate common tasks
+- Apply the same "procedure" to tens or hundreds of files, of objects, of dataframes, of variables.
+
+
+- In a nutshell: 
+  - Functions allow to avoid copy pasting, allow to reuse a procedure
+  - Loops allow to do one thing many times
+  
+
+- They are often used in combination.
+
+---
+
+## Functions (justyfying their use)
+
+```{r}
+set.seed(232)
+df <- tibble::tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10)
+)
+
+df$a <- (df$a - min(df$a, na.rm = TRUE)) / 
+  (max(df$a, na.rm = TRUE) - min(df$a, na.rm = TRUE))
+df$b <- (df$b - min(df$b, na.rm = TRUE)) / 
+  (max(df$b, na.rm = TRUE) - min(df$b, na.rm = TRUE))
+df$c <- (df$c - min(df$c, na.rm = TRUE)) / 
+  (max(df$c, na.rm = TRUE) - min(df$c, na.rm = TRUE))
+head(df)
+```
+---
+```{r}
+set.seed(232)
+df <- tibble::tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10)
+)
+
+rescale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+df$a <- rescale01(df$a)
+df$b <- rescale01(df$b)
+df$c <- rescale01(df$c)
+head(df)
+```
+---
+
+Implementing the mean function by taking the sum, and dividing by the number of non missing cases.
+
+```{r}
+my_vector <- c(3,8,19,NA,22,1)
+mean(my_vector,na.rm=TRUE)
+custom_mean1 <- function(x){
+  my_sum <- sum(x,na.rm=TRUE)
+  my_length <- sum(!is.na(x))
+  my_sum / my_length
+}
+custom_mean1(my_vector)
+```
+---
+
+Implementing the same mean function by going through all values one by one and calculating a bit like we would do in elementary school. This is often the logic in real functions. Breaking down everything.
+
+```{r}
+custom_mean2 <- function(x){
+  my_length <- 0
+  my_sum <- 0
+  for (i in my_vector){
+    if (!is.na(i)){
+      my_length <- my_length + 1
+      my_sum <- my_sum + i
+    }
+  }
+  my_sum / my_length
+}
+custom_mean2(my_vector)
+```
+---
+## Using existing functions
+
+Of course, you likely won't have to write many functions. A lot of functions exists. We've been using functions since the beginning of the semester.
+
+`mean()` `group_by()` `ggplot()` (and many more) these are all functions.
+
+Functions are incredibly useful.
+
+You might, for example, want to:
+
+- Calculate cross tabs and plot them, for many survey questions (à la what polling firms)
+- Read in a court decision and clean it to a format you can analyze
+
+---
+
+## Example 
+
+Imagine we have 200 respondents on 10 questions. Answers: {1:"Strongly disagree",2:"Somewhat disagree",3:"Neutral",4:"Somewhat agree",5:"Strongly agree",6:"Don't know"}. We want to plot the responses to each question in a separate figure.
+
+```{r, warning=FALSE,message=FALSE}
+questions <- paste0("question",1:10)
+df <- as_tibble(matrix(sample(1:6,size=2000,replace = TRUE),nrow=200))
+names(df) <- questions
+df
+```
+---
+```{r}
+
+make_plot <- function(data,my_variable,answer_choices){
+  
+  to_plot <- data %>%
+    select(all_of(my_variable)) %>%
+    rename(selected_variable=all_of(my_variable)) %>%
+    group_by(selected_variable) %>%
+    count() %>%
+    ungroup() %>%
+    mutate(p=n/sum(n))  
+
+  to_plot <- to_plot %>%
+    mutate(selected_variable=recode(selected_variable,!!!answer_choices)) %>%
+    mutate(selected_variable = factor(selected_variable,answer_choices))
+  
+  ggplot(to_plot,aes(x=selected_variable,y=p)) +
+    geom_bar(stat='identity') +
+    geom_text(aes(label = p), vjust = 1.5, colour = "white")
+  
+}
+```
+---
+```{r}
+answer_choices=c("Strongly disagree","Somewhat disagree","Neutral",'Somewhat agree',"Strongly agree","Don't know")
+make_plot(data=df,my_variable='question1',answer_choices=answer_choices)
+```
+---
+```{r}
+make_plot(data=df,my_variable='question2',answer_choices)
+```
+---
+```{r}
+make_data_to_plot <- function(data,my_variable){
+  
+  to_plot <- data %>%
+    select(all_of(my_variable)) %>%
+    rename(selected_variable=all_of(my_variable)) %>%
+    group_by(selected_variable) %>%
+    count() %>%
+    ungroup() %>%
+    mutate(p=n/sum(n))  
+  to_plot <- to_plot %>%
+    mutate(selected_variable=recode(selected_variable,!!!answer_choices)) %>%
+    mutate(selected_variable = factor(selected_variable,answer_choices))
+  to_plot
+}
+make_plot <-  function(data,answer_choices){
+  ggplot(data,aes(x=selected_variable,y=p)) +
+    geom_bar(stat='identity') +
+    geom_text(aes(label = p), vjust = 1.5, colour = "white")
+}
+```
+
+---
+
+```{r}
+data_to_plot <- make_data_to_plot(data=df,my_variable='question2')
+make_plot(data_to_plot,answer_choices)
+```
+
+---
+
+## Loops (Iteration chapter in the book)
+
+```{r}
+
+threeletters <- c("a","b","c")
+
+for (i in threeletters){
+  print(i)
+}
+```
+---
+
+```{r}
+for (i in seq_along(threeletters)){
+  print(i)
+  print(threeletters[i])
+}
+
+```
+
+---
+
+```{r}
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+```
+
+```{r}
+output <- vector("double", ncol(df))
+for (i in seq_along(df)) {            
+  output[[i]] <- median(df[[i]])      
+}
+output
+```
+---
+```{r}
+for (i in seq_along(df)) {            
+  df[[i]] <- df[[i]]+10      
+}
+df
+```
+
