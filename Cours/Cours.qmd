@@ -148,13 +148,13 @@ Par l’expérimentation, nous signifions des activités qui cherchent à explor
 
 ## 6. Poser les bonnes questions
 
-- <s>plus de données résolvent votre problème</s>
-- les sciences humaines et sociales ont besoin de théorie
+- <s>Plus de données résolvent votre problème</s>
+- Les sciences humaines et sociales ont besoin de théorie
 
 ## 6. Poser les bonnes questions
 
-- <s>plus de données résolvent votre problème</s>
-- les sciences humaines et sociales ont besoin de théorie
+- <s>Plus de données résolvent votre problème</s>
+- Les sciences humaines et sociales ont besoin de théorie
 - Qu'est-ce qu'on infère?
 
 ![](images/hume.png){.absolute top="350" left="400" width="250" height="250"}
