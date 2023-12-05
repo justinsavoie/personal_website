@@ -166,11 +166,11 @@ Changements sémantiques
 :::
 
 
-## Méthode: le sens et l'usage
+## Méthode: sens, usage, maths
 
 - Vectorisation des mots [*word embeddings*]
     - mots représentés par des vecteurs
-    - propriétés arthiméthiques
+    - propriétés arithmétiques
     ![](images/espace_vectoriel2.png){.absolute top="150" right="0" width="400" height="400"}
     
 
