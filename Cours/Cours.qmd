@@ -109,8 +109,10 @@ https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KCIK9D
 ## 3. L'expérimentation
 
 <q>
-[Par l’expérimentation, nous signifions des activités qui cherchent à explorer, à faire des essais et à comparer les effets des politiques, des interventions et des approches, pour éclairer la prise de décision basée sur des données probantes](https://www.canada.ca/fr/conseil-prive/services/objectif-2020/blogue/experimentation-simplement-bonne-pratique-politique-publique.html)
+Par l’expérimentation, nous signifions des activités qui cherchent à explorer, à faire des essais et à comparer les effets des politiques, des interventions et des approches, pour éclairer la prise de décision basée sur des données probantes
 </q>
+
+[L’expérimentation est simplement une bonne pratique de politique publique (Blogue Bureau du Conseil privé)](https://www.canada.ca/fr/conseil-prive/services/objectif-2020/blogue/experimentation-simplement-bonne-pratique-politique-publique.html)
 
 ## 4. Collaborer
 

@@ -47,13 +47,13 @@ format:
 
 1.  Science comportementale et recherche sur l'opinion publique
 
-![](images/alluvial.png){.absolute top="200" left="200" width="560" height="400"}
+![](images/alluvial.png){.absolute top="200" left="200" width="583" height="419"}
 
 ## Plan de recherche quinquennal
 
 1.  Science comportementale et recherche sur l'opinion publique
 
-![](images/multinomial_logit.png){.absolute top="200" left="200" width="560" height="400"}
+![](images/multinomial_logit.png){.absolute top="200" left="200" width="582" height="334"}
 
 ## Plan de recherche quinquennal
 
@@ -123,13 +123,11 @@ Changements sémantiques
 
 ## L'évolution du concept de nation au Canada - résumé
 
-::: incremental
 1. Étude du changement sémantique de « nation »
 2. Les nations sont l'oeuvre de dirigeants nationalistes
 3. Aucune façon systématique d'étudier ce que les dirigents disent
 4. Analyse systématique de toutes les mentions  
-5. Le changement est graduel
-:::
+5. Le changement est graduel mais évident: trois périodes
 
 ## Plan
 
@@ -147,8 +145,6 @@ Changements sémantiques
 
 -   État-nation canadien unifié?
 
--   Nommer et décrire, et la formation d'une identité collective
-
 ## Le concept de nation au Canada
 
 - Nations sont l'oeuvre de dirigeants
@@ -157,15 +153,11 @@ Changements sémantiques
 
 ## Méthode: le sens et l'usage
 
-::: incremental
-
 - Théorie de la signification fondée sur l'usage
 
 - L'hypothèse harissienne de proximité distributionnelle
 
-:::
-
-## Méthode: le sens et l'usage
+## Méthode: sens, usage, maths
 
 ::: incremental
 - Vectorisation des mots [*word embeddings*]
@@ -174,7 +166,7 @@ Changements sémantiques
 :::
 
 
-## Le sens et l'usage
+## Méthode: le sens et l'usage
 
 - Vectorisation des mots [*word embeddings*]
     - mots représentés par des vecteurs
@@ -182,7 +174,7 @@ Changements sémantiques
     ![](images/espace_vectoriel2.png){.absolute top="150" right="0" width="400" height="400"}
     
 
-## Le sens et l'usage
+## Méthode: GloVe
 
 - Vectorisation des mots [*word embeddings*][^1]
     - mots représentés par des vecteurs
@@ -322,46 +314,24 @@ Intuition:
 
 ![](images/context_full.png)
 
-## Réduction de la dimensionalité
-
-::: columns
-::: {.column width="50%"}
-![](images/pca.png)
-:::
-
-::: {.column width="50%"}
-<div class="small-text">
-| Dimensions            | Haut | Bas |
-|---|---|---|
-| Old-New               |   truly secure future children, wellbeing youngest canadians, opportunity participate   |  favoured tariffs, colony, toolmakers machinists   |
-| Quebec/Federation-Economy |  quebec recognized distinct, charter rights fundamental freedoms, nation quebec     |   time year unemployemnt, considering domestic economy, extraordinary jump unemployment  |
-| Inside-Outside        | house_commons intends respect rights, underlying mandate given members, defending quebeckers shameful respect |  canada trading prosperity, partner investment destination, trade parallels history   |
-| Postmaterialism       |  government's philosophy hearts bleed, future young canadians, people hopes dreams, love toronto t-shirts    | trade, italy favored treaty, provided favoured treaty    |
-| Crises-Consumption    |  problems facing economy, considered conference economic crisis, solid compregensice program deal, view serious economic crisis    |  every man every buy cheapest, consume pay taxing savings, money lend abroad buy goods,    |
-</div>
-:::
-:::
-
 ## Discussion - résumé
 
 - Un changement sémantique clair
 
+![](images/tiles.png){width="720" height="480"}
+
 ## Discussion - limites
 
-::: incremental
 - Superficiel ?
 - Nécessairement inductif
 - Combinaison d'approches quantitatives et qualitatives n'est pas triviale
 - On parle de quelle nation?
-- Niveleurs 1638-1666 (Schwartzberg & Spirling, 2023): égalité juridique plutôt que sociale 
-:::
 
 ## Discussion - directions futures
 
-::: incremental
 - Lignes directrices concrètes
+- Niveleurs 1638-1666 (Schwartzberg & Spirling, 2023): égalité juridique plutôt que sociale 
 - Modèles de sujet
-:::
 
 # Merci! {background="#915e4d"}
 
@@ -382,3 +352,23 @@ Intuition:
 - Schwartzberg, M., Spirling, A. (2023) Peers, Equals, and Jurors New Data and Methods on The Role of Legal Equality in Leveller Thought, 1638–1666, ERC (2023) Working Paper
 
 </div>
+
+## Annexe - Réduction de la dimensionalité
+
+::: columns
+::: {.column width="50%"}
+![](images/pca.png)
+:::
+
+::: {.column width="50%"}
+<div class="small-text">
+| Dimensions            | Haut | Bas |
+|---|---|---|
+| Ancien-Récent               |   truly secure future children, wellbeing youngest canadians, opportunity participate   |  favoured tariffs, colony, toolmakers machinists   |
+| Québec/Fédération-Économie |  quebec recognized distinct, charter rights fundamental freedoms, nation quebec     |   time year unemployemnt, considering domestic economy, extraordinary jump unemployment  |
+| Intérieur-Extérieur        | house_commons intends respect rights, underlying mandate given members, defending quebeckers shameful respect |  canada trading prosperity, partner investment destination, trade parallels history   |
+| Postmaterialisme       |  government's philosophy hearts bleed, future young canadians, people hopes dreams, love toronto t-shirts    | trade, italy favored treaty, provided favoured treaty    |
+| Crises-Consommation    |  problems facing economy, considered conference economic crisis, solid comprehensive program deal, view serious economic crisis    |  every man every buy cheapest, consume pay taxing savings, money lend abroad buy goods,    |
+</div>
+:::
+:::
