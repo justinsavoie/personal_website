@@ -1,0 +1,384 @@
+---
+title: "L'évolution du concept de nation au Canada"
+author: "Justin Savoie"
+format:
+  revealjs:
+    theme: [serif, custom-styles.css]
+    slide-number: true
+    mathjax: true
+---
+
+# Plan de la présentation
+
+1.  Vision pour la recherche: *extraire le sens des données*
+
+2.  L'évolution du concept de nation au Canada: une analyse computationelle contextuelle
+
+# Extraire le sens {background="#915e4d"}
+
+## Extraire le sens
+
+::: incremental
+1.  Observer, collecter, comprendre et expliquer ![](images/micro-teles.png){.absolute top="350" left="0" width="210" height="210"}
+2.  Réfléchir à un problème différemment ![](images/thinking_bubble.png){.absolute top="350" left="400" width="210" height="210"}
+3.  Reproductibilité, transparence, collaboration ![](images/transparency.png){.absolute top="350" left="800" width="210" height="210"}
+:::
+
+## Plan de recherche quinquennal
+
+## Plan de recherche quinquennal
+
+1.  Science comportementale et recherche sur l'opinion publique
+
+## Plan de recherche quinquennal
+
+1.  Science comportementale et recherche sur l'opinion publique
+
+![](images/consensus_belief_sub.png){.absolute top="200" left="200" width="560" height="400"}
+
+## Plan de recherche quinquennal
+
+1.  Science comportementale et recherche sur l'opinion publique
+
+![](images/reddit_twitter.png){.absolute top="200" left="280" width="400" height="400"}
+
+
+## Plan de recherche quinquennal
+
+1.  Science comportementale et recherche sur l'opinion publique
+
+![](images/alluvial.png){.absolute top="200" left="200" width="560" height="400"}
+
+## Plan de recherche quinquennal
+
+1.  Science comportementale et recherche sur l'opinion publique
+
+![](images/multinomial_logit.png){.absolute top="200" left="200" width="560" height="400"}
+
+## Plan de recherche quinquennal
+
+1.  Science comportementale et recherche sur l'opinion publique
+
+![](images/Brexit-Conjoint.png){.absolute top="200" left="200" width="560" height="373"}
+
+
+## Plan de recherche quinquennal
+
+1.  Science comportementale et recherche sur l'opinion publique
+2.  Développement d'outils méthodologiques
+
+![](images/survey.png){.absolute top="300" left="200" width="448" height="320"}
+
+## Plan de recherche quinquennal
+
+1.  Science comportementale et recherche sur l'opinion publique
+2.  Développement d'outils méthodologiques
+3.  L'analyse computationelle pour le texte
+
+::: r-hstack
+::: {data-id="box1" auto-animate-delay="0" style="background: #b7d97c; width: 300px; height: 200px; margin: 10px; text-align: center;"}
+Questions ouvertes de suivi
+:::
+
+::: {data-id="box2" auto-animate-delay="0.1" style="background: #f5d442; width: 300px; height: 200px; margin: 10px; text-align: center;"}
+Modèle de sujet
+:::
+
+::: {data-id="box3" auto-animate-delay="0.2" style="background: #4d9fd6; width: 300px; height: 200px; margin: 10px; text-align: center;"}
+Changements sémantiques
+:::
+:::
+
+## Extraire le sens à partir de données non structurées
+
+::: {.columns}
+::: {.column width="60%"}
+
+![](images/phone.png){.absolute top="150" left="0" width="300" height="300"}
+
+![](images/screen.png){.absolute top="150" left="350" width="300" height="300"}
+:::
+
+::: {.column width="5%"}
+:::
+
+::: {.column width="35%" .small2-text}
+
+1. Observer les comportements
+
+2. Mesurer les attitudes
+
+3. Expérimenter
+
+4. <span style="color:blue">***Collaborer***</span>
+
+5. <span style="color:blue">***Éthique***</span>
+
+6. <span style="color:red">***Poser des questions importantes***</span>
+
+:::
+:::
+
+# L'évolution du concept de nation au Canada {background="#915e4d"}
+
+## L'évolution du concept de nation au Canada - résumé
+
+::: incremental
+1. Étude du changement sémantique de « nation »
+2. Les nations sont l'oeuvre de dirigeants nationalistes
+3. Aucune façon systématique d'étudier ce que les dirigents disent
+4. Analyse systématique de toutes les mentions  
+5. Le changement est graduel
+:::
+
+## Plan
+
+1.  Le concept de nation au Canada
+
+2.  Méthodes, données
+
+3.  Résultats
+
+4.  Discussion
+
+## Le concept de nation au Canada
+
+-   Mélange unique de diversité culturelle, linguistique et régionale
+
+-   État-nation canadien unifié?
+
+-   Nommer et décrire, et la formation d'une identité collective
+
+## Le concept de nation au Canada
+
+- Nations sont l'oeuvre de dirigeants
+
+- Investir les conditions sociales d'une signification nationale
+
+## Méthode: le sens et l'usage
+
+::: incremental
+
+- Théorie de la signification fondée sur l'usage
+
+- L'hypothèse harissienne de proximité distributionnelle
+
+:::
+
+## Méthode: le sens et l'usage
+
+::: incremental
+- Vectorisation des mots [*word embeddings*]
+    - mots représentés par des vecteurs
+    ![](images/espace_vectoriel1.png){.absolute top="150" right="0" width="400" height="400"}
+:::
+
+
+## Le sens et l'usage
+
+- Vectorisation des mots [*word embeddings*]
+    - mots représentés par des vecteurs
+    - propriétés arthiméthiques
+    ![](images/espace_vectoriel2.png){.absolute top="150" right="0" width="400" height="400"}
+    
+
+## Le sens et l'usage
+
+- Vectorisation des mots [*word embeddings*][^1]
+    - mots représentés par des vecteurs
+    - propriétés arthiméthiques
+    - obtenus par optimisation des vecteurs $u$ et $v$
+$$
+\underbrace{\left [ 1,2,3 \right ]}_{\text{nation}} \times \underbrace{\begin{bmatrix}
+-1.2\\ 
+1.3\\ 
+0.5
+\end{bmatrix}}_{\text{voted}}=\underbrace{78}_{\text{cooccurences}}
+$$
+
+[^1]: Rodriguez & Spirling (2022)
+
+## Vectorisations à la carte
+
+-   Moyenne des vecteurs sur les mots proches[^2]
+
+$$ \small
+\underbrace{\begin{bmatrix}
+-1.2\\ 
+1.3\\ 
+0.5
+\end{bmatrix}}_{\text{voted}}
+\underbrace{\begin{bmatrix}
+1.8\\ 
+0.6\\ 
+-0.8
+\end{bmatrix}}_{\text{on}}
+\underbrace{\begin{bmatrix}
+-0.1\\ 
+-0.7\\ 
+0.8
+\end{bmatrix}}_{\text{the}}
+bill
+\underbrace{\begin{bmatrix}
+1.8\\ 
+1.9\\ 
+1.6
+\end{bmatrix}}_{\text{and}}
+\underbrace{\begin{bmatrix}
+-1.5\\ 
+-1.7\\ 
+0.5
+\end{bmatrix}}_{\text{it}}
+\underbrace{\begin{bmatrix}
+-0.1\\ 
+1.6\\ 
+-0.2
+\end{bmatrix}}_{\text{passed}}
+$$ 
+
+$$ \small
+v_{bill} =
+\begin{bmatrix}
+    0.12 \\
+    0.50 \\
+    0.4
+  \end{bmatrix}
+$$
+
+
+[^2]: Rodriguez, Spirling & Stewart (2023)
+
+## Test par régression
+
+$$
+\begin{array}{ccc}
+\underbrace{\mathbf{Y}}_{n \times D} = \underbrace{\mathbf{X}}_{n \times p+1} * \underbrace{\boldsymbol{\beta}}_{p+1 \times d} + \underbrace{\mathbf{E}}_{n \times D}
+\end{array}
+$$
+
+Intuition:
+
+- chaque mot est dans un espace de 300 dimensions
+- on exécute la régression sur chacune des dimensions (*multivariate regression*)
+- on prend la distance euclidienne pour tous les coefficients
+
+
+## Données
+
+- Canadian Hansard Dataset
+    - Transcription des débats parlementaires [1901-2019]
+    - 4.76 M textes
+    - 51,258 textes qui mentionne la « nation »
+    - 86,397 mentions
+    
+## Données
+
+![](images/distribution1.png){.absolute top="100" left="200" width="750" height="500"}
+
+## Données
+
+![](images/distribution2.png){.absolute top="100" left="200" width="750" height="500"}
+
+## Données
+
+![](images/distribution3.png){.absolute top="100" left="200" width="750" height="500"}
+
+## Validations {.smaller}
+
+- Validation interne: similarité cosinus 0.966
+- Validation externe: 
+
+<div class="small2-text">
+|mot| GloVe standard | Vectorisation à la carte                                                            |
+|--|---|---|
+|nation|country,america,continent,<br />largest,countries,biggest,<br />nations,states,most,its|country,world,must,<br />canada,become,future,<br />part,strong,always,great|
+|immigration|immigrants,naturalization,immigrant<br/>,enforcement,legislation,laws,<br/>deportation,citizenship,illegal,asylum|immigrants,department,citizenship,<br/>also,act,legislation,<br/>application,minister,special,however
+|quebec|ontario,canada,<br/>montreal,manitoba,québec,<br/>canadian,ottawa,alberta,scotia,newfoundland|province,provinces,majority,<br/>minority,ontario,federal_government,<br/>quebec's,provincial,federal,constitution|
+</div>
+
+## Résultats
+
+![](images/tiles.png){width="900" height="600"}
+
+
+## Résultats
+
+![](images/increasedecrease.png)
+
+## Résultats
+
+![](images/context_decade)
+
+
+## Résultats
+
+![](images/context_decade_party.png)
+
+## Résultats
+
+![](images/context_decade_gender.png)
+
+## Résultats
+
+![](images/context_full.png)
+
+## Réduction de la dimensionalité
+
+::: columns
+::: {.column width="50%"}
+![](images/pca.png)
+:::
+
+::: {.column width="50%"}
+<div class="small-text">
+| Dimensions            | Haut | Bas |
+|---|---|---|
+| Old-New               |   truly secure future children, wellbeing youngest canadians, opportunity participate   |  favoured tariffs, colony, toolmakers machinists   |
+| Quebec/Federation-Economy |  quebec recognized distinct, charter rights fundamental freedoms, nation quebec     |   time year unemployemnt, considering domestic economy, extraordinary jump unemployment  |
+| Inside-Outside        | house_commons intends respect rights, underlying mandate given members, defending quebeckers shameful respect |  canada trading prosperity, partner investment destination, trade parallels history   |
+| Postmaterialism       |  government's philosophy hearts bleed, future young canadians, people hopes dreams, love toronto t-shirts    | trade, italy favored treaty, provided favoured treaty    |
+| Crises-Consumption    |  problems facing economy, considered conference economic crisis, solid compregensice program deal, view serious economic crisis    |  every man every buy cheapest, consume pay taxing savings, money lend abroad buy goods,    |
+</div>
+:::
+:::
+
+## Discussion - résumé
+
+- Un changement sémantique clair
+
+## Discussion - limites
+
+::: incremental
+- Superficiel ?
+- Nécessairement inductif
+- Combinaison d'approches quantitatives et qualitatives n'est pas triviale
+- On parle de quelle nation?
+- Niveleurs 1638-1666 (Schwartzberg & Spirling, 2023): égalité juridique plutôt que sociale 
+:::
+
+## Discussion - directions futures
+
+::: incremental
+- Lignes directrices concrètes
+- Modèles de sujet
+:::
+
+# Merci! {background="#915e4d"}
+
+## Bibliographie
+
+<div class="small2-text">
+
+- Khodak, M., Saunshi, N., Liang, Y., Ma, T., Stewart, B., & Arora, S. (2018). A la carte embedding: Cheap but effective induction of semantic feature vectors. 
+
+- Mathieu, F. (2019). Ré-imaginer le Canada: vers un État multinational?. Presses de l'Université Laval.
+
+- McRoberts, K. (2001). Canada and the multinational state. Canadian Journal of Political Science/Revue canadienne de science politique, 34(4), 683-713.
+
+- Rodriguez, P. L., & Spirling, A. (2022). Word embeddings: What works, what doesn’t, and how to tell the difference for applied research. The Journal of Politics, 84(1), 101-115.
+
+- Rodriguez, P. L., Spirling, A., & Stewart, B. M. (2023). Embedding regression: Models for context-specific description and inference. American Political Science Review, 1-20.
+
+- Schwartzberg, M., Spirling, A. (2023) Peers, Equals, and Jurors New Data and Methods on The Role of Legal Equality in Leveller Thought, 1638–1666, ERC (2023) Working Paper
+
+</div>

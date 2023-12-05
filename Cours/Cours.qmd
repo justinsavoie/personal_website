@@ -1,0 +1,205 @@
+---
+title: "L'analyse computationnelle en science sociale"
+author: "Justin Savoie"
+date: "2023-12-05"
+format:
+  revealjs:
+    theme: [serif, custom-styles.css]
+    slide-number: true
+---
+
+# Extraire le sens
+
+##
+
+![](images/phone.png){.absolute top="100" left="0" width="400" height="400"}
+![](images/screen.png){.absolute top="100" left="600" width="400" height="400"}
+
+# Certains outils existent
+
+##
+
+```{python}
+#| eval: false
+#| echo: true
+from diffusers import StableDiffusionPipeline
+import torch
+
+model_id = "runwayml/stable-diffusion-v1-5"
+pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+pipe = pipe.to("cuda")
+
+prompt = "laptop on a purified background"
+image = pipe(prompt).images[0] 
+display(image)
+```
+
+## Six points à retenir
+
+1. Observer les comportements
+2. Mesurer les attitudes
+3. Expérimenter
+4. <span style="color:blue">***Collaborer***</span>
+5. <span style="color:blue">***Éthique***</span>
+6. <span style="color:red">***Poser les bonnes questions***</span>
+
+## 1. Observer les comportements
+
+- Discours des politiciens
+![](images/screaming.png){.absolute top="100" left="600" width="400" height="400"}
+
+## 1. Observer les comportements
+
+- Discours des politiciens
+- Republications [retweet] de gazouillis
+![](images/birds.png){.absolute top="250" left="200" width="550" height="200"}
+
+## 1. Observer les comportements
+
+- Discours des politiciens
+- Republications [retweet] de gazouillis
+- Contributions politiques
+![](images/contributions.png){.absolute top="325" left="150" width="800" height="260"}
+
+## 1. Observer les comportements
+
+- Discours des politiciens
+- Republications [retweet] de gazouillis
+- Contributions politiques
+- Consommation médiatique
+![](images/social_media.jpeg){.absolute top="250" left="600" width="500" height="400"}
+
+## 2. Mesurer les attitudes
+
+- Attitudes et préférences politiques
+- Idéologie / affiliation partisane / vote
+- Confiance envers [médias, gouvernements ...]
+
+![](images/trust.png){.absolute top="300" left="150" width="500" height="268"}
+
+##
+
+```{r, eval=FALSE, echo=TRUE}
+library(tidyverse)
+library(haven)
+df <- read_stata("DC 2021 v1.dta")
+labels_ <- c("Les tribunaux","Le gouvernement fédéral","Les médias","Votre gouvernement provincial","Élections Canada")
+to_plot <- df |>
+  select(all_of(paste0("dc21_confidence_inst_",1:5))) |>
+  gather(key,value) |> 
+  mutate(key=factor(key,labels=c(labels_))) |>
+  group_by(key) |>
+  summarise(v=mean(value<3))
+to_plot |>
+  ggplot(aes(x=key,y=v, label=paste0(100*round(v,2),"%"))) +
+  geom_bar(stat='identity',fill="black") +
+  coord_flip() +
+  theme_bw() + geom_text(hjust=-0.5) +
+  scale_y_continuous(limits=c(0,1), labels=function(x){paste0(x*100,"%")}) +
+  labs(y="% qui ont beaucoup ou assez confiance",x="", 
+       title="Quel niveau de confiance accordez-vous\naux institutions suivantes?")
+
+```
+
+<br>
+<small>
+https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/KCIK9D
+</small>
+
+## 3. L'expérimentation
+
+<q>
+[Par l’expérimentation, nous signifions des activités qui cherchent à explorer, à faire des essais et à comparer les effets des politiques, des interventions et des approches, pour éclairer la prise de décision basée sur des données probantes](https://www.canada.ca/fr/conseil-prive/services/objectif-2020/blogue/experimentation-simplement-bonne-pratique-politique-publique.html)
+</q>
+
+## 4. Collaborer
+
+- Collaboration entre informaticiens, statisticiens, chercheurs en sciences sociales
+
+![](images/computer-scientist.png){.absolute top="270" left="0" width="200" height="200"}
+
+![](images/statistician.png){.absolute top="270" left="300" width="200" height="200"}
+
+![](images/political scientist.png){.absolute top="270" left="600" width="200" height="200"}
+
+## 5. Éthique
+
+- Données personelles
+- Consentement et utilisation responsable des données
+- Biais
+
+
+## 5. Éthique
+
+- Données personelles
+- Consentement et utilisation responsable des données
+- Biais
+
+![](images/screaming.png){.absolute top="300" left="0" width="120" height="120"}
+
+![](images/computer-scientist.png){.absolute top="300" left="900" width="120" height="120"}
+
+![](images/statistician.png){.absolute top="300" left="600" width="120" height="120"}
+
+![](images/political scientist.png){.absolute top="300" left="300" width="120" height="120"}
+
+
+## 6. Poser les bonnes questions
+
+- <s>plus de données résolvent votre problème</s>
+- les sciences humaines et sociales ont besoin de théorie
+
+## 6. Poser les bonnes questions
+
+- <s>plus de données résolvent votre problème</s>
+- les sciences humaines et sociales ont besoin de théorie
+- Qu'est-ce qu'on infère?
+
+![](images/hume.png){.absolute top="350" left="400" width="250" height="250"}
+
+## Résumé
+
+<div style="display: flex;">
+
+<div style="flex: 50%;">
+
+1. Observer les comportements
+2. Mesurer les attitudes
+3. Expérimenter
+4. <span style="color:blue">***Collaborer***</span>
+5. <span style="color:blue">***Éthique***</span>
+6. <span style="color:red">***Poser les bonnes questions***</span>
+
+</div>
+
+<div style="flex: 50%;">
+
+</div>
+
+</div>
+
+## Résumé
+
+<div style="display: flex;">
+
+<div style="flex: 50%;">
+
+1. Observer les comportements
+2. Mesurer les attitudes
+3. Expérimenter
+4. <span style="color:blue">***Collaborer***</span>
+5. <span style="color:blue">***Éthique***</span>
+6. <span style="color:red">***Poser les bonnes questions***</span>
+
+</div>
+
+<div style="flex: 50%;">
+
+- Réfléchir à un problème différemment
+- Apprendre les outils qui permettent la collaboration
+
+</div>
+
+</div>
+
+# Merci! {background="#915e4d"}
