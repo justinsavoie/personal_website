@@ -280,3 +280,102 @@ There are other notes, for example, the bootstrap is straightforward only when a
 Estimators, such as the median or a regression coefficient, are obtained by solving equations that can be written as population totals or means. Standard errors for these estimates can be obtained with replicate weights. Alternatively we can use linearization, dicussed in Appendix.
 
 ### Quantiles
+
+The median is defined implicitly rather than explicitly: the estimated population size above and below the median are equal.
+
+Bootstrapping them:
+
+```{r}
+chis_adult <- foreign::read.dta("~/Downloads/adult.dta") # get on book website
+chis <- svrepdesign(variables=chis_adult[,1:418] ,
+repweights=chis_adult [,420:499] , weights=chis_adult[,419], combined.weights=TRUE, type="other", scale=1, rscales=1)
+svyquantile(~bmi_p,design=chis,quantiles=c(0.25,0.5,0.75))
+```
+
+```{r}
+sum_w <- sum(chis_adult$rakedw0)
+bmi_order <- order(chis_adult$bmi_p)
+median_loc <- which(cumsum(chis_adult$rakedw0[bmi_order])>(sum_w)/2)[1]
+chis_adult$bmi_p[bmi_order][median_loc]
+median_loc <- which(cumsum(chis_adult$rakedw0[bmi_order])>(sum_w)/4)[1]
+chis_adult$bmi_p[bmi_order][median_loc]
+```
+
+```{r}
+boot <- function(){
+  temp <- chis_adult[,c("rakedw0","bmi_p")]
+  temp_boot <- temp[sample(1:nrow(temp),replace=TRUE),]
+  sum_w <- sum(temp_boot$rakedw0)
+  bmi_order <- order(temp_boot$bmi_p)
+  median_loc <- which(cumsum(temp_boot$rakedw0[bmi_order])>(sum_w)/2)[1]
+  temp_boot$bmi_p[bmi_order][median_loc]
+}
+v_means <- replicate(500,boot())
+mean(v_means);sd(v_means)
+```
+
+SE is bigger than the result from svyquantile() but actually in line with what's in the book. Strange.
+
+**I'm skipping many chapters. This is what I'm using most often.**
+
+# Post-stratification raking calibration
+
+This is chapter 7.
+
+Raking by hand:
+
+```{r}
+library(tidyverse)
+gender <- sample(c("M","F"),100,replace=TRUE)
+age <- sample(c("Y","O"),100,replace=TRUE)
+educ <- sample(c("HS","C","U"),100,replace=TRUE)
+
+df <- data.frame(gender,age,educ)
+
+design <- svydesign(ids = ~1, data = df, weights = ~rep(1, nrow(df)))
+
+gender_marg <- data.frame(gender = c("M", "F"), Freq = c(40, 60))
+age_marg <- data.frame(age = c("Y", "O"), Freq = c(30, 70))
+educ_marg <- data.frame(educ = c("HS", "C", "U"), Freq = c(40, 40, 20))
+
+raked_design <- rake(design, 
+                     sample.margins = list(~gender, ~age, ~educ), 
+                     population.margins = list(gender_marg, age_marg, educ_marg))
+
+df$weights <- weights(raked_design)
+stored_w <- df$weights
+df$weights <- 1
+store_weights <- df$weights
+for (i in 1:100){
+  mult_gender <- df %>% 
+    group_by(gender) %>%
+    summarise(sw=sum(weights)) %>%
+    left_join(gender_marg,"gender") %>% mutate(mult=Freq/sw)
+  mult_age <- df %>% 
+    group_by(age) %>%
+    summarise(sw=sum(weights)) %>%
+    left_join(age_marg,"age") %>% mutate(mult=Freq/sw)
+  mult_educ <- df %>% 
+    group_by(educ) %>%
+    summarise(sw=sum(weights)) %>%
+    left_join(educ_marg,"educ") %>% mutate(mult=Freq/sw)
+  
+  df <- df %>%
+    left_join(mult_gender,"gender") %>%
+    left_join(mult_age,"age") %>%
+    left_join(mult_educ,"educ") %>%
+    mutate(weights=weights*mult.x*mult.y*mult) %>%
+    select(gender,age,educ,weights) %>%
+    mutate(weights=100*(weights/sum(weights)))
+  if (sum((df$weights-store_weights)^2)<0.00001){
+    break
+  }
+  store_weights <- df$weights
+  
+}
+
+cor(stored_w,df$weights)
+
+```
+
+Standard errors: 

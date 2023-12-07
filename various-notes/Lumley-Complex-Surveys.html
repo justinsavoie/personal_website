@@ -3165,6 +3165,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
   <li><a href="#quantiles" id="toc-quantiles" class="nav-link" data-scroll-target="#quantiles"><span class="header-section-number">2.4.1</span> Quantiles</a></li>
   </ul></li>
   </ul></li>
+  <li><a href="#post-stratification-raking-calibration" id="toc-post-stratification-raking-calibration" class="nav-link" data-scroll-target="#post-stratification-raking-calibration"><span class="header-section-number">3</span> Post-stratification raking calibration</a></li>
   </ul>
 </nav>
 </div>
@@ -3263,14 +3264,14 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>(T_hat_X <span class="ot">&lt;-</span> (<span class="dv">31000000</span><span class="sc">/</span><span class="dv">1000</span>)<span class="sc">*</span><span class="fu">sum</span>(sample))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 1.547244e+12</code></pre>
+<pre><code>[1] 1.53963e+12</code></pre>
 </div>
 </div>
 <p>Which is a ok estimate of that true number</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(T_X <span class="ot">&lt;-</span> <span class="fu">sum</span>(population))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 1.549989e+12</code></pre>
+<pre><code>[1] 1.549998e+12</code></pre>
 </div>
 </div>
 <p>The variance of this Horvitz-Thompson estimator is</p>
@@ -3278,7 +3279,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(var_T_hat_X <span class="ot">&lt;-</span> ((<span class="dv">31000000-1000</span>)<span class="sc">/</span><span class="dv">31000000</span>)<span class="sc">*</span><span class="dv">31000000</span><span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>(<span class="fu">var</span>(sample)<span class="sc">/</span><span class="dv">1000</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.261206e+19</code></pre>
+<pre><code>[1] 2.228268e+19</code></pre>
 </div>
 </div>
 <p>For illustration purposes, you can get this estimator using simulations</p>
@@ -3286,14 +3287,14 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>get_sum_one_sample <span class="ot">&lt;-</span> <span class="cf">function</span>() (<span class="dv">31000000</span><span class="sc">/</span><span class="dv">1000</span>)<span class="sc">*</span><span class="fu">sum</span>(<span class="fu">sample</span>(population,<span class="dv">1000</span>))</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">var</span>(<span class="fu">replicate</span>(<span class="dv">100000</span>,<span class="fu">get_sum_one_sample</span>()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.414016e+19</code></pre>
+<pre><code>[1] 2.399987e+19</code></pre>
 </div>
 </div>
 <p>The standard error of our estimator</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(var_T_hat_X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 4755214030</code></pre>
+<pre><code>[1] 4720453333</code></pre>
 </div>
 </div>
 <p>The first term in the variance formula is the inite population correction. When the population is large, you can drop it.</p>
@@ -3301,21 +3302,21 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(mu_x <span class="ot">&lt;-</span> T_hat_X <span class="sc">/</span> <span class="dv">31000000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 49911.09</code></pre>
+<pre><code>[1] 49665.47</code></pre>
 </div>
 </div>
 <p>The variance estimate is obtained by dividing the variance estimate for the total by <span class="math inline">\(N^2\)</span> (get the square root for standard error)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(var_T_hat_X <span class="sc">/</span> <span class="dv">31000000</span><span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 153.394</code></pre>
+<pre><code>[1] 152.2727</code></pre>
 </div>
 </div>
 <p>Which is equal to getting the standard error of the mean with the usual formula</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(sample)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 153.3965</code></pre>
+<pre><code>[1] 152.2751</code></pre>
 </div>
 </div>
 <p>The Horvitz-Thompson estimator of the population size is the sum of the sampling weights, in large surveys where the population size is known, the sampling weights are adjusted so that the estimated population size equals the true sample size.</p>
@@ -3474,11 +3475,11 @@ enroll 3687178 114642</code></pre>
 <span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>sample1 <span class="ot">&lt;-</span> <span class="fu">draw_1000</span>()</span>
 <span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(sample1)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.03203508</code></pre>
+<pre><code>[1] 0.03136798</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(<span class="fu">replicate</span>(<span class="dv">1000</span>,<span class="fu">mean</span>(<span class="fu">draw_1000</span>())))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.03165653</code></pre>
+<pre><code>[1] 0.03345514</code></pre>
 </div>
 </div>
 <p>The replicate-weight approach to estimating standard errors computes the standard deviation of the estimated summary across many partially independent subsets of the one sample, and extrapolates from this to the standard deviation between completely independent samples. Replicate weight methods require more computation than using the Horvitz- Thompson estimator but are easier to generalize to statistics other than the mean and total (at least for software designers). Are given as example: Balanced repeated replication, Fay’s method, jackkknife and bootstrap.</p>
@@ -3505,10 +3506,10 @@ enroll 595.28 18.509</code></pre>
 <span id="cb68-13"><a href="#cb68-13" aria-hidden="true" tabindex="-1"></a>draws1000 <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">1000</span>,<span class="fu">draw1</span>())</span>
 <span id="cb68-14"><a href="#cb68-14" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(draws1000);<span class="fu">sd</span>(draws1000)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 596.2623</code></pre>
+<pre><code>[1] 595.9776</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 19.09889</code></pre>
+<pre><code>[1] 18.9412</code></pre>
 </div>
 </div>
 <p>Very close. I love the bootstrap, it’s so intuitive.</p>
@@ -3523,7 +3524,7 @@ enroll 595.28 18.509</code></pre>
 <span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a><span class="fu">svymean</span>(<span class="sc">~</span>enroll,boot_design)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>         mean     SE
-enroll 595.28 18.678</code></pre>
+enroll 595.28 18.637</code></pre>
 </div>
 </div>
 <p>But we’ve already done something similar by hand, above.</p>
@@ -3537,8 +3538,470 @@ enroll 595.28 18.678</code></pre>
 <p>Estimators, such as the median or a regression coefficient, are obtained by solving equations that can be written as population totals or means. Standard errors for these estimates can be obtained with replicate weights. Alternatively we can use linearization, dicussed in Appendix.</p>
 <section id="quantiles" class="level3" data-number="2.4.1">
 <h3 data-number="2.4.1" class="anchored" data-anchor-id="quantiles"><span class="header-section-number">2.4.1</span> Quantiles</h3>
+<p>The median is defined implicitly rather than explicitly: the estimated population size above and below the median are equal.</p>
+<p>Bootstrapping them:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>chis_adult <span class="ot">&lt;-</span> foreign<span class="sc">::</span><span class="fu">read.dta</span>(<span class="st">&quot;~/Downloads/adult.dta&quot;</span>) <span class="co"># get on book website</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;sragef&#39;)
+for &#39;srage_p&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;povgwd&#39;)
+for &#39;povgwd_p&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw0&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw1&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw2&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw3&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw4&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw5&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw6&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw7&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw8&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw9&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw10&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw11&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw12&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw13&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw14&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw15&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw16&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw17&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw18&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw19&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw20&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw21&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw22&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw23&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw24&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw25&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw26&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw27&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw28&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw29&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw30&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw31&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw32&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw33&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw34&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw35&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw36&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw37&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw38&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw39&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw40&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw41&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw42&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw43&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw44&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw45&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw46&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw47&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw48&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw49&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw50&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw51&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw52&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw53&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw54&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw55&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw56&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw57&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw58&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw59&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw60&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw61&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw62&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw63&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw64&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw65&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw66&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw67&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw68&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw69&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw70&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw71&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw72&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw73&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw74&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw75&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw76&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw77&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw78&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw79&#39; are missing</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in foreign::read.dta(&quot;~/Downloads/adult.dta&quot;): value labels (&#39;rakedf&#39;)
+for &#39;rakedw80&#39; are missing</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb157"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb157-1"><a href="#cb157-1" aria-hidden="true" tabindex="-1"></a>chis <span class="ot">&lt;-</span> <span class="fu">svrepdesign</span>(<span class="at">variables=</span>chis_adult[,<span class="dv">1</span><span class="sc">:</span><span class="dv">418</span>] ,</span>
+<span id="cb157-2"><a href="#cb157-2" aria-hidden="true" tabindex="-1"></a><span class="at">repweights=</span>chis_adult [,<span class="dv">420</span><span class="sc">:</span><span class="dv">499</span>] , <span class="at">weights=</span>chis_adult[,<span class="dv">419</span>], <span class="at">combined.weights=</span><span class="cn">TRUE</span>, <span class="at">type=</span><span class="st">&quot;other&quot;</span>, <span class="at">scale=</span><span class="dv">1</span>, <span class="at">rscales=</span><span class="dv">1</span>)</span>
+<span id="cb157-3"><a href="#cb157-3" aria-hidden="true" tabindex="-1"></a><span class="fu">svyquantile</span>(<span class="sc">~</span>bmi_p,<span class="at">design=</span>chis,<span class="at">quantiles=</span><span class="fu">c</span>(<span class="fl">0.25</span>,<span class="fl">0.5</span>,<span class="fl">0.75</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$bmi_p
+     quantile ci.2.5 ci.97.5         se
+0.25    22.68  22.66   22.81 0.03767982
+0.5     25.75  25.69   25.80 0.02763161
+0.75    29.18  29.12   29.29 0.04270393
+
+attr(,&quot;hasci&quot;)
+[1] TRUE
+attr(,&quot;class&quot;)
+[1] &quot;newsvyquantile&quot;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb159"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb159-1"><a href="#cb159-1" aria-hidden="true" tabindex="-1"></a>sum_w <span class="ot">&lt;-</span> <span class="fu">sum</span>(chis_adult<span class="sc">$</span>rakedw0)</span>
+<span id="cb159-2"><a href="#cb159-2" aria-hidden="true" tabindex="-1"></a>bmi_order <span class="ot">&lt;-</span> <span class="fu">order</span>(chis_adult<span class="sc">$</span>bmi_p)</span>
+<span id="cb159-3"><a href="#cb159-3" aria-hidden="true" tabindex="-1"></a>median_loc <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">cumsum</span>(chis_adult<span class="sc">$</span>rakedw0[bmi_order])<span class="sc">&gt;</span>(sum_w)<span class="sc">/</span><span class="dv">2</span>)[<span class="dv">1</span>]</span>
+<span id="cb159-4"><a href="#cb159-4" aria-hidden="true" tabindex="-1"></a>chis_adult<span class="sc">$</span>bmi_p[bmi_order][median_loc]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 25.75</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb161"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb161-1"><a href="#cb161-1" aria-hidden="true" tabindex="-1"></a>median_loc <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">cumsum</span>(chis_adult<span class="sc">$</span>rakedw0[bmi_order])<span class="sc">&gt;</span>(sum_w)<span class="sc">/</span><span class="dv">4</span>)[<span class="dv">1</span>]</span>
+<span id="cb161-2"><a href="#cb161-2" aria-hidden="true" tabindex="-1"></a>chis_adult<span class="sc">$</span>bmi_p[bmi_order][median_loc]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 22.68</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb163"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a>boot <span class="ot">&lt;-</span> <span class="cf">function</span>(){</span>
+<span id="cb163-2"><a href="#cb163-2" aria-hidden="true" tabindex="-1"></a>  temp <span class="ot">&lt;-</span> chis_adult[,<span class="fu">c</span>(<span class="st">&quot;rakedw0&quot;</span>,<span class="st">&quot;bmi_p&quot;</span>)]</span>
+<span id="cb163-3"><a href="#cb163-3" aria-hidden="true" tabindex="-1"></a>  temp_boot <span class="ot">&lt;-</span> temp[<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(temp),<span class="at">replace=</span><span class="cn">TRUE</span>),]</span>
+<span id="cb163-4"><a href="#cb163-4" aria-hidden="true" tabindex="-1"></a>  sum_w <span class="ot">&lt;-</span> <span class="fu">sum</span>(temp_boot<span class="sc">$</span>rakedw0)</span>
+<span id="cb163-5"><a href="#cb163-5" aria-hidden="true" tabindex="-1"></a>  bmi_order <span class="ot">&lt;-</span> <span class="fu">order</span>(temp_boot<span class="sc">$</span>bmi_p)</span>
+<span id="cb163-6"><a href="#cb163-6" aria-hidden="true" tabindex="-1"></a>  median_loc <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">cumsum</span>(temp_boot<span class="sc">$</span>rakedw0[bmi_order])<span class="sc">&gt;</span>(sum_w)<span class="sc">/</span><span class="dv">2</span>)[<span class="dv">1</span>]</span>
+<span id="cb163-7"><a href="#cb163-7" aria-hidden="true" tabindex="-1"></a>  temp_boot<span class="sc">$</span>bmi_p[bmi_order][median_loc]</span>
+<span id="cb163-8"><a href="#cb163-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb163-9"><a href="#cb163-9" aria-hidden="true" tabindex="-1"></a>v_means <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">500</span>,<span class="fu">boot</span>())</span>
+<span id="cb163-10"><a href="#cb163-10" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(v_means);<span class="fu">sd</span>(v_means)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 25.72724</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.03555987</code></pre>
+</div>
+</div>
+<p>SE is bigger than the result from svyquantile() but actually in line with what’s in the book. Strange.</p>
+<p><strong>I’m skipping many chapters. This is what I’m using most often.</strong></p>
 </section>
 </section>
+</section>
+<section id="post-stratification-raking-calibration" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Post-stratification raking calibration</h1>
+<p>This is chapter 7.</p>
+<p>Raking by hand:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb166"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb166-1"><a href="#cb166-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.0
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ tidyr::expand() masks Matrix::expand()
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+✖ tidyr::pack()   masks Matrix::pack()
+✖ tidyr::unpack() masks Matrix::unpack()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb168"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb168-1"><a href="#cb168-1" aria-hidden="true" tabindex="-1"></a>gender <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">&quot;M&quot;</span>,<span class="st">&quot;F&quot;</span>),<span class="dv">100</span>,<span class="at">replace=</span><span class="cn">TRUE</span>)</span>
+<span id="cb168-2"><a href="#cb168-2" aria-hidden="true" tabindex="-1"></a>age <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">&quot;Y&quot;</span>,<span class="st">&quot;O&quot;</span>),<span class="dv">100</span>,<span class="at">replace=</span><span class="cn">TRUE</span>)</span>
+<span id="cb168-3"><a href="#cb168-3" aria-hidden="true" tabindex="-1"></a>educ <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">&quot;HS&quot;</span>,<span class="st">&quot;C&quot;</span>,<span class="st">&quot;U&quot;</span>),<span class="dv">100</span>,<span class="at">replace=</span><span class="cn">TRUE</span>)</span>
+<span id="cb168-4"><a href="#cb168-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb168-5"><a href="#cb168-5" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(gender,age,educ)</span>
+<span id="cb168-6"><a href="#cb168-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb168-7"><a href="#cb168-7" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">svydesign</span>(<span class="at">ids =</span> <span class="sc">~</span><span class="dv">1</span>, <span class="at">data =</span> df, <span class="at">weights =</span> <span class="sc">~</span><span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">nrow</span>(df)))</span>
+<span id="cb168-8"><a href="#cb168-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb168-9"><a href="#cb168-9" aria-hidden="true" tabindex="-1"></a>gender_marg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">gender =</span> <span class="fu">c</span>(<span class="st">&quot;M&quot;</span>, <span class="st">&quot;F&quot;</span>), <span class="at">Freq =</span> <span class="fu">c</span>(<span class="dv">40</span>, <span class="dv">60</span>))</span>
+<span id="cb168-10"><a href="#cb168-10" aria-hidden="true" tabindex="-1"></a>age_marg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">age =</span> <span class="fu">c</span>(<span class="st">&quot;Y&quot;</span>, <span class="st">&quot;O&quot;</span>), <span class="at">Freq =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">70</span>))</span>
+<span id="cb168-11"><a href="#cb168-11" aria-hidden="true" tabindex="-1"></a>educ_marg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">educ =</span> <span class="fu">c</span>(<span class="st">&quot;HS&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;U&quot;</span>), <span class="at">Freq =</span> <span class="fu">c</span>(<span class="dv">40</span>, <span class="dv">40</span>, <span class="dv">20</span>))</span>
+<span id="cb168-12"><a href="#cb168-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb168-13"><a href="#cb168-13" aria-hidden="true" tabindex="-1"></a>raked_design <span class="ot">&lt;-</span> <span class="fu">rake</span>(design, </span>
+<span id="cb168-14"><a href="#cb168-14" aria-hidden="true" tabindex="-1"></a>                     <span class="at">sample.margins =</span> <span class="fu">list</span>(<span class="sc">~</span>gender, <span class="sc">~</span>age, <span class="sc">~</span>educ), </span>
+<span id="cb168-15"><a href="#cb168-15" aria-hidden="true" tabindex="-1"></a>                     <span class="at">population.margins =</span> <span class="fu">list</span>(gender_marg, age_marg, educ_marg))</span>
+<span id="cb168-16"><a href="#cb168-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb168-17"><a href="#cb168-17" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>weights <span class="ot">&lt;-</span> <span class="fu">weights</span>(raked_design)</span>
+<span id="cb168-18"><a href="#cb168-18" aria-hidden="true" tabindex="-1"></a>stored_w <span class="ot">&lt;-</span> df<span class="sc">$</span>weights</span>
+<span id="cb168-19"><a href="#cb168-19" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>weights <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb168-20"><a href="#cb168-20" aria-hidden="true" tabindex="-1"></a>store_weights <span class="ot">&lt;-</span> df<span class="sc">$</span>weights</span>
+<span id="cb168-21"><a href="#cb168-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>){</span>
+<span id="cb168-22"><a href="#cb168-22" aria-hidden="true" tabindex="-1"></a>  mult_gender <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb168-23"><a href="#cb168-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(gender) <span class="sc">%&gt;%</span></span>
+<span id="cb168-24"><a href="#cb168-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">sw=</span><span class="fu">sum</span>(weights)) <span class="sc">%&gt;%</span></span>
+<span id="cb168-25"><a href="#cb168-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(gender_marg,<span class="st">&quot;gender&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">mult=</span>Freq<span class="sc">/</span>sw)</span>
+<span id="cb168-26"><a href="#cb168-26" aria-hidden="true" tabindex="-1"></a>  mult_age <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb168-27"><a href="#cb168-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(age) <span class="sc">%&gt;%</span></span>
+<span id="cb168-28"><a href="#cb168-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">sw=</span><span class="fu">sum</span>(weights)) <span class="sc">%&gt;%</span></span>
+<span id="cb168-29"><a href="#cb168-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(age_marg,<span class="st">&quot;age&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">mult=</span>Freq<span class="sc">/</span>sw)</span>
+<span id="cb168-30"><a href="#cb168-30" aria-hidden="true" tabindex="-1"></a>  mult_educ <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb168-31"><a href="#cb168-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(educ) <span class="sc">%&gt;%</span></span>
+<span id="cb168-32"><a href="#cb168-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">sw=</span><span class="fu">sum</span>(weights)) <span class="sc">%&gt;%</span></span>
+<span id="cb168-33"><a href="#cb168-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(educ_marg,<span class="st">&quot;educ&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">mult=</span>Freq<span class="sc">/</span>sw)</span>
+<span id="cb168-34"><a href="#cb168-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb168-35"><a href="#cb168-35" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb168-36"><a href="#cb168-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(mult_gender,<span class="st">&quot;gender&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb168-37"><a href="#cb168-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(mult_age,<span class="st">&quot;age&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb168-38"><a href="#cb168-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(mult_educ,<span class="st">&quot;educ&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb168-39"><a href="#cb168-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">weights=</span>weights<span class="sc">*</span>mult.x<span class="sc">*</span>mult.y<span class="sc">*</span>mult) <span class="sc">%&gt;%</span></span>
+<span id="cb168-40"><a href="#cb168-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(gender,age,educ,weights) <span class="sc">%&gt;%</span></span>
+<span id="cb168-41"><a href="#cb168-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">weights=</span><span class="dv">100</span><span class="sc">*</span>(weights<span class="sc">/</span><span class="fu">sum</span>(weights)))</span>
+<span id="cb168-42"><a href="#cb168-42" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">sum</span>((df<span class="sc">$</span>weights<span class="sc">-</span>store_weights)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">&lt;</span><span class="fl">0.00001</span>){</span>
+<span id="cb168-43"><a href="#cb168-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">break</span></span>
+<span id="cb168-44"><a href="#cb168-44" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb168-45"><a href="#cb168-45" aria-hidden="true" tabindex="-1"></a>  store_weights <span class="ot">&lt;-</span> df<span class="sc">$</span>weights</span>
+<span id="cb168-46"><a href="#cb168-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb168-47"><a href="#cb168-47" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb168-48"><a href="#cb168-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb168-49"><a href="#cb168-49" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(stored_w,df<span class="sc">$</span>weights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.9999974</code></pre>
+</div>
+</div>
+<p>Standard errors:</p>
 </section>
 
 </main>
