@@ -378,4 +378,4 @@ cor(stored_w,df$weights)
 
 ```
 
-Standard errors: 
+Standard errors:

@@ -1,0 +1,32 @@
+---
+title: "Naive Bayes"
+format: html
+editor: visual
+---
+
+We have class labels y and features x. Let' say *gear* is the class labels and *am* and *vs* the features. 
+
+```{r}
+library(e1071)
+to_model <- mtcars[,c("gear","am")]
+to_model$am <- factor(to_model$am)
+model <- naiveBayes(gear ~ ., data = to_model)
+model
+```
+
+$$P(y|x) = \frac{P(x|y)P(y)}{P(x)}$$
+The probability of a feature vector x representing an instance of y is probability of the class label y generating vector x times the prior probability of class label y, divided by the marginal probability of the class vector over all class labels.
+
+$$P(Y)$$ are simply
+
+```{r}
+prop.table(table(to_model$gear))
+```
+
+$$P(x|y)$$ are simply
+
+```{r}
+prop.table(table(to_model$am[to_model$gear==3]))
+prop.table(table(to_model$am[to_model$gear==4]))
+prop.table(table(to_model$am[to_model$gear==5]))
+```

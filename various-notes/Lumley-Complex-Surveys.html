@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.433">
+<meta name="generator" content="quarto-1.3.450">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -3264,14 +3264,14 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>(T_hat_X <span class="ot">&lt;-</span> (<span class="dv">31000000</span><span class="sc">/</span><span class="dv">1000</span>)<span class="sc">*</span><span class="fu">sum</span>(sample))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 1.53963e+12</code></pre>
+<pre><code>[1] 1.550859e+12</code></pre>
 </div>
 </div>
 <p>Which is a ok estimate of that true number</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>(T_X <span class="ot">&lt;-</span> <span class="fu">sum</span>(population))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 1.549998e+12</code></pre>
+<pre><code>[1] 1.550036e+12</code></pre>
 </div>
 </div>
 <p>The variance of this Horvitz-Thompson estimator is</p>
@@ -3279,7 +3279,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(var_T_hat_X <span class="ot">&lt;-</span> ((<span class="dv">31000000-1000</span>)<span class="sc">/</span><span class="dv">31000000</span>)<span class="sc">*</span><span class="dv">31000000</span><span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>(<span class="fu">var</span>(sample)<span class="sc">/</span><span class="dv">1000</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.228268e+19</code></pre>
+<pre><code>[1] 2.293811e+19</code></pre>
 </div>
 </div>
 <p>For illustration purposes, you can get this estimator using simulations</p>
@@ -3287,14 +3287,14 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>get_sum_one_sample <span class="ot">&lt;-</span> <span class="cf">function</span>() (<span class="dv">31000000</span><span class="sc">/</span><span class="dv">1000</span>)<span class="sc">*</span><span class="fu">sum</span>(<span class="fu">sample</span>(population,<span class="dv">1000</span>))</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">var</span>(<span class="fu">replicate</span>(<span class="dv">100000</span>,<span class="fu">get_sum_one_sample</span>()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.399987e+19</code></pre>
+<pre><code>[1] 2.40975e+19</code></pre>
 </div>
 </div>
 <p>The standard error of our estimator</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(var_T_hat_X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 4720453333</code></pre>
+<pre><code>[1] 4789375170</code></pre>
 </div>
 </div>
 <p>The first term in the variance formula is the inite population correction. When the population is large, you can drop it.</p>
@@ -3302,21 +3302,21 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(mu_x <span class="ot">&lt;-</span> T_hat_X <span class="sc">/</span> <span class="dv">31000000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 49665.47</code></pre>
+<pre><code>[1] 50027.7</code></pre>
 </div>
 </div>
 <p>The variance estimate is obtained by dividing the variance estimate for the total by <span class="math inline">\(N^2\)</span> (get the square root for standard error)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(var_T_hat_X <span class="sc">/</span> <span class="dv">31000000</span><span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 152.2727</code></pre>
+<pre><code>[1] 154.496</code></pre>
 </div>
 </div>
 <p>Which is equal to getting the standard error of the mean with the usual formula</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(sample)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 152.2751</code></pre>
+<pre><code>[1] 154.4985</code></pre>
 </div>
 </div>
 <p>The Horvitz-Thompson estimator of the population size is the sum of the sampling weights, in large surveys where the population size is known, the sampling weights are adjusted so that the estimated population size equals the true sample size.</p>
@@ -3475,11 +3475,11 @@ enroll 3687178 114642</code></pre>
 <span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>sample1 <span class="ot">&lt;-</span> <span class="fu">draw_1000</span>()</span>
 <span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(sample1)<span class="sc">/</span><span class="fu">sqrt</span>(<span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.03136798</code></pre>
+<pre><code>[1] 0.03156248</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(<span class="fu">replicate</span>(<span class="dv">1000</span>,<span class="fu">mean</span>(<span class="fu">draw_1000</span>())))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.03345514</code></pre>
+<pre><code>[1] 0.03035286</code></pre>
 </div>
 </div>
 <p>The replicate-weight approach to estimating standard errors computes the standard deviation of the estimated summary across many partially independent subsets of the one sample, and extrapolates from this to the standard deviation between completely independent samples. Replicate weight methods require more computation than using the Horvitz- Thompson estimator but are easier to generalize to statistics other than the mean and total (at least for software designers). Are given as example: Balanced repeated replication, Fay’s method, jackkknife and bootstrap.</p>
@@ -3506,10 +3506,10 @@ enroll 595.28 18.509</code></pre>
 <span id="cb68-13"><a href="#cb68-13" aria-hidden="true" tabindex="-1"></a>draws1000 <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">1000</span>,<span class="fu">draw1</span>())</span>
 <span id="cb68-14"><a href="#cb68-14" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(draws1000);<span class="fu">sd</span>(draws1000)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 595.9776</code></pre>
+<pre><code>[1] 596.3182</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 18.9412</code></pre>
+<pre><code>[1] 19.0782</code></pre>
 </div>
 </div>
 <p>Very close. I love the bootstrap, it’s so intuitive.</p>
@@ -3524,7 +3524,7 @@ enroll 595.28 18.509</code></pre>
 <span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a><span class="fu">svymean</span>(<span class="sc">~</span>enroll,boot_design)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>         mean     SE
-enroll 595.28 18.637</code></pre>
+enroll 595.28 17.866</code></pre>
 </div>
 </div>
 <p>But we’ve already done something similar by hand, above.</p>
@@ -3916,10 +3916,10 @@ attr(,&quot;class&quot;)
 <span id="cb163-9"><a href="#cb163-9" aria-hidden="true" tabindex="-1"></a>v_means <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">500</span>,<span class="fu">boot</span>())</span>
 <span id="cb163-10"><a href="#cb163-10" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(v_means);<span class="fu">sd</span>(v_means)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 25.72724</code></pre>
+<pre><code>[1] 25.72364</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.03555987</code></pre>
+<pre><code>[1] 0.04076844</code></pre>
 </div>
 </div>
 <p>SE is bigger than the result from svyquantile() but actually in line with what’s in the book. Strange.</p>
@@ -3998,7 +3998,7 @@ attr(,&quot;class&quot;)
 <span id="cb168-48"><a href="#cb168-48" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb168-49"><a href="#cb168-49" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(stored_w,df<span class="sc">$</span>weights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.9999974</code></pre>
+<pre><code>[1] 1</code></pre>
 </div>
 </div>
 <p>Standard errors:</p>
