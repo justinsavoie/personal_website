@@ -8,7 +8,9 @@ editor: visual
 
 ### Notes
 
-5 - [Notes from Lumley's Complex Surveys book](Lumley-Complex-Surveys.html) (2023-10) Notes and R code for illustrative purposes. Work in progress.
+7 - [L'analyse quantitative en sciences sociales](Analyse-Quanti-Sciences-Sociales.html) (2023-10) Quelques réflexions sur l'analyse quantitative 
+
+6 - [Notes from Lumley's Complex Surveys book](Lumley-Complex-Surveys.html) (2023-10) Notes and R code for illustrative purposes. Work in progress.
 
 5 - [What is data analysis?](data-analysis.html) (2023-09) What various key authors say data analysis is.
 

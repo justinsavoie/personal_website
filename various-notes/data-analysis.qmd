@@ -10,13 +10,11 @@ editor: visual
 
 Data analysis is the process of **(A) inspecting, (B) cleaning, (C) transforming, and (D) modelling data** with the objective of discovering useful information, drawing conclusions, and supporting decision-making. That's a very typical statement but it's also really vague.
 
-I don't think there's any essential difference between data analysis inside and outside the social sciences. It's all about looking at the data, understanding it, modelling it and then doing something with the insight gained. Whether you do this in public policy, in academia, or in marketing, there are many more similarities than differences. In all these contexts, you will ask similar questions about the possibility to generalize from the sample to outside that sample (to the population or to other samples), about causality, about whether you are in fact measuring the right concept, etc.
+I don't think there's any essential difference between data analysis inside and outside the social sciences. It's all about looking at the data, understanding it, modelling it and then doing something with the insight gained. Whether you do this in public policy, in academia, or in marketing, there are many more similarities than differences. In all these contexts, you will ask similar questions about the possibility to generalize from the sample to outside that sample (to the population or to other samples - that's what we call inference), about causality, about whether you are in fact measuring the right concept, etc.
 
-Let's look at what experts in the field of data analysis have to say about what data analysis is:
+Let's look at what experts in the field of data analysis have to say about what data analysis is: Here, the focus is on data analysis in the social sciences using R.
 
-Here, the focus is on data analysis in the social sciences using R.
-
-For [Llaudet and Imai](https://press.princeton.edu/books/hardcover/9780691199429/data-analysis-for-social-science):
+## For [Llaudet and Imai](https://press.princeton.edu/books/hardcover/9780691199429/data-analysis-for-social-science):
 
 ![Llaudet and Imai: Data Analysis for Social Science](figures/llaudet-imai-what-is-data-analysis.png)
 
@@ -38,11 +36,15 @@ It's worth quoting in full from Llaudet and Imai:
 
 > To explain a quantity of interest such as the causal effect of a treatment on an outcome, we need to find or create a situation in which the group of individuals who received the treatment is comparable, in the aggregate, to the group of individuals who did not. In other words, we need to eliminate or control for all confounding variables, which are variables that affect both (i) the likelihood of receiving the treatment and (i) the outcome variable. For example, when estimating the causal effect of attending a private school on student test scores, family wealth is a poten- tial confoundinq variable. Students from wealthier families are more likely to attend a private school and also more likely to receive after-school tutoring, which might have a positive impact on their test scores. To produce valid estimates of causal effects, we may conduct a randomized experiment, which eliminates all confounding variables by assigning the treatment at random. In the current example, we would achieve this by using a lottery to determine which students attend private schools and which do not. Alternatively, if we cannot conduct a randomized experiment and need to rely on observational data instead, we would need to use statistical methods to control for all confounding variables such as family wealth. Otherwise, we would not know what portion of the difference in average test scores between private and public school students was the result of the type of school attended and what portion was the result of family background.
 
+## For [Gelman, Hill and Vehtari](https://avehtari.github.io/ROS-Examples/index.html):
+
 Here is a slightly different take, by [Gelman, Hill and Vehtari](https://avehtari.github.io/ROS-Examples/index.html) on what statistical inference is:
 
 ![Gelman, Hill Vehtari: Statistical Inference](figures/ros-statistics.png)
 
 The focus is again on (D) modelling. Here, 1. corresponds directly to Llaudet's "describing" and 2. to "explaining". 3. is interesting and not directly described by Llaudet. It's the idea that often we use proxies. For example, we capture the concept of "democratic health" with something else, we operationalize the concept. But maybe we are not capturing it adequately, maybe our operationalization is faulty. Gelman et al. don't talk about prediction per se. They say all problems are ultimately about predictions.
+
+## For [Gelman and colleagues](http://www.stat.columbia.edu/~gelman/book/):
 
 Here's another take, again by Gelman and colleagues, but in a [more technical book](http://www.stat.columbia.edu/~gelman/book/):
 
@@ -50,17 +52,23 @@ Here's another take, again by Gelman and colleagues, but in a [more technical bo
 
 What's interesting is that here, again, the focus is exclusively on (D) modelling. It's about setting up a good model, fitting it, evaluating it.
 
+## For [Quan Li](https://academic.oup.com/book/27134):
+
 Here's the view taken by [Quan Li](https://academic.oup.com/book/27134) in another preface to a data analysis book:
 
 ![Li: Using R for Data Analysis in Social Sciences](figures/Li-da.png)
 
 Here, the definition is not only about (D) modelling. The passages highlighted discuss various aspects of (A)-(D): asking a substantive question, getting some data, writing code to clean and transform the data, using statistical models to ask questions and answer them.
 
+## For [Ismay and Kim](https://moderndive.com/preface.html):
+
 Here's another (visual) view, by [Ismay and Kim](https://moderndive.com/preface.html):
 
 ![Ismai and Kim: Modern Dive: Statistical Inference via Data Science](figures/moderndive-da.png)
 
 Here, the focus is on the entire data analysis pipeline (minus the substantive theoretical work beforehand).
+
+## For [Rohan Alexander](https://tellingstorieswithdata.com/):
 
 [Rohan Alexander](https://tellingstorieswithdata.com/) focuses on the social context in which we use data analysis:
 
@@ -70,9 +78,13 @@ The full table of contents from that book is illustrative in terms of what data 
 
 ![Alexander: Telling stories with data TOC](figures/tswd-toc.png)
 
-Lastly, what is probably the [most famous data analysis book in R (by Hadley Wickham)](https://r4ds.hadley.nz/preface-2e) drops the analysis/modelling part. This is not to say it's not important. It's very important, and the books suggests a full book on it suggests a full book on it by [Kuhn and Silge](https://r4ds.hadley.nz/preface-2e).
+## For [Wickham](https://r4ds.hadley.nz/preface-2e):
+
+Lastly, what is probably the [most famous data analysis/science book in R (by Hadley Wickham)](https://r4ds.hadley.nz/preface-2e) drops the analysis/modelling part. This is not to say it's not important. It's very important, and the books suggests a full book on it by [Kuhn and Silge](https://r4ds.hadley.nz/preface-2e). But what this books tells you is that if you want to do data analysis or data science, there's a huge job of (A) inspecting, (B) cleaning, (C) transforming to do BEFORE (D) modelling the data. 
 
 ![R4DS2](figures/r4ds2-preface.png)
+
+## Summary
 
 What all this illustrates is that data analysis is really broad. Some books focus on the modelling, some books focus on the social scientific theory, some books focus on the technical aspects of working with data in R.
 
