@@ -8,7 +8,9 @@ editor: visual
 
 ### Notes
 
-7 - [L'analyse quantitative en sciences sociales](Analyse-Quanti-Sciences-Sociales.html) (2023-10) Quelques réflexions sur l'analyse quantitative 
+8 - [Habilité des équipes de hockey dans RSA](hockey-abilities.html) (2024-12) Un modèle Bayésien ultra simple
+
+7 - [L'analyse quantitative en sciences sociales](Analyse-Quanti-Sciences-Sociales.html) (2023-10) Quelques réflexions sur l'analyse quantitative
 
 6 - [Notes from Lumley's Complex Surveys book](Lumley-Complex-Surveys.html) (2023-10) Notes and R code for illustrative purposes. Work in progress.
 

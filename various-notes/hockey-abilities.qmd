@@ -1,0 +1,135 @@
+---
+title: "[Habilité des équipes de hockey dans RSA](index.html)"
+format:
+  html:
+    embed-resources: true
+    toc: false
+    toc-location: left
+editor: visual
+---
+
+Modéliser la différence de score entre deux équipes à chaque match comme étant normalement distribuée, la moyenne étant donnée par la différence de leurs habilités Les capacités des équipes sont également modélisées comme étant normalement distribuées avec un a priori :
+
+$$
+\text{ability}_j \sim \mathcal{N}(0, 2), \quad \text{for } j = 1, \dots, T
+$$
+
+$$
+\text{score\_diff}_i \sim \mathcal{N}(\text{ability}_{\text{team1}_i} - \text{ability}_{\text{team2}_i}, \sigma), \quad \text{for } i = 1, \dots, N
+$$
+
+```{r, message=FALSE, warning=FALSE, results = 'hide'}
+library(tidyverse)
+library(rvest)
+library(ggridges)
+library(rstan)
+
+# Load the webpage
+url <- "https://reseausportsadultes.com/quebec_levis/hockey/horaire/ligue/103/a24-h25?date=saison&segment=saison_reg&equipe="
+page <- read_html(url)
+
+# Extract team names (assuming they are under a tag with class 'b')
+teams <- page %>% html_nodes("b") %>% html_text()
+teams <- teams[-1]
+t1 <- trimws(str_replace(teams[1:(59*2)],"\n",""))[seq(1, 118, by = 2)]
+t2 <- trimws(str_replace(teams[1:(59*2)],"\n",""))[seq(2, 118, by = 2)]
+
+# Extract scores (assuming they are under a tag with class 'scores')
+scores <- page %>% html_nodes(".scores") %>% html_text()
+scores <- trimws(str_replace(scores[1:59],"\n",""))
+
+s1 <- sub(" .*", "", scores)
+s2 <- sub(".* ", "", scores)
+
+data <- data.frame(t1,t2,s1=as.numeric(s1),s2=as.numeric(s2))
+data <- data %>%
+  filter(str_detect("Les 2 frères du quartier|Location Beauport|Les Styfes Sud|Hawks|Los Bambinos|Les Grues JLR|Pens|Beerkings|Matract|Blue Kings",t1))
+
+# Calculate score difference and create team indices
+teams <- unique(c(data$t1, data$t2))           # Get unique team names
+team_indices <- setNames(seq_along(teams), teams)  # Create index for each team
+
+# Map team names to indices in data
+data <- data %>%
+  mutate(score_diff = s1 - s2,
+         team1 = team_indices[t1],
+         team2 = team_indices[t2])
+
+# Stan model as a string
+stan_model_code <- "
+data {
+  int<lower=0> N;                // number of games
+  int<lower=1> T;                // number of teams
+  int<lower=1, upper=T> team1[N]; // team 1 index
+  int<lower=1, upper=T> team2[N]; // team 2 index
+  vector[N] score_diff;          // score difference for each game
+}
+parameters {
+  vector[T] ability;             // ability for each team
+  real<lower=0> sigma;           // standard deviation
+}
+model {
+  ability ~ normal(0, 2);        // Prior on ability
+  score_diff ~ normal(ability[team1] - ability[team2], sigma);
+}
+"
+
+# Compile the model
+stan_model <- stan_model(model_code = stan_model_code)
+
+# Data list for Stan
+stan_data <- list(
+  N = nrow(data),
+  T = length(unique(c(data$team1, data$team2))),
+  team1 = data$team1,
+  team2 = data$team2,
+  score_diff = data$score_diff
+)
+
+# Fit the model
+fit <- sampling(stan_model, data = stan_data, iter = 2000, chains = 4)
+```
+
+```{r, message=FALSE, warning = FALSE}
+
+fit
+
+abilities <- tibble(as.data.frame(extract(fit)$ability))
+names(abilities) <- names(team_indices)
+sigma <- extract(fit)$sigma
+
+abilities %>%
+  gather(team,ability) %>%
+  ggplot(aes(y = reorder(team,ability), x = ability)) +
+  geom_density_ridges() + labs(x='Habilité',y='Équipe')
+
+```
+
+On sait qu'on prédit le score final par:
+
+$$
+\text{score\_diff}_i \sim \mathcal{N}(\text{ability}_{\text{team1}_i} - \text{ability}_{\text{team2}_i}, \sigma), \quad \text{for } i = 1, \dots, N
+$$
+
+Et on peut visualiser le différentiel de scores possible probabilistiquement si les Grues (mon équipe) joue contre chacune des 9 autre équipes:
+
+```{r, message=FALSE, warning = FALSE}
+ev <- abilities$`Les Grues JLR`-abilities
+simulated_games <- sapply(1:10,function(y){
+  sapply(1:4000,function(x){
+  rnorm(1,ev[,y][x],sigma[x])})  
+})
+
+simulated_games <- tibble(as.data.frame(simulated_games))
+names(simulated_games) <- names(team_indices)
+
+simulated_games %>%
+  gather(team,ability) %>%
+  filter(team!="Les Grues JLR") %>%
+  ggplot(aes(y = reorder(team,ability), x = ability)) +
+  geom_density_ridges() + labs(x="Prédiction d'un match contre cette équipe",y='Équipe') +
+  coord_cartesian(xlim = c(-10,10)) +
+  geom_vline(aes(xintercept=0))
+
+
+```

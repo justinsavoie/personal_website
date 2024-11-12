@@ -1,0 +1,49 @@
+---
+title: "(Simple) Bayesian models based on the normal distribution"
+format: html
+editor: visual
+---
+
+This note is based on Chapter 2 of [Bayesian Essential](https://link.springer.com/book/10.1007/978-1-4614-8687-9) by Marin and Robert. That chapter uses the standard normal $\mathcal{N}(\mu, \sigma^2)$ distribution as an easy entry to generic Bayesian inferential methods.
+
+The normal (or Gaussian) distribution $\mathcal{N}(\mu, \sigma^2)$ has density:
+
+$$f(x|\mu,\sigma) = \frac{1}{\sqrt{2\pi\sigma}} \exp\left\{ -\frac{1}{2\sigma^2}(x - \mu)^2 \right\}$$
+
+The likelihood is "sort of" like the probability of the data given the parameters; however it is not a valid probability distribution because it obviously doesn't integrate to 1 over the entire space of the random variable:
+
+$$\ell(\theta|\mathcal{D}_n) = \prod_{i=1}^{n} f(x_i|\theta)$$ In the context of normal models, the likelihood is:
+
+$$\ell(\theta|\mathcal{D}_n) = \prod_{i=1}^{n} \frac{1}{\sqrt{2\pi\sigma}} \exp\left\{-\frac{(x_i - \mu)^2}{2\sigma^2}\right\}$$
+
+The way I think about maximizing the likelihood is simply that we try several values for our parameters $\mu$ and $\sigma$ until we find those that maximize the likelihood. We try values for the mean and the variance of our normal distribution until we find the best parameters for it. These parameters maximize the likelihood; they maximize the likelihood that we observed that data given those parameters.
+
+Below, the true parameters (maximizing the likelihood) are 3.33 and 1.53. The likelihood for $\mu$=3.33; $\sigma$=1.5 will be larger than for $\mu$=3; $\sigma$=1.
+
+```{r}
+x <- c(3,2,5)
+mu<-3
+sigma<-1
+prod( exp(-((x-mu)^2 / (2*sigma^2))) / sqrt(2*pi*sigma) )
+x <- c(3,2,5)
+mu<-3.33
+sigma<-1.5
+prod( exp(-((x-mu)^2 / (2*sigma^2))) / sqrt(2*pi*sigma) )
+```
+
+The major input of the Bayesian approach, compared with a traditional likelihood approach, is that it modifies the likelihood function into a posterior distribution, which is a valid probability distribution defined by the classical Bayes' formula (or theorem):
+
+$$\pi(\theta|\mathcal{D}_n) = \frac{\ell(\theta|\mathcal{D}_n)\pi(\theta)}{\int \ell(\theta|\mathcal{D}_n)\pi(\theta) d\theta}$$
+
+The denominator is the integral of the product of the likelihood and the prior over all possible parameter values, which normalizes the posterior distribution. This can be removed and we end up with:
+
+$$\pi(\theta|\mathcal{D}_n) \propto \ell(\theta|\mathcal{D}_n)\pi(\theta)$$ Consider the simplest case of the normal distribution with known variance $\mathcal{N}(\mu, \sigma^2)$. If the prior distribution on $\mu$, $\pi(\mu)$ is the normal $\mathcal{N}(0, \sigma^2)$ can be derived:
+
+$$
+\begin{equation} 
+\begin{split}
+\pi(\mu|\mathcal{D}_n) & \propto \pi(\mu)\ell(\mathcal{D}_n|\mu) \\
+& \propto \exp\left\{-\frac{\mu^2}{2\sigma^2}\right\}\exp\left\{-\frac{n(\bar{x} - \mu)^2}{2\sigma^2}\right\}
+\end{split}
+\end{equation}
+$$
