@@ -9,20 +9,31 @@ format:
 editor: visual
 ---
 
-I use survey data a lot and such data almost always comes with weights. Unfortunately, it's [not always clear](https://statmodeling.stat.columbia.edu/2015/07/14/survey-weighting-and-regression-modeling/) how to use weights. Further see [here](https://stats.stackexchange.com/questions/11018/recommend-references-on-survey-sample-weighting) or [here](https://healthyalgorithms.com/2011/05/24/journal-culture/). There is, however, a consensus that for descriptive statistics (in contrast to whatever is done with regression), one should use weights.
+I use survey data a lot and survey data always comes with weights. Unfortunately, it's [not always clear](https://statmodeling.stat.columbia.edu/2015/07/14/survey-weighting-and-regression-modeling/) how to use weights. Further see [here](https://stats.stackexchange.com/questions/11018/recommend-references-on-survey-sample-weighting) or [here](https://healthyalgorithms.com/2011/05/24/journal-culture/).
 
-There are [different kinds of weights](https://statmodeling.stat.columbia.edu/2021/01/17/weights-in-statistics/). Thomas Lumley, the author of `survey`, the main package for the analysis of surveys in R [calls them](https://notstatschat.rbind.io/2020/08/04/weights-in-statistics/) precision weights, frequency weights, sampling weights. These different weights will lead to the same estimate. However, they will differ in standard errors and here it's where it can get complicated. Here, I focus on sampling weights because those are the ones we use in survey data; the ones that "describe how the sample can be scaled up to the population". I will use *2021 Canadian Election Study v1.0.dta* available [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XBZHKC) which you can load using `haven::read_stata`.
+There is, however, a consensus that for descriptive statistics (using observed data to represent a larger population), one should use weights.
 
-Let's take the first 3000 rows to have larger standard errors, otherwise some are tiny. There's a lot of missing data too, some questions were possibly randomized and asked only to some respondents.
+There are [different kinds of weights](https://statmodeling.stat.columbia.edu/2021/01/17/weights-in-statistics/), terminology can be confusing. Thomas Lumley, the author of the `survey` package, the main package for the analysis of surveys in R [calls them](https://notstatschat.rbind.io/2020/08/04/weights-in-statistics/) precision weights, frequency weights, sampling weights. These different weights will lead to the same point estimate. However, they will differ in standard errors and here it's where it can get complicated.
+
+Here's a [nice deck](https://static1.squarespace.com/static/56dcecbd2eeb8186f4568c24/t/5ce178c362f60d0001c3be53/1558280389093/4_Sampling.pdf) by Prillaman. Lumley's [book is the reference](https://onlinelibrary.wiley.com/doi/book/10.1002/9780470580066).
+
+Here, I focus on sampling weights because those are the ones we use in survey data; the ones that "describe how the sample can be scaled up to the population". To be clear, the data we use in public opinion research and empirical social science is almost always non-probability sample. So all the theory about design effects and design weights discussed in the Lumley book and elsewhere doesn't really apply.
+
+That said, in practice we still weight. We usually use post-stratification: "[the use of weights to assure that the sample totals equal some external total based on the target population. Essentially, it is “stratifying” after you have already run your sample](https://static1.squarespace.com/static/56dcecbd2eeb8186f4568c24/t/5ce178c362f60d0001c3be53/1558280389093/4_Sampling.pdf)."
+
+In practice when do post-stratification we use raking. Post-stratification and raking are both weighting techniques used to adjust survey samples to match known population characteristics, but they differ in how they handle the adjustment. Post-stratification assigns weights based on predefined population cells or strata (e.g., specific age-gender-education groups), requiring complete joint distribution data for these variables in the population. In contrast, raking adjusts weights iteratively to match marginal distributions of variables (e.g., age and gender and education separately), making it more flexible and applicable when joint distribution data are unavailable or sparse. So in practice if you have reason to believe that e.g., education varies a lot by age or gender, raking might not be appropriate. [In practice, raking is used extensively.](https://www.pewresearch.org/methods/2018/01/26/how-different-weighting-methods-work/)
+
+I will use *2021 Canadian Election Study v1.0.dta* available [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/XBZHKC) which you can load using `haven::read_stata`.
 
 ```{r, message=FALSE,warning=FALSE}
 library(haven)
 library(tidyverse)
+library(srvyr)
+library(survey)
 df <- read_stata("~/Downloads/dataverse_files_CES2021/2021 Canadian Election Study v1.0.dta")
-df <- df[1:5000,]
 ```
 
-In descriptive statistics for survey data, we usually do two things: we calculate averages and we calculate proportions. I say "two things" but proportions can be seen as a special case of averages.
+In descriptive statistics for survey data, we usually do two things: we calculate averages and we calculate proportions. I say "two things" but proportions can be seen as a special case of averages. A proportion represents the mean of a binary variable, where the variable takes a value of 1 for the presence of a characteristic and 0 for its absence. The average (mean) of this binary variable is equivalent to the proportion of respondents with the characteristic. I illustrate everything here using proportions but it's all the same for means. The packages I use do both easily.
 
 I'll start without taking into accounts the weights. Let's look at:
 
@@ -33,6 +44,242 @@ I'll start without taking into accounts the weights. Let's look at:
 -   Somewhat agree (3)
 -   Strongly agree (4)
 -   Don't know / Prefer not to answer (5)
+
+That's our proportions, unweighted:
+
+```{r}
+prop.table(table(df$cps21_pol_eth))
+```
+
+In tidyverse style, this is just counting:
+
+```{r}
+df %>% 
+  select(cps21_pol_eth) %>%
+  filter(complete.cases(.)) %>%
+  group_by(cps21_pol_eth) %>%
+  count() %>% 
+  ungroup() %>%
+  mutate(estimate=n/sum(n))
+```
+
+Counting, by the way, is the same by the way as using weights equal to 1 everywhere.
+
+```{r}
+df %>% 
+  mutate(weight = 1) %>%
+  select(cps21_pol_eth,weight) %>%
+  filter(complete.cases(.)) %>%
+  group_by(cps21_pol_eth) %>%
+  summarise(sum_weight=sum(weight)) %>%
+  mutate(proportion=sum_weight/sum(sum_weight))
+```
+
+The CES provides weights in the `cps21_weight_general_all` variable.
+
+```{r}
+summary(df$cps21_weight_general_all)
+```
+
+Weights used in public opinion surveys usually sum to the number of people in the survey (with a mean of 1). Here I have no idea why the mean is 1.0015. Normally it should equal 1.
+
+Sometimes I've seen weights summing to 1 instead of summing to the number of obesrvations. I've also seen weights summing to the population of Canada. It's all the same, if weights sum to 1, multiplying them by the number of respondents puts them on that scale. Makes no difference for proportion calculations. Most common is weights that sum to the number of obesrvations with average 1.
+
+Here's comparing both no weights (well weights all equal to 1) and real weights:
+
+```{r}
+df %>% 
+  mutate(weight = 1) %>%
+  select(cps21_pol_eth,weight,cps21_weight_general_all) %>%
+  filter(complete.cases(.)) %>%
+  group_by(cps21_pol_eth) %>%
+  summarise(sum_weight=sum(weight),sum_real_weight=sum(cps21_weight_general_all)) %>%
+  mutate(sum_weight/sum(sum_weight),
+         sum_real_weight/sum(sum_real_weight))
+```
+The package `srvyr` has some functions to do all this.
+
+```{r}
+to_model <- df %>% 
+  select(cps21_ResponseId,cps21_pol_eth,cps21_genderid,
+         weight=cps21_weight_general_restricted) %>%
+  drop_na() 
+# The only thing to pass is the weights, that's it
+to_model %>% 
+  as_survey_design(weight = weight) %>%
+  group_by(cps21_pol_eth) %>%
+  summarise(survey_mean(),survey_mean(vartype = "ci"))
+```
+
+We can of course imitate "no weights":
+
+```{r}
+to_model <- df %>% 
+  select(cps21_ResponseId,cps21_pol_eth,cps21_genderid,
+         weight=cps21_weight_general_restricted) %>%
+  drop_na()  
+# The only thing to pass is the weights, that's it
+to_model %>% 
+  mutate(weight=1) %>%
+  as_survey_design(weight = weight) %>%
+  group_by(cps21_pol_eth) %>%
+  summarise(survey_mean(),survey_mean(vartype = "ci"))
+```
+
+We can break down by another variable e.g., gender
+
+```{r}
+to_model <- df %>% 
+  select(cps21_ResponseId,cps21_pol_eth,cps21_genderid,
+         weight=cps21_weight_general_restricted) %>%
+  drop_na() 
+# The only thing to pass is the weights, that's it
+to_model %>% 
+  as_survey_design(weight = weight) %>%
+  group_by(cps21_genderid,cps21_pol_eth) %>%
+  summarise(survey_mean(),survey_mean(vartype = "ci"))
+```
+
+If you actually want Likert averages (here we should remove the 5s which are DKs) :
+
+```{r}
+# The only thing to pass is the weights, that's it
+to_model %>% 
+  filter(cps21_pol_eth!=5) %>%
+  as_survey_design(weight = weight) %>%
+  group_by(cps21_genderid) %>%
+  summarise(survey_mean(cps21_pol_eth))
+```
+
+#### How to create weights?
+
+"Raking weights" (or iterative proportional fitting) is a method to create weights.
+
+In short, raking involves:
+
+Selecting Marginals: First, you identify key demographic (or other relevant) characteristics where you know both the distribution in your sample and the true distribution in the population (e.g., age groups, gender, education, region).
+
+Adjusting Weights: For each characteristic, you adjust the sample weights so that the weighted distribution matches the known population distribution.
+
+After the process, each survey respondent will have a weight (or a multiplier) that's used to make the sample data better resemble the actual population across the specified characteristics.
+
+I don't know what the marginals used for raking were here. 
+
+The documentation says: "Marginal values were successively weighted according to province, as well as gender, age group, and education level. All population data were taken from the 2016 Canadian census."
+
+So I could go back in the 2016 census and get them. But I can also just reverse engineer them from the weights.
+
+Think about it. I can count the number of people (unweighted) in each group. I get the approximate number of Canadians in those groups based on the CES. If I count the number of people in each group, adjusted with the weights, I get the approximate number of Canadian in those groups, adjusted with the weights, so adjusted to the census. 
+
+By summing the weights over the categories on which the weights are probably created, I can get some marginals, that is, estimates inline with the census.
+
+```{r}
+df %>%
+  group_by(cps21_genderid) %>%
+  summarise(sw=sum(cps21_weight_general_all,na.rm=TRUE)) %>%
+  mutate(sw/sum(sw))
+
+df %>%
+  mutate(age=cut(cps21_age,c(0,17,24,34,44,54,64,74,130))) %>%
+  group_by(age) %>%
+  summarise(sw=sum(cps21_weight_general_all,na.rm=TRUE)) %>%
+  mutate(sw/sum(sw))
+
+df %>%
+  group_by(cps21_province) %>%
+  summarise(sw=sum(cps21_weight_general_all,na.rm=TRUE)) %>%
+  mutate(sw/sum(sw))
+
+df %>%
+  mutate(education=cut(cps21_education,c(0,5,7,12),labels=c("HS or below","College","University"))) %>%
+  group_by(education) %>%
+  summarise(sw=sum(cps21_weight_general_all,na.rm=TRUE)) %>%
+  mutate(sw/sum(sw))
+
+```
+
+Let's use these marginals to create new weights, see if it makes sense.
+
+We need to have marginals that fit exactly the questions in our survey. Everything needs to match exactly, that's the most tricky part.
+
+The marginals also need to be alphabetically ordered in the SAME WAY as the variable. So college could come first, before HS or below. The first time you do this it's a pain.
+
+Let's just removed the territories because they are messing up my calculations, it's just that you can't calculate weights with either zero cases in the dataset or proportions of zero. Usually people in the territories are grouped either together or with people in the provinces below (YU->BC,NWT->AB,NU->MB).
+
+```{r}
+temp <- df %>%
+  filter(cps21_province %in% c(1:5,7,9:12)) %>%
+  mutate(gender_weight=recode(as.numeric(cps21_genderid),
+                              !!!c("1"="Male","2"="Female","3"="Other","4"="Other")),
+         age_weight=cut(cps21_age,c(17,24,34,44,54,64,74,130)),
+         education_weight=cut(cps21_education,c(0,5,7,12),
+                              labels=c("HS or below","College","University")),
+         province_weight=as_factor(cps21_province)) %>%
+  select(cps21_ResponseId,cps21_weight_general_all,gender_weight,age_weight,education_weight,province_weight)
+
+temp$province_weight <- droplevels(temp$province_weight)
+temp$age_weight <- droplevels(temp$age_weight)
+temp$education_weight <- as.character(temp$education_weight)
+```
+
+Let's calculate again the marginals again on this.
+
+Again, these are reversed engineered from the weights. In real life we would just get these real numbers in the census.
+
+```{r}
+marginals_df <- temp %>%
+  gather(key,value,-cps21_weight_general_all,-cps21_ResponseId) %>%
+  group_by(key,value) %>% summarise(sw=sum(cps21_weight_general_all,na.rm=TRUE)) %>%
+  group_by(key) %>% mutate(p=sw/sum(sw))
+```
+
+Here is how we declare the marginals. It's calculated with regression so that's why we have a weird 1 as intercept.
+
+We need to remove the first item in each category, like in regression when we have n-1 coefficients for categorical variables.
+
+```{r}
+(marginals <- c(`(Intercept)`= 1,
+               setNames(marginals_df$p,paste0(marginals_df$key,marginals_df$value))))
+marginals <- marginals[-grep("age",names(marginals))[1]]
+marginals <- marginals[-grep("education",names(marginals))[1]]
+marginals <- marginals[-grep("province",names(marginals))[1]]
+marginals <- marginals[-grep("gender",names(marginals))[1]]
+```
+
+When creating weights, we need a complete dataset on those variables for which we weight.
+
+Usually polling companies create weights on those observations where they have data on all weighting variables. They then assign w=1 to those observations where they have missing data.
+
+The survey package creates weights that sum to 1, not the sample size. I'm not going to show it here but let's say you have 1000 respondents and 50 have missing observations. My 950 weights would sum to 1. So I'd multiply them by 950. They'd now sum to 950. With the 50 weights summing to 50, all that would sum to 1. 
+
+```{r}
+
+temp <- temp %>% filter(complete.cases(.))
+
+tmp_form <- paste(" ~ age_weight+education_weight+gender_weight+province_weight")
+surveyDesign <- svydesign(id = ~ 1, 
+                          weights = ~ 1,
+                          data = temp)
+surveyDesign <- calibrate(design     = surveyDesign,
+                          formula    = as.formula(tmp_form),
+                          calfun     = "raking",
+                          population = marginals,
+                          maxit      = 2000)
+
+temp$weight_created_withR <- weights(surveyDesign)
+temp$weight_created_withR_avg1 <- temp$weight_created_withR*nrow(temp)
+
+```
+
+The weights we created are highly correlated with the real weights (0.95). We see from the plot different lines. This probably means that I am not weighting we the exact same variable as the census. Maybe they weight on income, maybe they weight on 6 education category, etc. I don't know, but this gives an idea. Each line on the plot is one group that the CES weights on, that I haven't weighted on.
+
+```{r}
+cor(temp$weight_created_withR_avg1,temp$cps21_weight_general_all)
+plot(temp$weight_created_withR_avg1,temp$cps21_weight_general_all)
+```
+
+````{=html}
+<!---
 
 ```{r}
 summary(df$cps21_pol_eth)
@@ -105,7 +352,7 @@ df %>%
          max=estimate+1.96*se)
 ```
 
-You'll sometimes see people doing the same thing with a linear model:
+You'll sometimes see people doing the same thing with a linear model (the difference in the standard error is that the linear model by default assumes homoscedasticity):
 
 ```{r}
 fit <- lm(cps21_pol_eth~as_factor(cps21_genderid),df %>% filter(cps21_pol_eth!=5))
@@ -356,4 +603,5 @@ df %>%
 
 Let's use these marginals to create new weights, see if it makes sense.
 
-A [nice deck](https://static1.squarespace.com/static/56dcecbd2eeb8186f4568c24/t/5ce178c362f60d0001c3be53/1558280389093/4_Sampling.pdf) by Prillaman.
+--->
+````

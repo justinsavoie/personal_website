@@ -8,7 +8,9 @@ editor: visual
 
 ### Notes
 
-8 - [Habilité des équipes de hockey dans RSA](hockey-abilities.html) (2024-12) Un modèle Bayésien ultra simple
+9 - [Using and understanding survey weights](Weights-understanding.html) (2024-11) Technical notes and R code
+
+8 - [Habilité des équipes de hockey dans RSA](hockey-abilities.html) (2024-11) Un modèle Bayésien ultra simple
 
 7 - [L'analyse quantitative en sciences sociales](Analyse-Quanti-Sciences-Sociales.html) (2023-10) Quelques réflexions sur l'analyse quantitative
 
