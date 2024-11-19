@@ -97,6 +97,7 @@ df %>%
   mutate(sum_weight/sum(sum_weight),
          sum_real_weight/sum(sum_real_weight))
 ```
+
 The package `srvyr` has some functions to do all this.
 
 ```{r}
@@ -163,13 +164,13 @@ Adjusting Weights: For each characteristic, you adjust the sample weights so tha
 
 After the process, each survey respondent will have a weight (or a multiplier) that's used to make the sample data better resemble the actual population across the specified characteristics.
 
-I don't know what the marginals used for raking were here. 
+I don't know what the marginals used for raking were here.
 
 The documentation says: "Marginal values were successively weighted according to province, as well as gender, age group, and education level. All population data were taken from the 2016 Canadian census."
 
 So I could go back in the 2016 census and get them. But I can also just reverse engineer them from the weights.
 
-Think about it. I can count the number of people (unweighted) in each group. I get the approximate number of Canadians in those groups based on the CES. If I count the number of people in each group, adjusted with the weights, I get the approximate number of Canadian in those groups, adjusted with the weights, so adjusted to the census. 
+Think about it. I can count the number of people (unweighted) in each group. I get the approximate number of Canadians in those groups based on the CES. If I count the number of people in each group, adjusted with the weights, I get the approximate number of Canadian in those groups, adjusted with the weights, so adjusted to the census.
 
 By summing the weights over the categories on which the weights are probably created, I can get some marginals, that is, estimates inline with the census.
 
@@ -204,7 +205,7 @@ We need to have marginals that fit exactly the questions in our survey. Everythi
 
 The marginals also need to be alphabetically ordered in the SAME WAY as the variable. So college could come first, before HS or below. The first time you do this it's a pain.
 
-Let's just removed the territories because they are messing up my calculations, it's just that you can't calculate weights with either zero cases in the dataset or proportions of zero. Usually people in the territories are grouped either together or with people in the provinces below (YU->BC,NWT->AB,NU->MB).
+Let's just removed the territories because they are messing up my calculations, it's just that you can't calculate weights with either zero cases in the dataset or proportions of zero. Usually people in the territories are grouped either together or with people in the provinces below (YU-\>BC,NWT-\>AB,NU-\>MB).
 
 ```{r}
 temp <- df %>%
@@ -250,7 +251,7 @@ When creating weights, we need a complete dataset on those variables for which w
 
 Usually polling companies create weights on those observations where they have data on all weighting variables. They then assign w=1 to those observations where they have missing data.
 
-The survey package creates weights that sum to 1, not the sample size. I'm not going to show it here but let's say you have 1000 respondents and 50 have missing observations. My 950 weights would sum to 1. So I'd multiply them by 950. They'd now sum to 950. With the 50 weights summing to 50, all that would sum to 1. 
+The survey package creates weights that sum to 1, not the sample size. I'm not going to show it here but let's say you have 1000 respondents and 50 have missing observations. My 950 weights would sum to 1. So I'd multiply them by 950. They'd now sum to 950. With the 50 weights summing to 50, all that would sum to 1.
 
 ```{r}
 
@@ -277,6 +278,19 @@ The weights we created are highly correlated with the real weights (0.95). We se
 cor(temp$weight_created_withR_avg1,temp$cps21_weight_general_all)
 plot(temp$weight_created_withR_avg1,temp$cps21_weight_general_all)
 ```
+
+#### Kish's Effective Sample Size
+
+One trick I've used often is to [calculate Kish's Effective Sample Size](https://en.wikipedia.org/wiki/Design_effect) to have a rough idea of what's the effective sample. If all weights are equal, then the effective sample size is equal to the sample size.
+
+```{r}
+# sample size
+length(temp$weight_created_withR_avg1)
+# effective sample size
+sum(temp$weight_created_withR_avg1)^2/sum(temp$weight_created_withR_avg1^2)
+```
+
+We can then use these approximate sample size numbers to calculate standard errors and confidence intervals. For example, for a proportion, we can use the formulas [here](https://ecampusontario.pressbooks.pub/introstats/chapter/7-4-confidence-intervals-for-a-population-proportion/).
 
 ````{=html}
 <!---
