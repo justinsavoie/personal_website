@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Justin Savoie</title>
+    <title>A simple system for classifying open-texts survey questions - Justin Savoie</title>
     <style>
         * {
             margin: 0;
@@ -273,22 +273,34 @@
         </div>
     </header>
     
+    <article>
+    <h1>A simple system for classifying open-texts survey questions</h1>
+    <div class="post-meta">05 Jul, 2025</div>
     
-    <div class="content" id="about-section">
-        <h1>Justin Savoie</h1>
-        <p>I'm a graduate of Université Laval with degrees in both Economics and Politics. I was in the PhD in Political Science at the University of Toronto (I'm currently on leave; hoping to finish one day) where I focused on the study of the concept of the nation using embeddings and language models. I am currently a Behavioral Science Fellow at Impact Canada. Previously, I did data science at Vox Pop Labs. My current interests lie somewhere at the intersection of computational social science and artificial intelligence. You can reach me at &lt;last name&gt;&lt;first name&gt;99 at gmail dot com.</p>
-    </div>
-    
-    <div class="content blog-section" id="blog-section">
-        <h1>Blog</h1>
-        <div class="blog-list">
-            <div class="blog-item">
-                <span class="date">05 Jul, 2025</span>
-                <a href="blog/simple-classification.html">A simple system for classifying open-texts survey questions</a>
-            </div>
-        </div>
-    </div>
-    
+    <p>By now, we all know that LLMs can code open-ended survey responses. It’s been documented, for example, in <a href="https://journals.sagepub.com/doi/full/10.1177/20531680241231468">this study</a>. </p>
+<p>Andrei Burkov, in his <a href="https://thelmbook.com/">LM book</a>, writes (but gives no additional details):</p>
+<blockquote>
+<p>"Advanced chat language models enable highly accurate automated document labeling through a panel of expert models. Using three LLMs, when two or more assign the same label to a document, that label is adopted. If all three disagree, either a human can decide, or a fourth model can break the tie. In many business contexts, manual labeling is becoming obsolete, as LLMs offer faster and often more reliable labeling."</p>
+</blockquote>
+<p>What’s less clear is how well they do it, how to do it in practice; all the details ... </p>
+<p>What I'm especially interested in is whether smaller, local models, can handle the task. Sometimes you don’t want to (or can't) send your data to commercial APIs. Maybe it's a privacy issue, maybe you just don’t feel like paying $8 per million tokens every time you want to analyze a batch of responses. Also, these models can change. We all agree there’s something nice and transparent with open models — even if it’s just the weights that are open and transparent.</p>
+<p>One obvious problem: there's no clear ground truth for this kind of task. Say you have hundreds or thousands of open-text answers that were hand-coded into, for example, 12 categories by a human. That number is pretty arbitrary — you could’ve just as easily used 8, or 10, or 14 categories depending on your perspective or goals. There's a science to all this, of course, to inter-coder reliability (coding scheme validations, benchmarks, coders as randomly interchangeable, etc.) but ultimately it's still subjective. Some classification schemes are obviously bad, but defining what counts as "best" is not straightforward.</p>
+<p>Anyways, after doing some planning with Claude and ChatGPT, I ended up with <a href="https://github.com/justinsavoie/open-text-coder">open-text-coder</a>, a lightweight text classification system using LLMs and machine learning.</p>
+<p>It has:</p>
+<ul>
+<li>Hybrid Classification: Uses LLMs to label a sample, then trains a fast ML classifier</li>
+<li>Multiple LLM Backends: Supports OpenAI and Ollama (local models)</li>
+<li>Translation Support: Built-in translation for multilingual datasets</li>
+<li>Category Generation: Automatically suggest categories from your data</li>
+<li>Multi-label Support: Classify texts into multiple categories</li>
+<li>Cost-Effective: Label only a sample with LLMs, predict the rest with ML</li>
+</ul>
+<p>For the full pipeline, check the <a href="https://github.com/justinsavoie/open-text-coder/blob/main/README.md">README.md</a> chaining the pieces.</p>
+<p>As an example, I ran it on the <a href="http://www.ces-eec.ca/2021-canadian-election-study/">2021 Canadian Election Study</a>.</p>
+<p><img alt="Distribution: most important issue" src="images/category_frequencies.png" /></p>
+<p>It works reasonably well, but it’s not perfect. The main issue is that I don’t have a gold standard to compare my results to—no definitive reference to tell me whether the classifications are actually “correct.” One way to validate might be to use a stronger language model as a kind of judge: send it some of the outputs and see how it evaluates them. But the best method would still be to compare to a real gold-standard dataset, which I don’t have at the moment.</p>
+<p>One last thought: I’ve done similar experiments at work on related topics, and they were much harder. Here, things go more smoothly because the categories are relatively clear. But when the topic itself is fuzzy—even for humans—it gets tricky fast. Imagine asking people why they’re dissatisfied with how democracy works (I haven’t tested that question exactly, but you get the idea). The answers go in every direction: metaphors, personal stories, vague references to parties or politicians. It’s hard to know how many categories there should even be. Is general cynicism its own class? What about cynicism directed at the current government, or at a specific politician? Sure, you can ask a powerful LLM to generate categories, but this kind of task is fundamentally hard and very context-specific. That’s about all I’ve got for now: doing this stuff well is harder than I initially thought.</p>
+</article>
     
     <footer>
         <p>© 2025 Justin Savoie</p>
