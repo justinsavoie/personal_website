@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A simple system for classifying open-texts survey questions - Justin Savoie</title>
+    <title>Analyse factorielle vs analyse en composantes principales - Justin Savoie</title>
     <style>
         * {
             margin: 0;
@@ -292,32 +292,88 @@
     </header>
     
     <article>
-    <h1>A simple system for classifying open-texts survey questions</h1>
-    <div class="post-meta">05 Jul, 2025</div>
+    <h1>Analyse factorielle vs analyse en composantes principales</h1>
+    <div class="post-meta">11 Feb, 2026</div>
     
-    <p>By now, we all know that LLMs can code open-ended survey responses. It’s been documented, for example, in <a href="https://journals.sagepub.com/doi/full/10.1177/20531680241231468">this study</a>. </p>
-<p>Andrei Burkov, in his <a href="https://thelmbook.com/">LM book</a>, writes (but gives no additional details):</p>
-<blockquote>
-<p>"Advanced chat language models enable highly accurate automated document labeling through a panel of expert models. Using three LLMs, when two or more assign the same label to a document, that label is adopted. If all three disagree, either a human can decide, or a fourth model can break the tie. In many business contexts, manual labeling is becoming obsolete, as LLMs offer faster and often more reliable labeling."</p>
-</blockquote>
-<p>What’s less clear is how well they do it, how to do it in practice; all the details ... </p>
-<p>What I'm especially interested in is whether smaller, local models, can handle the task. Sometimes you don’t want to (or can't) send your data to commercial APIs. Maybe it's a privacy issue, maybe you just don’t feel like paying $8 per million tokens every time you want to analyze a batch of responses. Also, these models can change. We all agree there’s something nice and transparent with open models — even if it’s just the weights that are open and transparent.</p>
-<p>One obvious problem: there's no clear ground truth for this kind of task. Say you have hundreds or thousands of open-text answers that were hand-coded into, for example, 12 categories by a human. That number is pretty arbitrary — you could’ve just as easily used 8, or 10, or 14 categories depending on your perspective or goals. There's a science to all this, of course, to inter-coder reliability (coding scheme validations, benchmarks, coders as randomly interchangeable, etc.) but ultimately it's still subjective. Some classification schemes are obviously bad, but defining what counts as "best" is not straightforward.</p>
-<p>Anyways, after doing some planning with Claude and ChatGPT, I ended up with <a href="https://github.com/justinsavoie/open-text-coder">open-text-coder</a>, a lightweight text classification system using LLMs and machine learning.</p>
-<p>It has:</p>
+    <p>Pour réduire la dimensionnalité, on a souvent à choisir entre l'analyse en composantes principales (PCA) et l'analyse factorielle (FA). Souvent, on ne sait pas laquelle choisir. Les deux reposent sur des postulats différents. En science sociale, d'habitude on utilise l'analyse factorielle.</p>
+<h4>Analyse en composantes principales / Principal Component Analysis (PCA)</h4>
 <ul>
-<li>Hybrid Classification: Uses LLMs to label a sample, then trains a fast ML classifier</li>
-<li>Multiple LLM Backends: Supports OpenAI and Ollama (local models)</li>
-<li>Translation Support: Built-in translation for multilingual datasets</li>
-<li>Category Generation: Automatically suggest categories from your data</li>
-<li>Multi-label Support: Classify texts into multiple categories</li>
-<li>Cost-Effective: Label only a sample with LLMs, predict the rest with ML</li>
+<li>L'objectif unique : réduction de dimension</li>
+<li>Modèle : décomposition algébrique de la variance totale</li>
+<li>Aucune hypothèse sur une structure latente; sur un concept latent</li>
+<li>Les composantes sont des combinaisons linéaires qui maximisent la variance expliquée. C'est tout.</li>
 </ul>
-<p>For the full pipeline, check the <a href="https://github.com/justinsavoie/open-text-coder/blob/main/README.md">README.md</a> chaining the pieces.</p>
-<p>As an example, I ran it on the <a href="http://www.ces-eec.ca/2021-canadian-election-study/">2021 Canadian Election Study</a>.</p>
-<p><img alt="Distribution: most important issue" src="images/category_frequencies.png" /></p>
-<p>It works reasonably well, but it’s not perfect. The main issue is that I don’t have a gold standard to compare my results to—no definitive reference to tell me whether the classifications are actually “correct.” One way to validate might be to use a stronger language model as a kind of judge: send it some of the outputs and see how it evaluates them. But the best method would still be to compare to a real gold-standard dataset, which I don’t have at the moment.</p>
-<p>One last thought: I’ve done similar experiments at work on related topics, and they were much harder. Here, things go more smoothly because the categories are relatively clear. But when the topic itself is fuzzy—even for humans—it gets tricky fast. Imagine asking people why they’re dissatisfied with how democracy works (I haven’t tested that question exactly, but you get the idea). The answers go in every direction: metaphors, personal stories, vague references to parties or politicians. It’s hard to know how many categories there should even be. Is general cynicism its own class? What about cynicism directed at the current government, or at a specific politician? Sure, you can ask a powerful LLM to generate categories, but this kind of task is fundamentally hard and very context-specific. That’s about all I’ve got for now: doing this stuff well is harder than I initially thought.</p>
+<p>Formellement :</p>
+<div class="arithmatex">\[
+X = Z W'
+\]</div>
+<p>où <span class="arithmatex">\(Z\)</span> sont les composantes principales. La PCA explique toute la variance, y compris l’erreur spécifique. <sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup></p>
+<h4>Analyse factorielle / Factor analysis (FA)</h4>
+<p>Parfois aussi appelée analyse factorielle exploratoire / exploratory factor analysis (EFA), pour la distinguer de l'analyse factorielle confirmatoire (CFA). Analyse factorielle exploratoire: on laisse les données révéler librement la structure des facteurs. Analyse factorielle confirmatoire: on teste un modèle factoriel précis défini à l’avance.</p>
+<ul>
+<li>Objectif de FA : modéliser une structure latente</li>
+<li>Modèle probabiliste</li>
+<li>Ne s’intéresse qu’à la variance commune (shared variance)</li>
+</ul>
+<p>Modèle :</p>
+<div class="arithmatex">\[
+x_i = \lambda_i F + \epsilon_i
+\]</div>
+<p>où :</p>
+<ul>
+<li><span class="arithmatex">\(F\)</span> = facteur latent</li>
+<li><span class="arithmatex">\(\lambda_i\)</span> = loading</li>
+<li><span class="arithmatex">\(\epsilon_i\)</span> = variance spécifique (erreur)</li>
+</ul>
+<p>La matrice de covariance est :</p>
+<div class="arithmatex">\[
+\Sigma = \Lambda \Phi \Lambda' + \Psi
+\]</div>
+<p>En FA, on suppose qu’il existe une variable latente (ex : autoritarisme, nationalisme, etc.) qui génère les réponses observées.</p>
+<h4>Comment calculer une FA ?</h4>
+<ol>
+<li>On estime la matrice de corrélations.</li>
+<li>On extrait les facteurs (ML ou minres).</li>
+<li>On estime les loadings.</li>
+<li>On peut calculer des scores factoriels.</li>
+</ol>
+<p>Exemple:</p>
+<pre><code class="language-r">n &lt;- 500
+F &lt;- rnorm(n)
+
+x1 &lt;- 0.8*F + rnorm(n, sd=.6)
+x2 &lt;- 0.7*F + rnorm(n, sd=.7)
+x3 &lt;- 0.9*F + rnorm(n, sd=.5)
+x4 &lt;- rnorm(n)  # bruit pur
+
+dat &lt;- data.frame(x1,x2,x3,x4)
+
+# analyse factorielle 1 facteur
+fa1 &lt;- factanal(dat, 1, scores = &quot;regression&quot;)
+</code></pre>
+<p>Les loadings représentent la contribution d’un facteur latent à une variable observée; dans les modèles orthogonaux standardisés, ils correspondent aux corrélations variable–facteur.</p>
+<p>Scores factoriels:</p>
+<pre><code class="language-r">c(fa1$scores)
+</code></pre>
+<p>Les scores factoriels sont des estimations de la position des individus sur le facteur latent. Ils dépendent des loadings, de la matrice de corrélation (ou covariance) entre les items, ainsi que de la méthode d’estimation utilisée (régression, Bartlett, Anderson-Rubin, etc.). Intuitivement, on peut les voir comme une combinaison linéaire pondérée des items, où les poids sont dérivés des loadings et de la structure de corrélation.</p>
+<p>On utilise souvent FA pour vérifier que les items mesurent bien une même dimension, puis on calcule simplement une moyenne additive parce qu’elle est plus simple à interpréter, plus stable entre échantillons et moins dépendante du modèle. Lorsque les loadings sont similaires, pondérer par des scores factoriels n’apporte presque rien par rapport à une moyenne standardisée.</p>
+<p>En pratique :</p>
+<pre><code class="language-r">dat$scale_mean &lt;- rowMeans(dat[,c(&quot;x1&quot;,&quot;x2&quot;,&quot;x3&quot;)])
+</code></pre>
+<p>Si la structure est unidimensionnelle et cohérente, la moyenne ≈ score factoriel.</p>
+<p>Comment choisir le nombre de dimensions?</p>
+<pre><code class="language-r">library(psych)
+fa.parallel(dat)
+</code></pre>
+<p>On peut quand même rester à une seule dimension même si fa.parallel propose plus. Ça dépend de notre théorie.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Dire que la PCA “explique toute la variance, y compris l’erreur spécifique” signifie intuitivement qu’elle ne fait aucune distinction entre ce qui, dans une variable, provient d’un construit latent partagé et ce qui relève simplement de son bruit propre ou de ses particularités idiosyncratiques. Imaginons trois items censés mesurer l’autoritarisme : chacun contient une part commune (le trait latent) et une part spécifique (erreur de mesure, ambiguïté de formulation, humeur du répondant, variance propre au contenu précis de l’item). L’analyse factorielle suppose explicitement que seule la variance commune doit servir à estimer le facteur latent, et elle modélise séparément la variance spécifique. La PCA, en revanche, cherche uniquement une combinaison linéaire des variables qui maximise la variance totale observée dans les données, sans se demander d’où vient cette variance ; elle traite donc la variance partagée et la variance spécifique exactement de la même manière. Si un item contient beaucoup de variance idiosyncratique (par exemple parce qu’il est mal formulé ou capte un aspect marginal), cette variance compte quand même dans le calcul de la composante principale. Autrement dit, la PCA compresse l’information statistique disponible, mais elle ne distingue pas structure latente et bruit : elle “explique” toute la dispersion des données, qu’elle soit théoriquement pertinente ou non. Mathématiquement, la distinction vient du fait que la PCA et la FA partent de décompositions différentes de la matrice de covariance (ou de corrélation) des variables observées. En PCA, on prend simplement la matrice de covariance et on fait une décomposition en valeurs propres. Les composantes principales sont des combinaisons linéaires correspondant aux directions de variance maximale, et toute la variance présente dans la matrice de covariance est distribuée entre ces composantes ; il n’y a aucun terme séparé pour l’erreur ou la variance spécifique, car le modèle n’en postule pas l’existence. En analyse factorielle, on impose un modèle où la variance commune est attribuée aux facteurs latents et la variance spécifique est modélisée séparément. Autrement dit, la FA contraint la matrice de covariance à être décomposée en une partie de rang réduit (les facteurs communs) plus un résidu diagonal (le spécifique), alors que la PCA ne sépare rien : elle redistribue toute la variance observée dans des axes orthogonaux sans modèle génératif sous-jacent. La distinction mathématique tient donc au fait que la FA introduit explicitement un terme pour la variance non partagée et estime ses paramètres, tandis que la PCA effectue uniquement une décomposition spectrale de la variance totale, sans hypothèse sur sa provenance. C'est ok de ne pas tout comprendre. C'est réellement compliqué. Il faut juste comprendre l'idée.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 </article>
     
     <footer>

@@ -92,8 +92,11 @@
             text-decoration: underline;
         }
         
-        /* Blog section - compact style */
+        /* Blog/Games section - compact style */
         .blog-section {
+            display: none;
+        }
+        .playground-section {
             display: none;
         }
         
@@ -232,6 +235,20 @@
             }
         }
     </style>
+    <!-- MathJax config for rendering LaTeX (inline: $...$, display: $$...$$) -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
 
@@ -239,6 +256,7 @@
         <nav>
             <a href="/" class="nav-about">About</a>
             <a href="/#blog" class="nav-blog">Blog</a>
+            <a href="/#playground" class="nav-playground">Playground</a>
         </nav>
         
         <div class="social-icons">
@@ -283,8 +301,25 @@
         <h1>Blog</h1>
         <div class="blog-list">
             <div class="blog-item">
+                <span class="date">11 Feb, 2026</span>
+                <a href="blog/FA vs PCA.html">Analyse factorielle vs analyse en composantes principales</a>
+            </div>
+            <div class="blog-item">
+                <span class="date">05 Nov, 2025</span>
+                <a href="blog/le-jeu-du-dictionnaire.html">Le jeu du dictionnaire</a>
+            </div>
+            <div class="blog-item">
                 <span class="date">05 Jul, 2025</span>
                 <a href="blog/simple-classification.html">A simple system for classifying open-texts survey questions</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="content playground-section" id="playground-section">
+        <h1>Playground</h1>
+        <div class="blog-list">
+            <div class="blog-item">
+                <a href="playground/jeu-dictionnaire.html">Jeu du dictionnaire</a>
             </div>
         </div>
     </div>
@@ -299,10 +334,12 @@
         function showSection(section) {
             const aboutSection = document.getElementById('about-section');
             const blogSection = document.getElementById('blog-section');
+            const playgroundSection = document.getElementById('playground-section');
             
-            if (aboutSection && blogSection) {
+            if (aboutSection && blogSection && playgroundSection) {
                 aboutSection.style.display = 'none';
                 blogSection.style.display = 'none';
+                playgroundSection.style.display = 'none';
                 
                 document.querySelectorAll('nav a').forEach(link => {
                     link.classList.remove('active');
@@ -314,6 +351,9 @@
                 } else if (section === 'blog') {
                     blogSection.style.display = 'block';
                     document.querySelector('.nav-blog').classList.add('active');
+                } else if (section === 'playground') {
+                    playgroundSection.style.display = 'block';
+                    document.querySelector('.nav-playground').classList.add('active');
                 }
             }
         }
@@ -335,9 +375,19 @@
             }
         });
         
+        document.querySelector('.nav-playground').addEventListener('click', function(e) {
+            if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+                e.preventDefault();
+                showSection('playground');
+                history.pushState(null, '', '/#playground');
+            }
+        });
+        
         // Check URL hash on load
         if (window.location.hash === '#blog') {
             showSection('blog');
+        } else if (window.location.hash === '#playground') {
+            showSection('playground');
         } else if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
             showSection('about');
         }
