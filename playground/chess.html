@@ -3,25 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chess AI - Tap & Drag Fixed</title>
+    <title>Chess AI - Play as Black or White</title>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <style>
         body { background: #2c3e50; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 5px; touch-action: manipulation; }
         #board { width: 98vw; max-width: 600px; margin: 0 auto; border: 4px solid #34495e; }
         .status { margin: 10px; font-size: 1.2em; color: #f1c40f; font-weight: bold; height: 1.5em; }
-        button { padding: 15px 30px; font-size: 1.1em; background: #e67e22; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 10px; -webkit-tap-highlight-color: transparent; }
-        
-        /* Clearer highlighting */
-        .highlight-square { 
-            box-shadow: inset 0 0 5px 5px rgba(241, 196, 15, 0.8) !important;
-        }
+        .controls { margin: 10px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        button { padding: 12px 20px; font-size: 1em; background: #e67e22; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        button.secondary { background: #34495e; border: 1px solid #7f8c8d; }
+        button:active { opacity: 0.8; }
+        .highlight-square { box-shadow: inset 0 0 5px 5px rgba(241, 196, 15, 0.8) !important; }
     </style>
 </head>
 <body>
 
     <div class="status" id="status">White to move</div>
+    
     <div id="board"></div>
-    <button onclick="resetGame()">New Game</button>
+
+    <div class="controls">
+        <button onclick="resetGame()">New Game</button>
+        <button class="secondary" onclick="flipBoard()">Flip Board</button>
+        <select id="userColor" onchange="resetGame()" style="padding: 10px; border-radius: 8px;">
+            <option value="w">Play as White</option>
+            <option value="b">Play as Black</option>
+        </select>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -33,6 +41,7 @@
         var board = null;
         var game = new Chess();
         var sourceSquare = null;
+        var userColor = 'w';
 
         var weights = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
 
@@ -60,54 +69,55 @@
         }
 
         function makeBestMove() {
-            var moves = game.moves();
             if (game.game_over()) return;
+            var moves = game.moves();
             moves.sort(() => 0.5 - Math.random());
-            var bestMove = null, bestValue = 9999; 
+            
+            // If AI is White, it wants to MAXIMIZE. If AI is Black, it wants to MINIMIZE.
+            var isAIWhite = (game.turn() === 'w');
+            var bestMove = null;
+            var bestValue = isAIWhite ? -9999 : 9999;
+
             for (var i = 0; i < moves.length; i++) {
                 game.move(moves[i]);
-                var val = minimax(2, game, -10000, 10000, true);
+                var val = minimax(2, game, -10000, 10000, !isAIWhite);
                 game.undo();
-                if (val < bestValue) { bestValue = val; bestMove = moves[i]; }
+
+                if (isAIWhite) {
+                    if (val > bestValue) { bestValue = val; bestMove = moves[i]; }
+                } else {
+                    if (val < bestValue) { bestValue = val; bestMove = moves[i]; }
+                }
             }
             game.move(bestMove);
             board.position(game.fen());
             updateStatus();
         }
 
-        function removeHighlights() {
-            $('#board .square-55d63').removeClass('highlight-square');
-        }
-
-        // Logic for both Click and Tap
         function handleSquareSelection(square) {
+            if (game.turn() !== userColor) return; // Prevent moving during AI turn
             var piece = game.get(square);
 
             if (sourceSquare === null) {
-                // First selection
-                if (piece && piece.color === game.turn()) {
+                if (piece && piece.color === userColor) {
                     sourceSquare = square;
-                    removeHighlights();
+                    $('.square-55d63').removeClass('highlight-square');
                     $('.square-' + square).addClass('highlight-square');
                 }
             } else {
-                // Second selection - attempt move
                 var move = game.move({ from: sourceSquare, to: square, promotion: 'q' });
-                
                 if (move === null) {
-                    // If illegal, but clicked another of own pieces, switch selection
-                    if (piece && piece.color === game.turn()) {
+                    if (piece && piece.color === userColor) {
                         sourceSquare = square;
-                        removeHighlights();
+                        $('.square-55d63').removeClass('highlight-square');
                         $('.square-' + square).addClass('highlight-square');
                     } else {
                         sourceSquare = null;
-                        removeHighlights();
+                        $('.square-55d63').removeClass('highlight-square');
                     }
                 } else {
-                    // Legal move
                     sourceSquare = null;
-                    removeHighlights();
+                    $('.square-55d63').removeClass('highlight-square');
                     board.position(game.fen());
                     updateStatus();
                     window.setTimeout(makeBestMove, 250);
@@ -116,25 +126,33 @@
         }
 
         function onDrop(source, target) {
+            if (game.turn() !== userColor) return 'snapback';
             var move = game.move({ from: source, to: target, promotion: 'q' });
             if (move === null) return 'snapback';
             sourceSquare = null;
-            removeHighlights();
+            $('.square-55d63').removeClass('highlight-square');
             updateStatus();
             window.setTimeout(makeBestMove, 250);
         }
 
         function updateStatus() {
-            var status = game.in_checkmate() ? "Checkmate!" : game.in_draw() ? "Draw!" : (game.turn() === 'w' ? "Your turn" : "AI thinking...");
+            var status = game.in_checkmate() ? "Checkmate!" : game.in_draw() ? "Draw!" : (game.turn() === 'w' ? "White to move" : "Black to move");
             $('#status').html(status);
         }
 
         function resetGame() {
             game.reset();
+            userColor = $('#userColor').val();
+            board.orientation(userColor === 'w' ? 'white' : 'black');
             board.start();
             sourceSquare = null;
-            removeHighlights();
+            $('.square-55d63').removeClass('highlight-square');
             updateStatus();
+            if (userColor === 'b') window.setTimeout(makeBestMove, 500);
+        }
+
+        function flipBoard() {
+            board.flip();
         }
 
         board = Chessboard('board', {
@@ -142,14 +160,11 @@
             position: 'start',
             onDrop: onDrop,
             pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-            onSnapEnd: function() { board.position(game.fen()); }
+            onSnapEnd: () => board.position(game.fen())
         });
 
-        // BINDING TO BOTH MOUSE AND TOUCH
-        // Using 'pointerdown' covers both mouse click and finger tap efficiently
-        $('#board').on('pointerdown', '.square-55d63', function(e) {
-            var square = $(this).attr('data-square');
-            handleSquareSelection(square);
+        $('#board').on('pointerdown', '.square-55d63', function() {
+            handleSquareSelection($(this).attr('data-square'));
         });
 
         updateStatus();
