@@ -118,41 +118,104 @@ button{
 <script>
 
 const words = [
-"chat","chien","pomme","banane","voiture","ballon","soleil","lune","fleur","poisson","oiseau","ours","bébé","train","bateau","maison","lait","gâteau",
+"je vais à l'école",
+"je mange une pomme",
+"il boit de l'eau",
+"elle lit un livre",
+"nous allons au parc",
+"tu prends le bus",
+"je vois un chien",
+"elle a un chat",
+"il ouvre la porte",
+"je ferme la fenêtre",
 
-"table","chaise","porte","fenêtre","lit","lampe","stylo","cahier","livre","sac","clé","montre","écran","téléphone","ordinateur",
+"nous mangeons du pain",
+"tu bois du lait",
+"il regarde la télé",
+"elle écrit un mot",
+"je prends un stylo",
+"nous lisons ensemble",
+"tu poses une question",
+"il donne une réponse",
+"elle aime la musique",
+"je joue au ballon",
 
-"eau","pain","fromage","beurre","sucre","sel","riz","pâtes","viande","poire","fraise","orange","raisin","carotte","tomate","salade",
+"nous marchons vite",
+"tu cours dehors",
+"il saute haut",
+"elle danse bien",
+"je chante une chanson",
+"nous regardons le ciel",
+"tu vois la lune",
+"il aime le soleil",
+"elle regarde les étoiles",
+"je marche dans la rue",
 
-"tasse","verre","assiette","fourchette","cuillère","couteau","bol","cuisine","repas","déjeuner","dîner",
+"nous allons à la maison",
+"tu ouvres ton sac",
+"il ferme son cahier",
+"elle prend un livre",
+"je pose mon téléphone",
+"nous écrivons un texte",
+"tu lis une phrase",
+"il compte les nombres",
+"elle apprend à lire",
+"je fais un dessin",
 
-"papa","maman","frère","sœur","ami","copain","voisin","enfant","famille","professeur","élève",
+"nous mangeons ensemble",
+"tu prends une cuillère",
+"il coupe le pain",
+"elle boit du jus",
+"je mange une banane",
+"nous préparons le repas",
+"tu cuisines avec moi",
+"il lave les mains",
+"elle met la table",
+"je nettoie la cuisine",
 
-"école","classe","récré","devoir","examen","question","réponse","lecture","écriture","calcul",
+"nous allons en ville",
+"tu prends le métro",
+"il conduit la voiture",
+"elle marche au parc",
+"je vois un arbre",
+"nous regardons la rivière",
+"tu traverses la rue",
+"il monte le pont",
+"elle descend la colline",
+"je marche sur le chemin",
 
-"route","rue","pont","ville","village","parc","forêt","plage","montagne","rivière","lac","mer",
+"nous jouons à un jeu",
+"tu gagnes un point",
+"il perd la partie",
+"elle choisit une carte",
+"je lance le dé",
+"nous continuons le jeu",
+"tu fais une erreur",
+"il trouve la réponse",
+"elle réussit bien",
+"je recommence encore",
 
-"avion","bus","métro","taxi","vélo","camion","moto","train","bateau",
+"nous sommes à l'école",
+"tu parles au prof",
+"il écoute bien",
+"elle écrit au tableau",
+"je réponds à la question",
+"nous faisons un exercice",
+"tu corriges la phrase",
+"il comprend la leçon",
+"elle étudie le soir",
+"je fais mes devoirs",
 
-"rouge","bleu","vert","jaune","noir","blanc","gris","rose","orange","violet",
-
-"grand","petit","gros","mince","long","court","rapide","lent","chaud","froid","fort","faible",
-
-"main","pied","tête","bras","jambe","œil","nez","bouche","oreille","dos",
-
-"courir","marcher","sauter","manger","boire","dormir","parler","écouter","regarder","penser","jouer",
-
-"heure","minute","seconde","jour","nuit","matin","soir","semaine","mois","année",
-
-"pluie","neige","vent","orage","nuage","ciel","soleil","lune",
-
-"clé","porte","mur","toit","sol","jardin","garage","escalier",
-
-"argent","prix","achat","vente","magasin","client","ticket","carte",
-
-"musique","chanson","danse","film","image","photo","dessin","art",
-
-"jeu","score","point","niveau","erreur","réussite","choix","réponse"
+"nous partons le matin",
+"tu arrives à l'heure",
+"il attend dehors",
+"elle entre dans la classe",
+"je sors à midi",
+"nous rentrons à la maison",
+"tu ouvres la porte",
+"il enlève son manteau",
+"elle pose son sac",
+"je me repose un peu"
 ];
 
 let hits = 0;
@@ -217,7 +280,7 @@ function nextRound(){
 
   render();
 
-  setTimeout(()=>speak(target),1200);
+  setTimeout(()=>speak(target),1000);
 }
 
 function render(){
