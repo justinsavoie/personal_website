@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeu images</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  background:#f0f2f5;
+}
+
+.app{
+  width:100%;
+  max-width:480px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.prompt{
+  text-align:center;
+  font-size:26px;
+  font-weight:900;
+}
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button{
+  flex:1;
+  padding:12px;
+  font-size:18px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.choice{
+  padding:16px 8px;
+  font-size:16px;
+  font-weight:700;
+  border-radius:12px;
+  background:#ffffff;
+  border:2px solid #000;
+  color:#000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+}
+
+.choice .emoji{
+  font-size:52px;
+  line-height:1;
+}
+
+.choice .word{
+  font-size:18px;
+  font-weight:900;
+}
+
+.good{
+  background:#00c853;
+  color:white;
+  border-color:#00c853;
+}
+
+.bad{
+  background:#d50000;
+  color:white;
+  border-color:#d50000;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+
+  <div class="main">
+    <div class="prompt">Listen</div>
+
+    <div class="controls">
+      <button id="start">Play</button>
+      <button id="repeat">🔊</button>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+</div>
+
+<script>
+
+const words = [
+  {word:"cat",       emoji:"🐱"},
+  {word:"dog",       emoji:"🐶"},
+  {word:"apple",     emoji:"🍎"},
+  {word:"banana",    emoji:"🍌"},
+  {word:"car",       emoji:"🚗"},
+  {word:"ball",      emoji:"⚽"},
+  {word:"sun",       emoji:"☀️"},
+  {word:"moon",      emoji:"🌙"},
+  {word:"flower",    emoji:"🌸"},
+  {word:"fish",      emoji:"🐟"},
+  {word:"bird",      emoji:"🐦"},
+  {word:"bear",      emoji:"🐻"},
+  {word:"train",     emoji:"🚂"},
+  {word:"boat",      emoji:"⛵"},
+  {word:"house",     emoji:"🏠"},
+  {word:"milk",      emoji:"🥛"},
+  {word:"cake",      emoji:"🎂"},
+  {word:"tree",      emoji:"🌳"},
+  {word:"bus",       emoji:"🚌"},
+  {word:"bike",      emoji:"🚲"},
+  {word:"plane",     emoji:"✈️"},
+  {word:"star",      emoji:"⭐"},
+  {word:"heart",     emoji:"❤️"},
+  {word:"hat",       emoji:"🎩"},
+  {word:"shoe",      emoji:"👟"},
+  {word:"shirt",     emoji:"👕"},
+  {word:"book",      emoji:"📚"},
+  {word:"pencil",    emoji:"✏️"},
+  {word:"rain",      emoji:"🌧️"},
+  {word:"snow",      emoji:"❄️"},
+  {word:"fire",      emoji:"🔥"},
+  {word:"water",     emoji:"💧"},
+  {word:"bread",     emoji:"🍞"},
+  {word:"cheese",    emoji:"🧀"},
+  {word:"rice",      emoji:"🍚"},
+  {word:"pizza",     emoji:"🍕"},
+  {word:"egg",       emoji:"🥚"},
+  {word:"strawberry",emoji:"🍓"},
+  {word:"grape",     emoji:"🍇"},
+  {word:"carrot",    emoji:"🥕"},
+  {word:"tomato",    emoji:"🍅"},
+  {word:"fork",      emoji:"🍴"},
+  {word:"key",       emoji:"🔑"},
+  {word:"clock",     emoji:"🕐"},
+  {word:"phone",     emoji:"📱"},
+  {word:"eye",       emoji:"👁️"},
+  {word:"hand",      emoji:"✋"},
+  {word:"foot",      emoji:"🦶"},
+  {word:"cloud",     emoji:"☁️"},
+  {word:"turtle",    emoji:"🐢"},
+  {word:"horse",     emoji:"🐴"},
+  {word:"rabbit",    emoji:"🐰"},
+  {word:"elephant",  emoji:"🐘"},
+  {word:"lion",      emoji:"🦁"},
+  {word:"frog",      emoji:"🐸"},
+  {word:"butterfly", emoji:"🦋"},
+  {word:"bee",       emoji:"🐝"},
+  {word:"snake",     emoji:"🐍"},
+  {word:"umbrella",  emoji:"☂️"},
+  {word:"gift",      emoji:"🎁"},
+  {word:"balloon",   emoji:"🎈"},
+  {word:"pencil",    emoji:"✏️"},
+  {word:"drum",      emoji:"🥁"},
+  {word:"guitar",    emoji:"🎸"},
+  {word:"ice cream", emoji:"🍦"},
+  {word:"cookie",    emoji:"🍪"},
+  {word:"hamburger", emoji:"🍔"},
+  {word:"corn",      emoji:"🌽"},
+  {word:"pear",      emoji:"🍐"},
+  {word:"orange",    emoji:"🍊"},
+  {word:"lemon",     emoji:"🍋"},
+  {word:"cherry",    emoji:"🍒"},
+  {word:"pineapple", emoji:"🍍"},
+  {word:"watermelon",emoji:"🍉"},
+  {word:"broccoli",  emoji:"🥦"},
+  {word:"potato",    emoji:"🥔"},
+  {word:"mushroom",  emoji:"🍄"},
+  {word:"truck",     emoji:"🚚"},
+  {word:"rocket",    emoji:"🚀"},
+  {word:"rainbow",   emoji:"🌈"},
+  {word:"mountain",  emoji:"⛰️"},
+  {word:"volcano",   emoji:"🌋"},
+  {word:"island",    emoji:"🏝️"},
+  {word:"castle",    emoji:"🏰"},
+  {word:"tent",      emoji:"⛺"},
+  {word:"robot",     emoji:"🤖"},
+  {word:"crown",     emoji:"👑"},
+  {word:"diamond",   emoji:"💎"},
+  {word:"sword",     emoji:"⚔️"},
+  {word:"anchor",    emoji:"⚓"},
+  {word:"compass",   emoji:"🧭"},
+  {word:"magnet",    emoji:"🧲"},
+  {word:"scissors",  emoji:"✂️"},
+  {word:"hammer",    emoji:"🔨"},
+  {word:"lamp",      emoji:"💡"},
+];
+
+let hits = 0;
+let misses = 0;
+let round = null;
+let lock = false;
+
+let voices = [];
+let ready = false;
+
+const hitsEl = document.getElementById("hits");
+const missesEl = document.getElementById("misses");
+const grid = document.getElementById("grid");
+
+function shuffle(a){
+  return [...a].sort(()=>Math.random()-0.5);
+}
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  if(voices.length > 0) ready = true;
+}
+
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(word){
+  if(!ready) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(word);
+  const enVoice = voices.find(v => v.lang.startsWith("en"));
+  if(enVoice) utter.voice = enVoice;
+  utter.lang = "en-US";
+  utter.rate = 0.85;
+  speechSynthesis.speak(utter);
+}
+
+function nextRound(){
+  lock = false;
+
+  const target = words[Math.floor(Math.random()*words.length)];
+  const others = shuffle(words.filter(w => w.word !== target.word)).slice(0, 3);
+  const choices = shuffle([target, ...others]);
+
+  round = {target, choices};
+  render();
+  setTimeout(() => speak(target.word), 1200);
+}
+
+function render(){
+  grid.innerHTML = "";
+
+  round.choices.forEach(item => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.innerHTML = `<span class="emoji">${item.emoji}</span><span class="word">${item.word}</span>`;
+
+    b.onclick = () => {
+      if(lock) return;
+
+      if(item.word === round.target.word){
+        lock = true;
+        hits++;
+        hitsEl.textContent = hits;
+        b.classList.add("good");
+        speak(item.word);
+        setTimeout(nextRound, 900);
+      } else {
+        misses++;
+        missesEl.textContent = misses;
+        b.classList.add("bad");
+        speak(item.word);
+        setTimeout(() => b.classList.remove("bad"), 300);
+      }
+    };
+
+    grid.appendChild(b);
+  });
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(round.target.word);
+};
+
+</script>
+
+</body>
+</html>
