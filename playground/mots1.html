@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Jeu des mots - français</title>
+  <style>
+    :root{
+      --bg1:#fff8e7;
+      --bg2:#e8f7ff;
+      --card:#ffffff;
+      --text:#24324a;
+      --good:#1f9d55;
+      --bad:#d64545;
+      --accent:#6b7cff;
+      --shadow:0 8px 24px rgba(0,0,0,.10);
+      --radius:24px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: linear-gradient(180deg,var(--bg1),var(--bg2));
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+    }
+    .app{
+      width:min(900px,100%);
+      min-height:100%;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .topbar{
+      display:flex;
+      gap:12px;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .title{
+      background:rgba(255,255,255,.7);
+      padding:12px 16px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:clamp(20px,4vw,32px);
+      box-shadow:var(--shadow);
+    }
+    .score{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .pill{
+      background:var(--card);
+      border-radius:999px;
+      padding:10px 14px;
+      box-shadow:var(--shadow);
+      font-weight:800;
+      font-size:clamp(16px,3vw,20px);
+    }
+    .main{
+      background:rgba(255,255,255,.65);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      flex:1;
+    }
+    .prompt{
+      text-align:center;
+      font-weight:900;
+      font-size:clamp(24px,5vw,40px);
+      line-height:1.15;
+    }
+    .sub{
+      text-align:center;
+      font-size:clamp(16px,3vw,22px);
+      opacity:.85;
+    }
+    .controls{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    button{
+      border:none;
+      border-radius:20px;
+      padding:14px 18px;
+      font-size:clamp(18px,3.4vw,24px);
+      font-weight:900;
+      background:var(--accent);
+      color:white;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+    }
+    button.secondary{
+      background:#ff9f43;
+    }
+    button:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin-top:4px;
+    }
+    .choice{
+      min-height:180px;
+      background:var(--card);
+      color:var(--text);
+      border:5px solid transparent;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      border-radius:28px;
+      font-weight:900;
+      padding:12px;
+      user-select:none;
+    }
+    .choice .emoji{
+      font-size:clamp(54px,11vw,92px);
+      line-height:1;
+    }
+    .choice .label{
+      font-size:clamp(22px,4vw,34px);
+      line-height:1.1;
+    }
+    .choice.good{
+      border-color:var(--good);
+      transform:scale(1.02);
+    }
+    .choice.bad{
+      border-color:var(--bad);
+      animation:shake .2s linear 2;
+    }
+    .message{
+      min-height:64px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      font-size:clamp(24px,5vw,38px);
+      font-weight:900;
+    }
+    .message.good{color:var(--good)}
+    .message.bad{color:var(--bad)}
+    .footer{
+      text-align:center;
+      opacity:.75;
+      font-size:14px;
+      padding-bottom:8px;
+    }
+    .hidden{display:none}
+    @keyframes shake{
+      0%{transform:translateX(0)}
+      25%{transform:translateX(-6px)}
+      50%{transform:translateX(6px)}
+      75%{transform:translateX(-4px)}
+      100%{transform:translateX(0)}
+    }
+    @media (max-width: 720px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+      .choice{min-height:140px}
+      .app{padding:12px}
+      .main{padding:14px}
+      button{width:100%}
+      .controls button{max-width:360px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">🎈 Jeu des mots</div>
+      <div class="score">
+        <div class="pill">✅ Réussites: <span id="hits">0</span></div>
+        <div class="pill">❌ Erreurs: <span id="misses">0</span></div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="prompt">Écoute le mot</div>
+      <div class="sub">Tape la bonne image</div>
+
+      <div class="controls">
+        <button id="startBtn">Commencer</button>
+        <button id="repeatBtn" class="secondary" disabled>🔊 Répéter</button>
+      </div>
+
+      <div id="message" class="message">Appuie sur “Commencer”</div>
+
+      <div id="grid" class="grid hidden"></div>
+    </div>
+
+    <div class="footer">Fonctionne dans Chrome mobile et ordinateur.</div>
+  </div>
+
+  <script>
+    const words = [
+      { word: "chat", emoji: "🐱" },
+      { word: "chien", emoji: "🐶" },
+      { word: "pomme", emoji: "🍎" },
+      { word: "banane", emoji: "🍌" },
+      { word: "voiture", emoji: "🚗" },
+      { word: "ballon", emoji: "⚽" },
+      { word: "soleil", emoji: "☀️" },
+      { word: "lune", emoji: "🌙" },
+      { word: "fleur", emoji: "🌸" },
+      { word: "poisson", emoji: "🐟" },
+      { word: "oiseau", emoji: "🐦" },
+      { word: "ours", emoji: "🐻" },
+      { word: "bébé", emoji: "👶" },
+      { word: "train", emoji: "🚂" },
+      { word: "bateau", emoji: "🚤" },
+      { word: "maison", emoji: "🏠" },
+      { word: "lait", emoji: "🥛" },
+      { word: "gâteau", emoji: "🎂" }
+    ];
+
+    const hitsEl = document.getElementById("hits");
+    const missesEl = document.getElementById("misses");
+    const gridEl = document.getElementById("grid");
+    const messageEl = document.getElementById("message");
+    const startBtn = document.getElementById("startBtn");
+    const repeatBtn = document.getElementById("repeatBtn");
+
+    let hits = 0;
+    let misses = 0;
+    let started = false;
+    let round = null;
+    let voices = [];
+    let frenchVoice = null;
+    let lockChoices = false;
+
+    function shuffle(arr){
+      const a = [...arr];
+      for(let i = a.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function updateScore(){
+      hitsEl.textContent = hits;
+      missesEl.textContent = misses;
+    }
+
+    function setMessage(text, kind=""){
+      messageEl.textContent = text;
+      messageEl.className = "message" + (kind ? " " + kind : "");
+    }
+
+    function loadVoices(){
+      voices = window.speechSynthesis.getVoices();
+      frenchVoice = voices.find(v => /^fr/i.test(v.lang)) || null;
+    }
+
+    function speak(text){
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "fr-FR";
+      u.rate = 0.9;
+      u.pitch = 1.05;
+      if (frenchVoice) u.voice = frenchVoice;
+      window.speechSynthesis.speak(u);
+    }
+
+    function pickRound(){
+      const target = words[Math.floor(Math.random() * words.length)];
+      const others = shuffle(words.filter(w => w.word !== target.word)).slice(0, 2);
+      const choices = shuffle([target, ...others]);
+      return { target, choices };
+    }
+
+    function renderRound(){
+      gridEl.innerHTML = "";
+      round.choices.forEach(item => {
+        const btn = document.createElement("button");
+        btn.className = "choice";
+        btn.setAttribute("aria-label", item.word);
+        btn.innerHTML = `
+          <div class="emoji">${item.emoji}</div>
+          <div class="label">${item.word}</div>
+        `;
+        btn.addEventListener("click", () => choose(item, btn));
+        gridEl.appendChild(btn);
+      });
+    }
+
+    function speakPrompt(){
+      if (!round) return;
+      speak(round.target.word);
+    }
+
+    function nextRound(){
+      lockChoices = false;
+      round = pickRound();
+      renderRound();
+      gridEl.classList.remove("hidden");
+      setMessage("Écoute bien 👂");
+      setTimeout(speakPrompt, 250);
+    }
+
+    function choose(item, btn){
+      if (lockChoices || !round) return;
+
+      if (item.word === round.target.word){
+        lockChoices = true;
+        hits++;
+        updateScore();
+        btn.classList.add("good");
+        setMessage("Bravo ! 🎉🥳🎂", "good");
+        speak("Bravo ! C'est correct !");
+        setTimeout(nextRound, 1400);
+      } else {
+        misses++;
+        updateScore();
+        btn.classList.add("bad");
+        setMessage("Essaie encore 🙂", "bad");
+        speak("Essaie encore");
+        setTimeout(() => btn.classList.remove("bad"), 450);
+      }
+    }
+
+    startBtn.addEventListener("click", () => {
+      started = true;
+      startBtn.textContent = "Recommencer";
+      repeatBtn.disabled = false;
+      nextRound();
+    });
+
+    repeatBtn.addEventListener("click", () => {
+      if (!started) return;
+      speakPrompt();
+    });
+
+    loadVoices();
+    if (typeof speechSynthesis !== "undefined") {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    updateScore();
+  </script>
+</body>
+</html>
