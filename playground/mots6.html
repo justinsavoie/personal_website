@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeu géographie</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+
+.app{
+  width:100%;
+  max-width:520px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+#map-wrap{
+  border-radius:10px;
+  overflow:hidden;
+  background:#cce8f4;
+  cursor:default;
+  user-select:none;
+}
+
+#map{ display:block; }
+
+.question{
+  text-align:center;
+  font-size:20px;
+  font-weight:900;
+  min-height:28px;
+}
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:disabled{
+  background:#aaa;
+  cursor:default;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.choice{
+  padding:14px 8px;
+  font-size:14px;
+  font-weight:700;
+  border-radius:12px;
+  background:#ffffff;
+  border:2px solid #000;
+  color:#000;
+  cursor:pointer;
+  line-height:1.3;
+}
+
+.good{ background:#00c853; color:white; border-color:#00c853; }
+.bad{  background:#d50000; color:white; border-color:#d50000; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div id="map-wrap"><svg id="map"></svg></div>
+    <div class="question" id="question">Chargement…</div>
+    <div id="grid" class="grid"></div>
+    <div class="controls">
+      <button id="start" disabled>Jouer</button>
+      <button id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+
+// ── Country data (French names + region for nearby wrong answers) ──────────
+const COUNTRIES = {
+  4:  {name:"Afghanistan",             r:"as"},
+  8:  {name:"Albanie",                 r:"eu"},
+  12: {name:"Algérie",                 r:"af"},
+  24: {name:"Angola",                  r:"af"},
+  32: {name:"Argentine",               r:"am"},
+  36: {name:"Australie",               r:"oc"},
+  40: {name:"Autriche",                r:"eu"},
+  50: {name:"Bangladesh",              r:"as"},
+  56: {name:"Belgique",                r:"eu"},
+  68: {name:"Bolivie",                 r:"am"},
+  70: {name:"Bosnie-Herzégovine",      r:"eu"},
+  72: {name:"Botswana",                r:"af"},
+  76: {name:"Brésil",                  r:"am"},
+  100:{name:"Bulgarie",                r:"eu"},
+  104:{name:"Myanmar",                 r:"as"},
+  112:{name:"Biélorussie",             r:"eu"},
+  116:{name:"Cambodge",                r:"as"},
+  120:{name:"Cameroun",                r:"af"},
+  124:{name:"Canada",                  r:"am"},
+  140:{name:"Rép. centrafricaine",     r:"af"},
+  144:{name:"Sri Lanka",               r:"as"},
+  148:{name:"Tchad",                   r:"af"},
+  152:{name:"Chili",                   r:"am"},
+  156:{name:"Chine",                   r:"as"},
+  170:{name:"Colombie",                r:"am"},
+  178:{name:"Congo",                   r:"af"},
+  180:{name:"Rép. dém. du Congo",      r:"af"},
+  188:{name:"Costa Rica",              r:"am"},
+  191:{name:"Croatie",                 r:"eu"},
+  192:{name:"Cuba",                    r:"am"},
+  203:{name:"Tchéquie",                r:"eu"},
+  204:{name:"Bénin",                   r:"af"},
+  208:{name:"Danemark",                r:"eu"},
+  218:{name:"Équateur",                r:"am"},
+  222:{name:"Salvador",                r:"am"},
+  231:{name:"Éthiopie",                r:"af"},
+  232:{name:"Érythrée",                r:"af"},
+  233:{name:"Estonie",                 r:"eu"},
+  246:{name:"Finlande",                r:"eu"},
+  250:{name:"France",                  r:"eu"},
+  266:{name:"Gabon",                   r:"af"},
+  268:{name:"Géorgie",                 r:"as"},
+  276:{name:"Allemagne",               r:"eu"},
+  288:{name:"Ghana",                   r:"af"},
+  300:{name:"Grèce",                   r:"eu"},
+  320:{name:"Guatemala",               r:"am"},
+  324:{name:"Guinée",                  r:"af"},
+  328:{name:"Guyana",                  r:"am"},
+  332:{name:"Haïti",                   r:"am"},
+  340:{name:"Honduras",                r:"am"},
+  348:{name:"Hongrie",                 r:"eu"},
+  356:{name:"Inde",                    r:"as"},
+  360:{name:"Indonésie",               r:"as"},
+  364:{name:"Iran",                    r:"as"},
+  368:{name:"Irak",                    r:"as"},
+  372:{name:"Irlande",                 r:"eu"},
+  376:{name:"Israël",                  r:"as"},
+  380:{name:"Italie",                  r:"eu"},
+  384:{name:"Côte d'Ivoire",           r:"af"},
+  392:{name:"Japon",                   r:"as"},
+  398:{name:"Kazakhstan",              r:"as"},
+  400:{name:"Jordanie",                r:"as"},
+  404:{name:"Kenya",                   r:"af"},
+  408:{name:"Corée du Nord",           r:"as"},
+  410:{name:"Corée du Sud",            r:"as"},
+  417:{name:"Kirghizistan",            r:"as"},
+  418:{name:"Laos",                    r:"as"},
+  422:{name:"Liban",                   r:"as"},
+  426:{name:"Lesotho",                 r:"af"},
+  428:{name:"Lettonie",                r:"eu"},
+  430:{name:"Libéria",                 r:"af"},
+  434:{name:"Libye",                   r:"af"},
+  440:{name:"Lituanie",                r:"eu"},
+  450:{name:"Madagascar",              r:"af"},
+  454:{name:"Malawi",                  r:"af"},
+  458:{name:"Malaisie",                r:"as"},
+  466:{name:"Mali",                    r:"af"},
+  478:{name:"Mauritanie",              r:"af"},
+  484:{name:"Mexique",                 r:"am"},
+  496:{name:"Mongolie",                r:"as"},
+  498:{name:"Moldavie",                r:"eu"},
+  504:{name:"Maroc",                   r:"af"},
+  508:{name:"Mozambique",              r:"af"},
+  516:{name:"Namibie",                 r:"af"},
+  524:{name:"Népal",                   r:"as"},
+  528:{name:"Pays-Bas",                r:"eu"},
+  554:{name:"Nouvelle-Zélande",        r:"oc"},
+  558:{name:"Nicaragua",               r:"am"},
+  562:{name:"Niger",                   r:"af"},
+  566:{name:"Nigeria",                 r:"af"},
+  578:{name:"Norvège",                 r:"eu"},
+  586:{name:"Pakistan",                r:"as"},
+  591:{name:"Panama",                  r:"am"},
+  598:{name:"Papouasie-Nlle-Guinée",   r:"oc"},
+  600:{name:"Paraguay",                r:"am"},
+  604:{name:"Pérou",                   r:"am"},
+  608:{name:"Philippines",             r:"as"},
+  616:{name:"Pologne",                 r:"eu"},
+  620:{name:"Portugal",                r:"eu"},
+  642:{name:"Roumanie",                r:"eu"},
+  643:{name:"Russie",                  r:"eu"},
+  646:{name:"Rwanda",                  r:"af"},
+  682:{name:"Arabie saoudite",         r:"as"},
+  686:{name:"Sénégal",                 r:"af"},
+  688:{name:"Serbie",                  r:"eu"},
+  694:{name:"Sierra Leone",            r:"af"},
+  703:{name:"Slovaquie",               r:"eu"},
+  705:{name:"Slovénie",                r:"eu"},
+  706:{name:"Somalie",                 r:"af"},
+  710:{name:"Afrique du Sud",          r:"af"},
+  716:{name:"Zimbabwe",                r:"af"},
+  724:{name:"Espagne",                 r:"eu"},
+  728:{name:"Soudan du Sud",           r:"af"},
+  729:{name:"Soudan",                  r:"af"},
+  740:{name:"Suriname",                r:"am"},
+  752:{name:"Suède",                   r:"eu"},
+  756:{name:"Suisse",                  r:"eu"},
+  760:{name:"Syrie",                   r:"as"},
+  762:{name:"Tadjikistan",             r:"as"},
+  764:{name:"Thaïlande",               r:"as"},
+  768:{name:"Togo",                    r:"af"},
+  784:{name:"Émirats arabes unis",     r:"as"},
+  788:{name:"Tunisie",                 r:"af"},
+  792:{name:"Turquie",                 r:"as"},
+  795:{name:"Turkménistan",            r:"as"},
+  800:{name:"Ouganda",                 r:"af"},
+  804:{name:"Ukraine",                 r:"eu"},
+  807:{name:"Macédoine du Nord",       r:"eu"},
+  818:{name:"Égypte",                  r:"af"},
+  826:{name:"Royaume-Uni",             r:"eu"},
+  834:{name:"Tanzanie",                r:"af"},
+  840:{name:"États-Unis",              r:"am"},
+  854:{name:"Burkina Faso",            r:"af"},
+  858:{name:"Uruguay",                 r:"am"},
+  860:{name:"Ouzbékistan",             r:"as"},
+  862:{name:"Venezuela",               r:"am"},
+  887:{name:"Yémen",                   r:"as"},
+  894:{name:"Zambie",                  r:"af"},
+  51: {name:"Arménie",                 r:"as"},
+  31: {name:"Azerbaïdjan",             r:"as"},
+  704:{name:"Vietnam",                 r:"as"},
+  214:{name:"Rép. dominicaine",        r:"am"},
+};
+
+// ── D3 setup ────────────────────────────────────────────────────────────────
+const W = Math.min(window.innerWidth - 24, 520);
+const H = Math.round(W * 0.58);
+
+document.getElementById("map").setAttribute("width",  W);
+document.getElementById("map").setAttribute("height", H);
+
+const projection = d3.geoNaturalEarth1()
+  .scale(W / 6.3)
+  .translate([W / 2, H / 2]);
+
+const path = d3.geoPath().projection(projection);
+
+const svg  = d3.select("#map");
+const g    = svg.append("g");
+
+const zoomBeh = d3.zoom()
+  .scaleExtent([1, 60])
+  .on("zoom", e => g.attr("transform", e.transform));
+
+svg.call(zoomBeh).on("dblclick.zoom", null);
+
+// ── State ────────────────────────────────────────────────────────────────────
+let featureById = {};
+let availableIds = [];
+let round = null;
+let lock  = false;
+let hits  = 0, misses = 0;
+let voices = [], voicesReady = false;
+
+// ── TTS ──────────────────────────────────────────────────────────────────────
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  if(voices.length) voicesReady = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const fr = voices.find(v => v.lang.startsWith("fr"));
+  if(fr) u.voice = fr;
+  u.lang = "fr-FR";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function shuffle(a){ return [...a].sort(() => Math.random() - 0.5); }
+
+function zoomToFeature(feature){
+  const [[x0,y0],[x1,y1]] = path.bounds(feature);
+  const dx = Math.max(x1 - x0, 4);
+  const dy = Math.max(y1 - y0, 4);
+  const pad = 3;
+  const scale = Math.min(
+    50,
+    0.9 / Math.max(dx * (1+pad) / W, dy * (1+pad) / H)
+  );
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+  svg.transition().duration(3000)
+    .call(zoomBeh.transform,
+      d3.zoomIdentity.translate(W/2, H/2).scale(scale).translate(-cx, -cy));
+}
+
+// ── Game logic ────────────────────────────────────────────────────────────────
+function nextRound(){
+  lock = false;
+
+  const targetId = availableIds[Math.floor(Math.random() * availableIds.length)];
+  const info     = COUNTRIES[targetId];
+
+  // Wrong answers: same region first, fallback to any
+  const sameR = availableIds.filter(id => id !== targetId && COUNTRIES[id].r === info.r);
+  const pool  = sameR.length >= 3 ? sameR : availableIds.filter(id => id !== targetId);
+  const wrongIds = shuffle(pool).slice(0, 3);
+  const choices  = shuffle([targetId, ...wrongIds]);
+
+  round = {targetId, choices};
+
+  // Repaint countries
+  g.selectAll(".country")
+    .attr("fill",         d => +d.id === targetId ? "#e53935" : "#f5f5f0")
+    .attr("stroke",       "#aaa")
+    .attr("stroke-width", d => +d.id === targetId ? 0.8 : 0.3);
+
+  zoomToFeature(featureById[targetId]);
+  renderChoices(choices);
+  document.getElementById("question").textContent = "Quel est ce pays ?";
+  setTimeout(() => speak(info.name), 900);
+}
+
+function renderChoices(choiceIds){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  choiceIds.forEach(id => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.textContent = COUNTRIES[id].name;
+    b.onclick = () => {
+      if(lock) return;
+      if(id === round.targetId){
+        lock = true;
+        hits++;
+        document.getElementById("hits").textContent = hits;
+        b.classList.add("good");
+        document.getElementById("question").textContent = "✓ " + COUNTRIES[id].name;
+        speak(COUNTRIES[id].name);
+        setTimeout(nextRound, 1100);
+      } else {
+        misses++;
+        document.getElementById("misses").textContent = misses;
+        b.classList.add("bad");
+        speak(COUNTRIES[id].name);
+        setTimeout(() => b.classList.remove("bad"), 350);
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+// ── Init: load TopoJSON ──────────────────────────────────────────────────────
+async function init(){
+  const world = await d3.json(
+    "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
+  );
+  const geo = topojson.feature(world, world.objects.countries);
+
+  geo.features.forEach(f => {
+    if(COUNTRIES[+f.id]) featureById[+f.id] = f;
+  });
+
+  availableIds = Object.keys(COUNTRIES)
+    .map(Number)
+    .filter(id => featureById[id]);
+
+  // Draw all countries
+  g.selectAll(".country")
+    .data(geo.features)
+    .join("path")
+    .attr("class",        "country")
+    .attr("d",            path)
+    .attr("fill",         "#f5f5f0")
+    .attr("stroke",       "#aaa")
+    .attr("stroke-width", 0.3);
+
+  document.getElementById("question").textContent = "Quel est ce pays ?";
+  document.getElementById("start").disabled = false;
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(COUNTRIES[round.targetId].name);
+};
+
+init();
+</script>
+</body>
+</html>
