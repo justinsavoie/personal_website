@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeu additions</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  background:#f0f2f5;
+}
+
+.app{
+  width:100%;
+  max-width:420px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.prompt{
+  text-align:center;
+  font-size:42px;
+  font-weight:900;
+  letter-spacing:2px;
+  padding:10px 0;
+}
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button{
+  flex:1;
+  padding:12px;
+  font-size:18px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.choice{
+  padding:22px;
+  font-size:28px;
+  font-weight:900;
+  border-radius:12px;
+  background:#ffffff;
+  border:2px solid #000;
+  color:#000;
+  cursor:pointer;
+}
+
+.good{
+  background:#00c853;
+  color:white;
+  border-color:#00c853;
+}
+
+.bad{
+  background:#d50000;
+  color:white;
+  border-color:#d50000;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+
+  <div class="main">
+    <div class="prompt" id="prompt">?</div>
+
+    <div class="controls">
+      <button id="start">Jouer</button>
+      <button id="repeat">🔊</button>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+</div>
+
+<script>
+
+let hits = 0;
+let misses = 0;
+let round = null;
+let lock = false;
+
+let voices = [];
+let ready = false;
+
+const hitsEl   = document.getElementById("hits");
+const missesEl = document.getElementById("misses");
+const grid     = document.getElementById("grid");
+const promptEl = document.getElementById("prompt");
+
+function shuffle(a){
+  return [...a].sort(() => Math.random() - 0.5);
+}
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  if(voices.length > 0) ready = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  if(!ready) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function randInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function uniqueWrongAnswers(correct, count){
+  const wrong = new Set();
+  while(wrong.size < count){
+    // Stay in a reasonable range around the correct answer
+    const offset = randInt(-10, 10);
+    const candidate = correct + offset;
+    if(candidate !== correct && candidate >= 0) wrong.add(candidate);
+  }
+  return [...wrong];
+}
+
+function nextRound(){
+  lock = false;
+
+  const a = randInt(0, 14);
+  const b = randInt(0, 9);
+
+  // Random order
+  const [left, right] = Math.random() < 0.5 ? [a, b] : [b, a];
+  const answer = left + right;
+
+  const wrongAnswers = uniqueWrongAnswers(answer, 3);
+  const choices = shuffle([answer, ...wrongAnswers]);
+
+  round = {left, right, answer, choices};
+
+  promptEl.textContent = `${left} + ${right} = ?`;
+
+  render();
+  setTimeout(() => speak(`${left} plusse ${right}`), 1200);
+}
+
+function render(){
+  grid.innerHTML = "";
+
+  round.choices.forEach(val => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.textContent = val;
+
+    b.onclick = () => {
+      if(lock) return;
+
+      if(val === round.answer){
+        lock = true;
+        hits++;
+        hitsEl.textContent = hits;
+        b.classList.add("good");
+        promptEl.textContent = `${round.left} + ${round.right} = ${round.answer}`;
+        speak(`${round.answer}`);
+        setTimeout(nextRound, 1000);
+      } else {
+        misses++;
+        missesEl.textContent = misses;
+        b.classList.add("bad");
+        speak(`${val}`);
+        setTimeout(() => b.classList.remove("bad"), 300);
+      }
+    };
+
+    grid.appendChild(b);
+  });
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(`${round.left} plus ${round.right}`);
+};
+
+</script>
+
+</body>
+</html>
