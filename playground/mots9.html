@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeu drapeaux 2</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+
+.app{
+  width:100%;
+  max-width:420px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.country-display{
+  text-align:center;
+  font-size:24px;
+  font-weight:900;
+  padding:16px 8px 8px;
+  min-height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1.2;
+}
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.choice{
+  padding:14px 8px;
+  font-size:62px;
+  line-height:1.1;
+  border-radius:12px;
+  background:#ffffff;
+  border:2px solid #000;
+  color:#000;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:90px;
+}
+
+.good{ background:#00c853; border-color:#00c853; }
+.bad{  background:#d50000; border-color:#d50000; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div class="country-display" id="country">?</div>
+    <div id="grid" class="grid"></div>
+    <div class="controls">
+      <button id="start">Jouer</button>
+      <button id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const COUNTRIES = [
+  {name:"Afghanistan",                   code:"AF", r:"as"},
+  {name:"Albanie",                       code:"AL", r:"eu"},
+  {name:"Algérie",                       code:"DZ", r:"af"},
+  {name:"Angola",                        code:"AO", r:"af"},
+  {name:"Argentine",                     code:"AR", r:"am"},
+  {name:"Australie",                     code:"AU", r:"oc"},
+  {name:"Autriche",                      code:"AT", r:"eu"},
+  {name:"Bangladesh",                    code:"BD", r:"as"},
+  {name:"Belgique",                      code:"BE", r:"eu"},
+  {name:"Bolivie",                       code:"BO", r:"am"},
+  {name:"Bosnie-Herzégovine",            code:"BA", r:"eu"},
+  {name:"Botswana",                      code:"BW", r:"af"},
+  {name:"Brésil",                        code:"BR", r:"am"},
+  {name:"Bulgarie",                      code:"BG", r:"eu"},
+  {name:"Myanmar",                       code:"MM", r:"as"},
+  {name:"Biélorussie",                   code:"BY", r:"eu"},
+  {name:"Cambodge",                      code:"KH", r:"as"},
+  {name:"Cameroun",                      code:"CM", r:"af"},
+  {name:"Canada",                        code:"CA", r:"am"},
+  {name:"République centrafricaine",     code:"CF", r:"af"},
+  {name:"Sri Lanka",                     code:"LK", r:"as"},
+  {name:"Tchad",                         code:"TD", r:"af"},
+  {name:"Chili",                         code:"CL", r:"am"},
+  {name:"Chine",                         code:"CN", r:"as"},
+  {name:"Colombie",                      code:"CO", r:"am"},
+  {name:"Congo",                         code:"CG", r:"af"},
+  {name:"République démocratique du Congo", code:"CD", r:"af"},
+  {name:"Costa Rica",                    code:"CR", r:"am"},
+  {name:"Croatie",                       code:"HR", r:"eu"},
+  {name:"Cuba",                          code:"CU", r:"am"},
+  {name:"Tchéquie",                      code:"CZ", r:"eu"},
+  {name:"Bénin",                         code:"BJ", r:"af"},
+  {name:"Danemark",                      code:"DK", r:"eu"},
+  {name:"Équateur",                      code:"EC", r:"am"},
+  {name:"Salvador",                      code:"SV", r:"am"},
+  {name:"Éthiopie",                      code:"ET", r:"af"},
+  {name:"Érythrée",                      code:"ER", r:"af"},
+  {name:"Estonie",                       code:"EE", r:"eu"},
+  {name:"Finlande",                      code:"FI", r:"eu"},
+  {name:"France",                        code:"FR", r:"eu"},
+  {name:"Gabon",                         code:"GA", r:"af"},
+  {name:"Géorgie",                       code:"GE", r:"as"},
+  {name:"Allemagne",                     code:"DE", r:"eu"},
+  {name:"Ghana",                         code:"GH", r:"af"},
+  {name:"Grèce",                         code:"GR", r:"eu"},
+  {name:"Guatemala",                     code:"GT", r:"am"},
+  {name:"Guinée",                        code:"GN", r:"af"},
+  {name:"Guyana",                        code:"GY", r:"am"},
+  {name:"Haïti",                         code:"HT", r:"am"},
+  {name:"Honduras",                      code:"HN", r:"am"},
+  {name:"Hongrie",                       code:"HU", r:"eu"},
+  {name:"Inde",                          code:"IN", r:"as"},
+  {name:"Indonésie",                     code:"ID", r:"as"},
+  {name:"Iran",                          code:"IR", r:"as"},
+  {name:"Irak",                          code:"IQ", r:"as"},
+  {name:"Irlande",                       code:"IE", r:"eu"},
+  {name:"Israël",                        code:"IL", r:"as"},
+  {name:"Italie",                        code:"IT", r:"eu"},
+  {name:"Côte d'Ivoire",                 code:"CI", r:"af"},
+  {name:"Japon",                         code:"JP", r:"as"},
+  {name:"Kazakhstan",                    code:"KZ", r:"as"},
+  {name:"Jordanie",                      code:"JO", r:"as"},
+  {name:"Kenya",                         code:"KE", r:"af"},
+  {name:"Corée du Nord",                 code:"KP", r:"as"},
+  {name:"Corée du Sud",                  code:"KR", r:"as"},
+  {name:"Kirghizistan",                  code:"KG", r:"as"},
+  {name:"Laos",                          code:"LA", r:"as"},
+  {name:"Liban",                         code:"LB", r:"as"},
+  {name:"Lesotho",                       code:"LS", r:"af"},
+  {name:"Lettonie",                      code:"LV", r:"eu"},
+  {name:"Libéria",                       code:"LR", r:"af"},
+  {name:"Libye",                         code:"LY", r:"af"},
+  {name:"Lituanie",                      code:"LT", r:"eu"},
+  {name:"Madagascar",                    code:"MG", r:"af"},
+  {name:"Malawi",                        code:"MW", r:"af"},
+  {name:"Malaisie",                      code:"MY", r:"as"},
+  {name:"Mali",                          code:"ML", r:"af"},
+  {name:"Mauritanie",                    code:"MR", r:"af"},
+  {name:"Mexique",                       code:"MX", r:"am"},
+  {name:"Mongolie",                      code:"MN", r:"as"},
+  {name:"Moldavie",                      code:"MD", r:"eu"},
+  {name:"Maroc",                         code:"MA", r:"af"},
+  {name:"Mozambique",                    code:"MZ", r:"af"},
+  {name:"Namibie",                       code:"NA", r:"af"},
+  {name:"Népal",                         code:"NP", r:"as"},
+  {name:"Pays-Bas",                      code:"NL", r:"eu"},
+  {name:"Nouvelle-Zélande",              code:"NZ", r:"oc"},
+  {name:"Nicaragua",                     code:"NI", r:"am"},
+  {name:"Niger",                         code:"NE", r:"af"},
+  {name:"Nigeria",                       code:"NG", r:"af"},
+  {name:"Norvège",                       code:"NO", r:"eu"},
+  {name:"Pakistan",                      code:"PK", r:"as"},
+  {name:"Panama",                        code:"PA", r:"am"},
+  {name:"Papouasie-Nouvelle-Guinée",     code:"PG", r:"oc"},
+  {name:"Paraguay",                      code:"PY", r:"am"},
+  {name:"Pérou",                         code:"PE", r:"am"},
+  {name:"Philippines",                   code:"PH", r:"as"},
+  {name:"Pologne",                       code:"PL", r:"eu"},
+  {name:"Portugal",                      code:"PT", r:"eu"},
+  {name:"Roumanie",                      code:"RO", r:"eu"},
+  {name:"Russie",                        code:"RU", r:"eu"},
+  {name:"Rwanda",                        code:"RW", r:"af"},
+  {name:"Arabie saoudite",               code:"SA", r:"as"},
+  {name:"Sénégal",                       code:"SN", r:"af"},
+  {name:"Serbie",                        code:"RS", r:"eu"},
+  {name:"Sierra Leone",                  code:"SL", r:"af"},
+  {name:"Slovaquie",                     code:"SK", r:"eu"},
+  {name:"Slovénie",                      code:"SI", r:"eu"},
+  {name:"Somalie",                       code:"SO", r:"af"},
+  {name:"Afrique du Sud",                code:"ZA", r:"af"},
+  {name:"Zimbabwe",                      code:"ZW", r:"af"},
+  {name:"Espagne",                       code:"ES", r:"eu"},
+  {name:"Soudan du Sud",                 code:"SS", r:"af"},
+  {name:"Soudan",                        code:"SD", r:"af"},
+  {name:"Suriname",                      code:"SR", r:"am"},
+  {name:"Suède",                         code:"SE", r:"eu"},
+  {name:"Suisse",                        code:"CH", r:"eu"},
+  {name:"Syrie",                         code:"SY", r:"as"},
+  {name:"Tadjikistan",                   code:"TJ", r:"as"},
+  {name:"Thaïlande",                     code:"TH", r:"as"},
+  {name:"Togo",                          code:"TG", r:"af"},
+  {name:"Émirats arabes unis",           code:"AE", r:"as"},
+  {name:"Tunisie",                       code:"TN", r:"af"},
+  {name:"Turquie",                       code:"TR", r:"as"},
+  {name:"Turkménistan",                  code:"TM", r:"as"},
+  {name:"Ouganda",                       code:"UG", r:"af"},
+  {name:"Ukraine",                       code:"UA", r:"eu"},
+  {name:"Macédoine du Nord",             code:"MK", r:"eu"},
+  {name:"Égypte",                        code:"EG", r:"af"},
+  {name:"Royaume-Uni",                   code:"GB", r:"eu"},
+  {name:"Tanzanie",                      code:"TZ", r:"af"},
+  {name:"États-Unis",                    code:"US", r:"am"},
+  {name:"Burkina Faso",                  code:"BF", r:"af"},
+  {name:"Uruguay",                       code:"UY", r:"am"},
+  {name:"Ouzbékistan",                   code:"UZ", r:"as"},
+  {name:"Venezuela",                     code:"VE", r:"am"},
+  {name:"Yémen",                         code:"YE", r:"as"},
+  {name:"Zambie",                        code:"ZM", r:"af"},
+  {name:"Arménie",                       code:"AM", r:"as"},
+  {name:"Azerbaïdjan",                   code:"AZ", r:"as"},
+  {name:"Vietnam",                       code:"VN", r:"as"},
+  {name:"République dominicaine",        code:"DO", r:"am"},
+];
+
+function flagEmoji(code){
+  return [...code.toUpperCase()]
+    .map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
+    .join('');
+}
+
+let hits = 0, misses = 0;
+let round = null, lock = false;
+let voices = [], voicesReady = false;
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  if(voices.length) voicesReady = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const fr = voices.find(v => v.lang.startsWith("fr"));
+  if(fr) u.voice = fr;
+  u.lang = "fr-FR";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+function shuffle(a){ return [...a].sort(() => Math.random() - 0.5); }
+
+function nextRound(){
+  lock = false;
+
+  const target = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
+  const sameR  = COUNTRIES.filter(c => c !== target && c.r === target.r);
+  const pool   = sameR.length >= 3 ? sameR : COUNTRIES.filter(c => c !== target);
+  const wrongs = shuffle(pool).slice(0, 3);
+  const choices = shuffle([target, ...wrongs]);
+
+  round = {target, choices};
+
+  document.getElementById("country").textContent = target.name;
+  renderChoices(choices);
+  setTimeout(() => speak(target.name), 400);
+}
+
+function renderChoices(choices){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  choices.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.textContent = flagEmoji(c.code);
+    b.onclick = () => {
+      if(lock) return;
+      if(c === round.target){
+        lock = true;
+        hits++;
+        document.getElementById("hits").textContent = hits;
+        b.classList.add("good");
+        speak(c.name);
+        setTimeout(nextRound, 1000);
+      } else {
+        misses++;
+        document.getElementById("misses").textContent = misses;
+        b.classList.add("bad");
+        setTimeout(() => b.classList.remove("bad"), 350);
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(round.target.name);
+};
+
+</script>
+</body>
+</html>

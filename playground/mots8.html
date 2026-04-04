@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeu des dés</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+
+.app{
+  width:100%;
+  max-width:420px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.dice-display{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  padding:14px 0 6px;
+  flex-wrap:wrap;
+}
+
+.die{
+  width:72px;
+  height:72px;
+  background:#fff;
+  border:2.5px solid #222;
+  border-radius:12px;
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  grid-template-rows:repeat(3, 1fr);
+  padding:7px;
+  gap:3px;
+}
+
+.dot{
+  background:#222;
+  border-radius:50%;
+}
+
+.question{
+  text-align:center;
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:1px;
+  min-height:34px;
+}
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.choice{
+  padding:22px;
+  font-size:28px;
+  font-weight:900;
+  border-radius:12px;
+  background:#ffffff;
+  border:2px solid #000;
+  color:#000;
+  cursor:pointer;
+}
+
+.good{ background:#00c853; color:white; border-color:#00c853; }
+.bad{  background:#d50000; color:white; border-color:#d50000; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div class="dice-display" id="dice"></div>
+    <div class="question" id="question">= ?</div>
+    <div id="grid" class="grid"></div>
+    <div class="controls">
+      <button id="start">Jouer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// dot positions in a 3×3 grid (1-indexed, left-to-right, top-to-bottom)
+const DOTS = {
+  1: [5],
+  2: [3, 7],
+  3: [3, 5, 7],
+  4: [1, 3, 7, 9],
+  5: [1, 3, 5, 7, 9],
+  6: [1, 3, 4, 6, 7, 9]
+};
+
+function createDie(value){
+  const die = document.createElement("div");
+  die.className = "die";
+  const filled = DOTS[value];
+  for(let i = 1; i <= 9; i++){
+    const cell = document.createElement("div");
+    cell.className = filled.includes(i) ? "dot" : "";
+    die.appendChild(cell);
+  }
+  return die;
+}
+
+let hits = 0, misses = 0;
+let round = null, lock = false;
+
+function shuffle(a){ return [...a].sort(() => Math.random() - 0.5); }
+
+function randInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function wrongAnswers(correct, count){
+  const wrong = new Set();
+  let attempts = 0;
+  while(wrong.size < count && attempts < 200){
+    attempts++;
+    const offset = randInt(-5, 5);
+    const candidate = correct + offset;
+    if(candidate !== correct && candidate >= 4 && candidate <= 24) wrong.add(candidate);
+  }
+  // fallback: fill with nearby values if needed
+  let v = correct + 1;
+  while(wrong.size < count){
+    if(v !== correct && v >= 4 && v <= 24) wrong.add(v);
+    v++;
+  }
+  return [...wrong].slice(0, count);
+}
+
+function nextRound(){
+  lock = false;
+
+  const dice = [randInt(1,6), randInt(1,6), randInt(1,6), randInt(1,6)];
+  const answer = dice.reduce((a, b) => a + b, 0);
+  const choices = shuffle([answer, ...wrongAnswers(answer, 3)]);
+
+  round = {dice, answer, choices};
+
+  // render dice
+  const diceEl = document.getElementById("dice");
+  diceEl.innerHTML = "";
+  dice.forEach(v => diceEl.appendChild(createDie(v)));
+
+  document.getElementById("question").textContent = "= ?";
+  renderChoices(choices, answer);
+}
+
+function renderChoices(choices, answer){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  choices.forEach(val => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.textContent = val;
+    b.onclick = () => {
+      if(lock) return;
+      if(val === answer){
+        lock = true;
+        hits++;
+        document.getElementById("hits").textContent = hits;
+        b.classList.add("good");
+        document.getElementById("question").textContent = "= " + answer;
+        setTimeout(nextRound, 900);
+      } else {
+        misses++;
+        document.getElementById("misses").textContent = misses;
+        b.classList.add("bad");
+        setTimeout(() => b.classList.remove("bad"), 300);
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+document.getElementById("start").onclick = () => nextRound();
+
+</script>
+</body>
+</html>
