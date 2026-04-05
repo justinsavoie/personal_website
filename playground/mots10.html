@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeu géographie – Trouve le pays</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+
+.app{
+  width:100%;
+  max-width:520px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+#map-wrap{
+  border-radius:10px;
+  overflow:hidden;
+  background:#cce8f4;
+  cursor:default;
+  user-select:none;
+}
+
+#map{ display:block; }
+
+.question{
+  text-align:center;
+  font-size:20px;
+  font-weight:900;
+  min-height:28px;
+}
+
+.num-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:8px;
+}
+
+.num-btn{
+  padding:14px 8px;
+  font-size:22px;
+  font-weight:900;
+  border-radius:12px;
+  background:#1a1a2e;
+  border:2px solid #1a1a2e;
+  color:white;
+  cursor:pointer;
+}
+
+.num-btn:disabled{ opacity:0.4; cursor:default; }
+.num-btn.good{ background:#00c853; border-color:#00c853; }
+.num-btn.bad{  background:#d50000; border-color:#d50000; }
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button.ctrl{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button.ctrl:disabled{ background:#aaa; cursor:default; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div id="map-wrap"><svg id="map"></svg></div>
+    <div class="question" id="question">Chargement…</div>
+    <div class="num-buttons">
+      <button class="num-btn" id="btn0" disabled>1</button>
+      <button class="num-btn" id="btn1" disabled>2</button>
+      <button class="num-btn" id="btn2" disabled>3</button>
+      <button class="num-btn" id="btn3" disabled>4</button>
+    </div>
+    <div class="controls">
+      <button class="ctrl" id="start" disabled>Jouer</button>
+      <button class="ctrl" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+
+const COUNTRIES = {
+  4:  {name:"Afghanistan",                      r:"as"},
+  8:  {name:"Albanie",                          r:"eu"},
+  12: {name:"Algérie",                          r:"af"},
+  24: {name:"Angola",                           r:"af"},
+  32: {name:"Argentine",                        r:"am"},
+  36: {name:"Australie",                        r:"oc"},
+  40: {name:"Autriche",                         r:"eu"},
+  50: {name:"Bangladesh",                       r:"as"},
+  56: {name:"Belgique",                         r:"eu"},
+  68: {name:"Bolivie",                          r:"am"},
+  70: {name:"Bosnie-Herzégovine",               r:"eu"},
+  72: {name:"Botswana",                         r:"af"},
+  76: {name:"Brésil",                           r:"am"},
+  100:{name:"Bulgarie",                         r:"eu"},
+  104:{name:"Myanmar",                          r:"as"},
+  112:{name:"Biélorussie",                      r:"eu"},
+  116:{name:"Cambodge",                         r:"as"},
+  120:{name:"Cameroun",                         r:"af"},
+  124:{name:"Canada",                           r:"am"},
+  140:{name:"République centrafricaine",        r:"af"},
+  144:{name:"Sri Lanka",                        r:"as"},
+  148:{name:"Tchad",                            r:"af"},
+  152:{name:"Chili",                            r:"am"},
+  156:{name:"Chine",                            r:"as"},
+  170:{name:"Colombie",                         r:"am"},
+  178:{name:"Congo",                            r:"af"},
+  180:{name:"République démocratique du Congo", r:"af"},
+  188:{name:"Costa Rica",                       r:"am"},
+  191:{name:"Croatie",                          r:"eu"},
+  192:{name:"Cuba",                             r:"am"},
+  203:{name:"Tchéquie",                         r:"eu"},
+  204:{name:"Bénin",                            r:"af"},
+  208:{name:"Danemark",                         r:"eu"},
+  218:{name:"Équateur",                         r:"am"},
+  222:{name:"Salvador",                         r:"am"},
+  231:{name:"Éthiopie",                         r:"af"},
+  232:{name:"Érythrée",                         r:"af"},
+  233:{name:"Estonie",                          r:"eu"},
+  246:{name:"Finlande",                         r:"eu"},
+  250:{name:"France",                           r:"eu"},
+  266:{name:"Gabon",                            r:"af"},
+  268:{name:"Géorgie",                          r:"as"},
+  276:{name:"Allemagne",                        r:"eu"},
+  288:{name:"Ghana",                            r:"af"},
+  300:{name:"Grèce",                            r:"eu"},
+  320:{name:"Guatemala",                        r:"am"},
+  324:{name:"Guinée",                           r:"af"},
+  328:{name:"Guyana",                           r:"am"},
+  332:{name:"Haïti",                            r:"am"},
+  340:{name:"Honduras",                         r:"am"},
+  348:{name:"Hongrie",                          r:"eu"},
+  356:{name:"Inde",                             r:"as"},
+  360:{name:"Indonésie",                        r:"as"},
+  364:{name:"Iran",                             r:"as"},
+  368:{name:"Irak",                             r:"as"},
+  372:{name:"Irlande",                          r:"eu"},
+  376:{name:"Israël",                           r:"as"},
+  380:{name:"Italie",                           r:"eu"},
+  384:{name:"Côte d'Ivoire",                    r:"af"},
+  392:{name:"Japon",                            r:"as"},
+  398:{name:"Kazakhstan",                       r:"as"},
+  400:{name:"Jordanie",                         r:"as"},
+  404:{name:"Kenya",                            r:"af"},
+  408:{name:"Corée du Nord",                    r:"as"},
+  410:{name:"Corée du Sud",                     r:"as"},
+  417:{name:"Kirghizistan",                     r:"as"},
+  418:{name:"Laos",                             r:"as"},
+  422:{name:"Liban",                            r:"as"},
+  426:{name:"Lesotho",                          r:"af"},
+  428:{name:"Lettonie",                         r:"eu"},
+  430:{name:"Libéria",                          r:"af"},
+  434:{name:"Libye",                            r:"af"},
+  440:{name:"Lituanie",                         r:"eu"},
+  450:{name:"Madagascar",                       r:"af"},
+  454:{name:"Malawi",                           r:"af"},
+  458:{name:"Malaisie",                         r:"as"},
+  466:{name:"Mali",                             r:"af"},
+  478:{name:"Mauritanie",                       r:"af"},
+  484:{name:"Mexique",                          r:"am"},
+  496:{name:"Mongolie",                         r:"as"},
+  498:{name:"Moldavie",                         r:"eu"},
+  504:{name:"Maroc",                            r:"af"},
+  508:{name:"Mozambique",                       r:"af"},
+  516:{name:"Namibie",                          r:"af"},
+  524:{name:"Népal",                            r:"as"},
+  528:{name:"Pays-Bas",                         r:"eu"},
+  554:{name:"Nouvelle-Zélande",                 r:"oc"},
+  558:{name:"Nicaragua",                        r:"am"},
+  562:{name:"Niger",                            r:"af"},
+  566:{name:"Nigeria",                          r:"af"},
+  578:{name:"Norvège",                          r:"eu"},
+  586:{name:"Pakistan",                         r:"as"},
+  591:{name:"Panama",                           r:"am"},
+  598:{name:"Papouasie-Nouvelle-Guinée",        r:"oc"},
+  600:{name:"Paraguay",                         r:"am"},
+  604:{name:"Pérou",                            r:"am"},
+  608:{name:"Philippines",                      r:"as"},
+  616:{name:"Pologne",                          r:"eu"},
+  620:{name:"Portugal",                         r:"eu"},
+  642:{name:"Roumanie",                         r:"eu"},
+  643:{name:"Russie",                           r:"eu"},
+  646:{name:"Rwanda",                           r:"af"},
+  682:{name:"Arabie saoudite",                  r:"as"},
+  686:{name:"Sénégal",                          r:"af"},
+  688:{name:"Serbie",                           r:"eu"},
+  694:{name:"Sierra Leone",                     r:"af"},
+  703:{name:"Slovaquie",                        r:"eu"},
+  705:{name:"Slovénie",                         r:"eu"},
+  706:{name:"Somalie",                          r:"af"},
+  710:{name:"Afrique du Sud",                   r:"af"},
+  716:{name:"Zimbabwe",                         r:"af"},
+  724:{name:"Espagne",                          r:"eu"},
+  728:{name:"Soudan du Sud",                    r:"af"},
+  729:{name:"Soudan",                           r:"af"},
+  740:{name:"Suriname",                         r:"am"},
+  752:{name:"Suède",                            r:"eu"},
+  756:{name:"Suisse",                           r:"eu"},
+  760:{name:"Syrie",                            r:"as"},
+  762:{name:"Tadjikistan",                      r:"as"},
+  764:{name:"Thaïlande",                        r:"as"},
+  768:{name:"Togo",                             r:"af"},
+  784:{name:"Émirats arabes unis",              r:"as"},
+  788:{name:"Tunisie",                          r:"af"},
+  792:{name:"Turquie",                          r:"as"},
+  795:{name:"Turkménistan",                     r:"as"},
+  800:{name:"Ouganda",                          r:"af"},
+  804:{name:"Ukraine",                          r:"eu"},
+  807:{name:"Macédoine du Nord",                r:"eu"},
+  818:{name:"Égypte",                           r:"af"},
+  826:{name:"Royaume-Uni",                      r:"eu"},
+  834:{name:"Tanzanie",                         r:"af"},
+  840:{name:"États-Unis",                       r:"am"},
+  854:{name:"Burkina Faso",                     r:"af"},
+  858:{name:"Uruguay",                          r:"am"},
+  860:{name:"Ouzbékistan",                      r:"as"},
+  862:{name:"Venezuela",                        r:"am"},
+  887:{name:"Yémen",                            r:"as"},
+  894:{name:"Zambie",                           r:"af"},
+  51: {name:"Arménie",                          r:"as"},
+  31: {name:"Azerbaïdjan",                      r:"as"},
+  704:{name:"Vietnam",                          r:"as"},
+  214:{name:"République dominicaine",           r:"am"},
+};
+
+// ── D3 setup ─────────────────────────────────────────────────────────────────
+const W = Math.min(window.innerWidth - 24, 520);
+const H = Math.round(W * 0.58);
+
+document.getElementById("map").setAttribute("width",  W);
+document.getElementById("map").setAttribute("height", H);
+
+const projection = d3.geoNaturalEarth1()
+  .scale(W / 6.3)
+  .translate([W / 2, H / 2]);
+
+const path = d3.geoPath().projection(projection);
+const svg  = d3.select("#map");
+const g    = svg.append("g");
+
+let currentK = 1;
+
+const zoomBeh = d3.zoom()
+  .scaleExtent([1, 60])
+  .on("zoom", e => {
+    g.attr("transform", e.transform);
+    currentK = e.transform.k;
+    g.selectAll(".marker-circle")
+      .attr("r", markerR())
+      .attr("stroke-width", 1.5 / currentK);
+    g.selectAll(".marker-text")
+      .attr("font-size", markerFs());
+  });
+
+svg.call(zoomBeh).on("dblclick.zoom", null);
+
+function markerR()  { return Math.max(3, 11 / currentK); }
+function markerFs() { return Math.max(3.5, 8 / currentK); }
+
+// ── State ────────────────────────────────────────────────────────────────────
+let featureById  = {};
+let availableIds = [];
+let round = null;
+let lock  = false;
+let hits  = 0, misses = 0;
+
+// ── TTS ──────────────────────────────────────────────────────────────────────
+let voices = [], voicesReady = false;
+function loadVoices(){ voices = speechSynthesis.getVoices(); if(voices.length) voicesReady = true; }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const fr = voices.find(v => v.lang.startsWith("fr"));
+  if(fr) u.voice = fr;
+  u.lang = "fr-FR";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function shuffle(a){ return [...a].sort(() => Math.random() - 0.5); }
+
+function zoomToAll(ids){
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  ids.forEach(id => {
+    const [[x0,y0],[x1,y1]] = path.bounds(featureById[id]);
+    minX = Math.min(minX, x0);
+    minY = Math.min(minY, y0);
+    maxX = Math.max(maxX, x1);
+    maxY = Math.max(maxY, y1);
+  });
+  const dx = maxX - minX;
+  const dy = maxY - minY;
+  const scale = Math.min(14, 0.80 / Math.max(dx / W, dy / H));
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  svg.transition().duration(800)
+    .call(zoomBeh.transform,
+      d3.zoomIdentity.translate(W/2, H/2).scale(scale).translate(-cx, -cy));
+}
+
+function placeMarkers(ids){
+  g.selectAll(".marker").remove();
+  ids.forEach((id, i) => {
+    const [cx, cy] = path.centroid(featureById[id]);
+    if(isNaN(cx) || isNaN(cy)) return;
+    const num = i + 1;
+    const grp = g.append("g")
+      .attr("class", "marker")
+      .style("cursor", "pointer")
+      .on("click", () => handleAnswer(id, i));
+
+    grp.append("circle")
+      .attr("class", "marker-circle")
+      .attr("cx", cx).attr("cy", cy)
+      .attr("r", markerR())
+      .attr("fill", "#1a1a2e")
+      .attr("stroke", "white")
+      .attr("stroke-width", 1.5 / currentK);
+
+    grp.append("text")
+      .attr("class", "marker-text")
+      .attr("x", cx).attr("y", cy)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "central")
+      .attr("fill", "white")
+      .attr("font-size", markerFs())
+      .attr("font-weight", "bold")
+      .style("pointer-events", "none")
+      .text(num);
+  });
+}
+
+// ── Answer handling ───────────────────────────────────────────────────────────
+function handleAnswer(id, btnIdx){
+  if(lock) return;
+  const btn = document.getElementById("btn" + btnIdx);
+
+  if(id === round.targetId){
+    lock = true;
+    hits++;
+    document.getElementById("hits").textContent = hits;
+    g.selectAll(".country").filter(d => +d.id === id).attr("fill","#00c853");
+    btn.classList.add("good");
+    document.getElementById("question").textContent = "✓ " + COUNTRIES[id].name;
+    speak(COUNTRIES[id].name);
+    setTimeout(nextRound, 1200);
+  } else {
+    misses++;
+    document.getElementById("misses").textContent = misses;
+    speak(COUNTRIES[id].name);
+    g.selectAll(".country").filter(d => +d.id === id).attr("fill","#d50000");
+    btn.classList.add("bad");
+    setTimeout(() => {
+      g.selectAll(".country").filter(d => +d.id === id).attr("fill","#ddd8f5");
+      btn.classList.remove("bad");
+    }, 400);
+  }
+}
+
+// ── Round ─────────────────────────────────────────────────────────────────────
+function nextRound(){
+  lock = false;
+
+  const targetId = availableIds[Math.floor(Math.random() * availableIds.length)];
+  const info = COUNTRIES[targetId];
+
+  const sameR  = availableIds.filter(id => id !== targetId && COUNTRIES[id].r === info.r);
+  const pool   = sameR.length >= 3 ? sameR : availableIds.filter(id => id !== targetId);
+  const wrongIds = shuffle(pool).slice(0, 3);
+  const allIds   = shuffle([targetId, ...wrongIds]);
+
+  round = {targetId, allIds};
+
+  // Reset map colours
+  g.selectAll(".country")
+    .attr("fill",         "#f5f5f0")
+    .attr("stroke",       "#aaa")
+    .attr("stroke-width", 0.3);
+
+  // Highlight the 4 candidates
+  allIds.forEach(id => {
+    g.selectAll(".country").filter(d => +d.id === id)
+      .attr("fill", "#ddd8f5")
+      .attr("stroke", "#888")
+      .attr("stroke-width", 0.6);
+  });
+
+  // Wire up number buttons
+  for(let i = 0; i < 4; i++){
+    const btn = document.getElementById("btn" + i);
+    btn.disabled = false;
+    btn.className = "num-btn";
+    btn.onclick = () => handleAnswer(allIds[i], i);
+  }
+
+  placeMarkers(allIds);
+  zoomToAll(allIds);
+
+  document.getElementById("question").textContent = "Où est : " + info.name + " ?";
+  setTimeout(() => speak(info.name), 900);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init(){
+  const world = await d3.json(
+    "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
+  );
+  const geo = topojson.feature(world, world.objects.countries);
+
+  geo.features.forEach(f => {
+    if(COUNTRIES[+f.id]) featureById[+f.id] = f;
+  });
+
+  availableIds = Object.keys(COUNTRIES).map(Number).filter(id => featureById[id]);
+
+  g.selectAll(".country")
+    .data(geo.features)
+    .join("path")
+    .attr("class",        "country")
+    .attr("d",            path)
+    .attr("fill",         "#f5f5f0")
+    .attr("stroke",       "#aaa")
+    .attr("stroke-width", 0.3);
+
+  document.getElementById("question").textContent = "Prêt !";
+  document.getElementById("start").disabled = false;
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(COUNTRIES[round.targetId].name);
+};
+
+init();
+</script>
+</body>
+</html>

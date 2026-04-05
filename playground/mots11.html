@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capitales</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+
+.app{
+  width:100%;
+  max-width:420px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.country-display{
+  text-align:center;
+  font-size:28px;
+  font-weight:900;
+  padding:16px 8px 8px;
+  min-height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1.2;
+}
+
+.question{
+  text-align:center;
+  font-size:16px;
+  font-weight:600;
+  color:#555;
+  min-height:22px;
+}
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:disabled{
+  background:#aaa;
+  cursor:default;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.choice{
+  padding:14px 8px;
+  font-size:14px;
+  font-weight:700;
+  border-radius:12px;
+  background:#ffffff;
+  border:2px solid #000;
+  color:#000;
+  cursor:pointer;
+  line-height:1.3;
+}
+
+.good{ background:#00c853; color:white; border-color:#00c853; }
+.bad{  background:#d50000; color:white; border-color:#d50000; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div class="country-display" id="country">?</div>
+    <div class="question" id="question">Quelle est la capitale ?</div>
+    <div id="grid" class="grid"></div>
+    <div class="controls">
+      <button id="start">Jouer</button>
+      <button id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const COUNTRIES = [
+  {name:"Afghanistan",                      capital:"Kaboul",              r:"as"},
+  {name:"Albanie",                          capital:"Tirana",              r:"eu"},
+  {name:"Algérie",                          capital:"Alger",               r:"af"},
+  {name:"Angola",                           capital:"Luanda",              r:"af"},
+  {name:"Argentine",                        capital:"Buenos Aires",        r:"am"},
+  {name:"Australie",                        capital:"Canberra",            r:"oc"},
+  {name:"Autriche",                         capital:"Vienne",              r:"eu"},
+  {name:"Bangladesh",                       capital:"Dacca",               r:"as"},
+  {name:"Belgique",                         capital:"Bruxelles",           r:"eu"},
+  {name:"Bolivie",                          capital:"La Paz",              r:"am"},
+  {name:"Bosnie-Herzégovine",               capital:"Sarajevo",            r:"eu"},
+  {name:"Botswana",                         capital:"Gaborone",            r:"af"},
+  {name:"Brésil",                           capital:"Brasília",            r:"am"},
+  {name:"Bulgarie",                         capital:"Sofia",               r:"eu"},
+  {name:"Myanmar",                          capital:"Naypyidaw",           r:"as"},
+  {name:"Biélorussie",                      capital:"Minsk",               r:"eu"},
+  {name:"Cambodge",                         capital:"Phnom Penh",          r:"as"},
+  {name:"Cameroun",                         capital:"Yaoundé",             r:"af"},
+  {name:"Canada",                           capital:"Ottawa",              r:"am"},
+  {name:"République centrafricaine",        capital:"Bangui",              r:"af"},
+  {name:"Sri Lanka",                        capital:"Colombo",             r:"as"},
+  {name:"Tchad",                            capital:"N'Djaména",           r:"af"},
+  {name:"Chili",                            capital:"Santiago",            r:"am"},
+  {name:"Chine",                            capital:"Pékin",               r:"as"},
+  {name:"Colombie",                         capital:"Bogotá",              r:"am"},
+  {name:"Congo",                            capital:"Brazzaville",         r:"af"},
+  {name:"République démocratique du Congo", capital:"Kinshasa",            r:"af"},
+  {name:"Costa Rica",                       capital:"San José",            r:"am"},
+  {name:"Croatie",                          capital:"Zagreb",              r:"eu"},
+  {name:"Cuba",                             capital:"La Havane",           r:"am"},
+  {name:"Tchéquie",                         capital:"Prague",              r:"eu"},
+  {name:"Bénin",                            capital:"Porto-Novo",          r:"af"},
+  {name:"Danemark",                         capital:"Copenhague",          r:"eu"},
+  {name:"Équateur",                         capital:"Quito",               r:"am"},
+  {name:"Salvador",                         capital:"San Salvador",        r:"am"},
+  {name:"Éthiopie",                         capital:"Addis-Abeba",         r:"af"},
+  {name:"Érythrée",                         capital:"Asmara",              r:"af"},
+  {name:"Estonie",                          capital:"Tallinn",             r:"eu"},
+  {name:"Finlande",                         capital:"Helsinki",            r:"eu"},
+  {name:"France",                           capital:"Paris",               r:"eu"},
+  {name:"Gabon",                            capital:"Libreville",          r:"af"},
+  {name:"Géorgie",                          capital:"Tbilissi",            r:"as"},
+  {name:"Allemagne",                        capital:"Berlin",              r:"eu"},
+  {name:"Ghana",                            capital:"Accra",               r:"af"},
+  {name:"Grèce",                            capital:"Athènes",             r:"eu"},
+  {name:"Guatemala",                        capital:"Guatemala",           r:"am"},
+  {name:"Guinée",                           capital:"Conakry",             r:"af"},
+  {name:"Guyana",                           capital:"Georgetown",          r:"am"},
+  {name:"Haïti",                            capital:"Port-au-Prince",      r:"am"},
+  {name:"Honduras",                         capital:"Tegucigalpa",         r:"am"},
+  {name:"Hongrie",                          capital:"Budapest",            r:"eu"},
+  {name:"Inde",                             capital:"New Delhi",           r:"as"},
+  {name:"Indonésie",                        capital:"Djakarta",            r:"as"},
+  {name:"Iran",                             capital:"Téhéran",             r:"as"},
+  {name:"Irak",                             capital:"Bagdad",              r:"as"},
+  {name:"Irlande",                          capital:"Dublin",              r:"eu"},
+  {name:"Israël",                           capital:"Jérusalem",           r:"as"},
+  {name:"Italie",                           capital:"Rome",                r:"eu"},
+  {name:"Côte d'Ivoire",                    capital:"Yamoussoukro",        r:"af"},
+  {name:"Japon",                            capital:"Tokyo",               r:"as"},
+  {name:"Kazakhstan",                       capital:"Astana",              r:"as"},
+  {name:"Jordanie",                         capital:"Amman",               r:"as"},
+  {name:"Kenya",                            capital:"Nairobi",             r:"af"},
+  {name:"Corée du Nord",                    capital:"Pyongyang",           r:"as"},
+  {name:"Corée du Sud",                     capital:"Séoul",               r:"as"},
+  {name:"Kirghizistan",                     capital:"Bichkek",             r:"as"},
+  {name:"Laos",                             capital:"Vientiane",           r:"as"},
+  {name:"Liban",                            capital:"Beyrouth",            r:"as"},
+  {name:"Lesotho",                          capital:"Maseru",              r:"af"},
+  {name:"Lettonie",                         capital:"Riga",                r:"eu"},
+  {name:"Libéria",                          capital:"Monrovia",            r:"af"},
+  {name:"Libye",                            capital:"Tripoli",             r:"af"},
+  {name:"Lituanie",                         capital:"Vilnius",             r:"eu"},
+  {name:"Madagascar",                       capital:"Antananarivo",        r:"af"},
+  {name:"Malawi",                           capital:"Lilongwe",            r:"af"},
+  {name:"Malaisie",                         capital:"Kuala Lumpur",        r:"as"},
+  {name:"Mali",                             capital:"Bamako",              r:"af"},
+  {name:"Mauritanie",                       capital:"Nouakchott",          r:"af"},
+  {name:"Mexique",                          capital:"Mexico",              r:"am"},
+  {name:"Mongolie",                         capital:"Oulan-Bator",         r:"as"},
+  {name:"Moldavie",                         capital:"Chișinău",            r:"eu"},
+  {name:"Maroc",                            capital:"Rabat",               r:"af"},
+  {name:"Mozambique",                       capital:"Maputo",              r:"af"},
+  {name:"Namibie",                          capital:"Windhoek",            r:"af"},
+  {name:"Népal",                            capital:"Katmandou",           r:"as"},
+  {name:"Pays-Bas",                         capital:"Amsterdam",           r:"eu"},
+  {name:"Nouvelle-Zélande",                 capital:"Wellington",          r:"oc"},
+  {name:"Nicaragua",                        capital:"Managua",             r:"am"},
+  {name:"Niger",                            capital:"Niamey",              r:"af"},
+  {name:"Nigeria",                          capital:"Abuja",               r:"af"},
+  {name:"Norvège",                          capital:"Oslo",                r:"eu"},
+  {name:"Pakistan",                         capital:"Islamabad",           r:"as"},
+  {name:"Panama",                           capital:"Panama",              r:"am"},
+  {name:"Papouasie-Nouvelle-Guinée",        capital:"Port Moresby",        r:"oc"},
+  {name:"Paraguay",                         capital:"Asunción",            r:"am"},
+  {name:"Pérou",                            capital:"Lima",                r:"am"},
+  {name:"Philippines",                      capital:"Manille",             r:"as"},
+  {name:"Pologne",                          capital:"Varsovie",            r:"eu"},
+  {name:"Portugal",                         capital:"Lisbonne",            r:"eu"},
+  {name:"Roumanie",                         capital:"Bucarest",            r:"eu"},
+  {name:"Russie",                           capital:"Moscou",              r:"eu"},
+  {name:"Rwanda",                           capital:"Kigali",              r:"af"},
+  {name:"Arabie saoudite",                  capital:"Riyad",               r:"as"},
+  {name:"Sénégal",                          capital:"Dakar",               r:"af"},
+  {name:"Serbie",                           capital:"Belgrade",            r:"eu"},
+  {name:"Sierra Leone",                     capital:"Freetown",            r:"af"},
+  {name:"Slovaquie",                        capital:"Bratislava",          r:"eu"},
+  {name:"Slovénie",                         capital:"Ljubljana",           r:"eu"},
+  {name:"Somalie",                          capital:"Mogadiscio",          r:"af"},
+  {name:"Afrique du Sud",                   capital:"Pretoria",            r:"af"},
+  {name:"Zimbabwe",                         capital:"Harare",              r:"af"},
+  {name:"Espagne",                          capital:"Madrid",              r:"eu"},
+  {name:"Soudan du Sud",                    capital:"Djouba",              r:"af"},
+  {name:"Soudan",                           capital:"Khartoum",            r:"af"},
+  {name:"Suriname",                         capital:"Paramaribo",          r:"am"},
+  {name:"Suède",                            capital:"Stockholm",           r:"eu"},
+  {name:"Suisse",                           capital:"Berne",               r:"eu"},
+  {name:"Syrie",                            capital:"Damas",               r:"as"},
+  {name:"Tadjikistan",                      capital:"Douchanbé",           r:"as"},
+  {name:"Thaïlande",                        capital:"Bangkok",             r:"as"},
+  {name:"Togo",                             capital:"Lomé",                r:"af"},
+  {name:"Émirats arabes unis",              capital:"Abou Dhabi",          r:"as"},
+  {name:"Tunisie",                          capital:"Tunis",               r:"af"},
+  {name:"Turquie",                          capital:"Ankara",              r:"as"},
+  {name:"Turkménistan",                     capital:"Achgabat",            r:"as"},
+  {name:"Ouganda",                          capital:"Kampala",             r:"af"},
+  {name:"Ukraine",                          capital:"Kiev",                r:"eu"},
+  {name:"Macédoine du Nord",                capital:"Skopje",              r:"eu"},
+  {name:"Égypte",                           capital:"Le Caire",            r:"af"},
+  {name:"Royaume-Uni",                      capital:"Londres",             r:"eu"},
+  {name:"Tanzanie",                         capital:"Dodoma",              r:"af"},
+  {name:"États-Unis",                       capital:"Washington",          r:"am"},
+  {name:"Burkina Faso",                     capital:"Ouagadougou",         r:"af"},
+  {name:"Uruguay",                          capital:"Montevideo",          r:"am"},
+  {name:"Ouzbékistan",                      capital:"Tachkent",            r:"as"},
+  {name:"Venezuela",                        capital:"Caracas",             r:"am"},
+  {name:"Yémen",                            capital:"Sanaa",               r:"as"},
+  {name:"Zambie",                           capital:"Lusaka",              r:"af"},
+  {name:"Arménie",                          capital:"Erevan",              r:"as"},
+  {name:"Azerbaïdjan",                      capital:"Bakou",               r:"as"},
+  {name:"Vietnam",                          capital:"Hanoï",               r:"as"},
+  {name:"République dominicaine",           capital:"Saint-Domingue",      r:"am"},
+];
+
+let hits = 0, misses = 0;
+let round = null, lock = false;
+let voices = [], voicesReady = false;
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  if(voices.length) voicesReady = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const fr = voices.find(v => v.lang.startsWith("fr"));
+  if(fr) u.voice = fr;
+  u.lang = "fr-FR";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+function shuffle(a){ return [...a].sort(() => Math.random() - 0.5); }
+
+function nextRound(){
+  lock = false;
+
+  const target = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
+  const sameR  = COUNTRIES.filter(c => c !== target && c.r === target.r);
+  const pool   = sameR.length >= 3 ? sameR : COUNTRIES.filter(c => c !== target);
+  const wrongs = shuffle(pool).slice(0, 3);
+  const choices = shuffle([target, ...wrongs]);
+
+  round = {target, choices};
+
+  document.getElementById("country").textContent = target.name;
+  document.getElementById("question").textContent = "Quelle est la capitale ?";
+  renderChoices(choices);
+  setTimeout(() => speak(target.name), 400);
+}
+
+function renderChoices(choices){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  choices.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.textContent = c.capital;
+    b.onclick = () => {
+      if(lock) return;
+      if(c === round.target){
+        lock = true;
+        hits++;
+        document.getElementById("hits").textContent = hits;
+        b.classList.add("good");
+        document.getElementById("question").textContent = "✓ " + c.capital;
+        speak(c.capital);
+        setTimeout(nextRound, 1100);
+      } else {
+        misses++;
+        document.getElementById("misses").textContent = misses;
+        b.classList.add("bad");
+        speak(c.capital);
+        setTimeout(() => b.classList.remove("bad"), 400);
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(round.target.name);
+};
+
+</script>
+</body>
+</html>

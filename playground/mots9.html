@@ -325,6 +325,7 @@ function renderChoices(choices){
         misses++;
         document.getElementById("misses").textContent = misses;
         b.classList.add("bad");
+        speak(c.name);
         setTimeout(() => b.classList.remove("bad"), 350);
       }
     };
