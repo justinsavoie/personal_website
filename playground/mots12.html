@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeu dinosaures</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+
+.app{
+  width:100%;
+  max-width:420px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.dino-name{
+  text-align:center;
+  font-size:26px;
+  font-weight:900;
+  padding:12px 8px 4px;
+  min-height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1.2;
+}
+
+.question{
+  text-align:center;
+  font-size:15px;
+  font-weight:600;
+  color:#555;
+  min-height:20px;
+}
+
+.img-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.img-choice{
+  border-radius:12px;
+  overflow:hidden;
+  border:3px solid #000;
+  cursor:pointer;
+  aspect-ratio:1;
+  background:#e8f4e8;
+  padding:0;
+}
+
+.img-choice img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  pointer-events:none;
+}
+
+.img-choice.good{ border-color:#00c853; border-width:4px; }
+.img-choice.bad{  border-color:#d50000; border-width:4px; }
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button.ctrl{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div class="dino-name" id="dino-name">?</div>
+    <div class="question" id="question">Clique sur le bon dinosaure</div>
+    <div id="grid" class="img-grid"></div>
+    <div class="controls">
+      <button class="ctrl" id="start">Jouer</button>
+      <button class="ctrl" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// g = groupe pour mauvaises réponses similaires
+// th=théropodes, sa=sauropodes, or=ornithopodes, ar=blindés/crêtes, pt=ptérosaures et marins, ce=cératopsiens
+const DINOS = [
+  {name:"Tyrannosaure",      file:"tyrannosaurus",      g:"th"},
+  {name:"Deinonychus",       file:"deinonychus",        g:"th"},
+  {name:"Vélociraptor",      file:"velociraptor",       g:"th"},
+  {name:"Allosaurus",        file:"allosaurus",         g:"th"},
+  {name:"Spinosaure",        file:"spinosaurus",        g:"th"},
+  {name:"Brachiosaure",      file:"brachiosaurus",      g:"sa"},
+  {name:"Hypsilophodon",     file:"hypsilophodon",      g:"or"},
+  {name:"Iguanodon",         file:"iguanodon",          g:"or"},
+  {name:"Parasaurolophus",   file:"parasaurolophus",    g:"or"},
+  {name:"Stégosaure",        file:"stegosaurus",        g:"ar"},
+  {name:"Pachycéphalosaure", file:"pachycephalosaurus", g:"ar"},
+  {name:"Ankylosaure",       file:"ankylosaurus",       g:"ar"},
+  {name:"Ptéranodon",        file:"pteranodon",         g:"pt"},
+  {name:"Plésiosaure",       file:"plesiosaurus",       g:"pt"},
+  {name:"Rhamphorhynchus",   file:"rhamphorhynchus",    g:"pt"},
+  {name:"Tricératops",       file:"triceratops",        g:"ce"},
+];
+
+let hits = 0, misses = 0;
+let round = null, lock = false;
+let voices = [], voicesReady = false;
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  if(voices.length) voicesReady = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const fr = voices.find(v => v.lang.startsWith("fr"));
+  if(fr) u.voice = fr;
+  u.lang = "fr-FR";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+function shuffle(a){ return [...a].sort(() => Math.random() - 0.5); }
+
+function imgPath(dino){ return `assets/dinos/${dino.file}.jpg`; }
+
+function nextRound(){
+  lock = false;
+
+  const target = DINOS[Math.floor(Math.random() * DINOS.length)];
+  const sameG  = DINOS.filter(d => d !== target && d.g === target.g);
+  const pool   = sameG.length >= 3 ? sameG : DINOS.filter(d => d !== target);
+  const wrongs = shuffle(pool).slice(0, 3);
+  const choices = shuffle([target, ...wrongs]);
+
+  round = {target, choices};
+
+  document.getElementById("dino-name").textContent = target.name;
+  document.getElementById("question").textContent = "Clique sur le bon dinosaure";
+  renderChoices(choices);
+  setTimeout(() => speak(target.name), 300);
+}
+
+function renderChoices(choices){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  choices.forEach(c => {
+    const btn = document.createElement("button");
+    btn.className = "img-choice";
+    btn.innerHTML = `<img src="${imgPath(c)}" alt="${c.name}">`;
+    btn.onclick = () => {
+      if(lock) return;
+      if(c === round.target){
+        lock = true;
+        hits++;
+        document.getElementById("hits").textContent = hits;
+        btn.classList.add("good");
+        document.getElementById("question").textContent = "✓ " + c.name;
+        speak(c.name);
+        setTimeout(nextRound, 1200);
+      } else {
+        misses++;
+        document.getElementById("misses").textContent = misses;
+        btn.classList.add("bad");
+        speak(c.name);
+        setTimeout(() => btn.classList.remove("bad"), 400);
+      }
+    };
+    grid.appendChild(btn);
+  });
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(round.target.name);
+};
+
+</script>
+</body>
+</html>
