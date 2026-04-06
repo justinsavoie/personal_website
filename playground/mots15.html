@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Complète la phrase</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+.app{ width:100%; max-width:420px; display:flex; flex-direction:column; gap:10px; }
+.top{ display:flex; justify-content:space-between; font-weight:bold; font-size:18px; }
+.main{ background:white; padding:12px; border-radius:16px; display:flex; flex-direction:column; gap:10px; }
+.sentence{
+  text-align:center;
+  font-size:22px;
+  font-weight:900;
+  padding:14px 8px 6px;
+  min-height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1.4;
+}
+.blank{ display:inline-block; min-width:80px; border-bottom:3px solid #000; }
+.question{ text-align:center; font-size:15px; font-weight:600; color:#555; min-height:20px; }
+.controls{ display:flex; gap:6px; }
+button{ flex:1; padding:10px; font-size:16px; border:none; border-radius:12px; background:#222; color:white; font-weight:bold; cursor:pointer; }
+.grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.choice{ padding:14px 8px; font-size:16px; font-weight:700; border-radius:12px; background:#fff; border:2px solid #000; color:#000; cursor:pointer; line-height:1.3; }
+.good{ background:#00c853; color:white; border-color:#00c853; }
+.bad{  background:#d50000; color:white; border-color:#d50000; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div class="sentence" id="sentence"></div>
+    <div class="question" id="question">Quel mot manque ?</div>
+    <div id="grid" class="grid"></div>
+    <div class="controls">
+      <button id="start">Jouer</button>
+      <button id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+<script>
+// text uses ___ for the blank; g = groupe pour mauvaises réponses similaires
+const SENTENCES = [
+  {text:"le chien ___",              answer:"aboie",      wrong:["miaule",    "hennit",    "vole"],       g:"animal"},
+  {text:"le chat ___",               answer:"miaule",     wrong:["aboie",     "hennit",    "vole"],       g:"animal"},
+  {text:"le cheval ___",             answer:"hennit",     wrong:["aboie",     "miaule",    "vole"],       g:"animal"},
+  {text:"l'oiseau ___ dans le ciel", answer:"vole",       wrong:["aboie",     "miaule",    "nage"],       g:"animal"},
+  {text:"le poisson ___ dans l'eau", answer:"nage",       wrong:["vole",      "saute",     "court"],      g:"animal"},
+  {text:"le soleil est ___",         answer:"jaune",      wrong:["bleu",      "rouge",     "vert"],       g:"couleur"},
+  {text:"le ciel est ___",           answer:"bleu",       wrong:["jaune",     "rouge",     "vert"],       g:"couleur"},
+  {text:"la neige est ___",          answer:"blanche",    wrong:["rouge",     "bleue",     "verte"],      g:"couleur"},
+  {text:"le gazon est ___",          answer:"vert",       wrong:["rouge",     "bleu",      "jaune"],      g:"couleur"},
+  {text:"le sang est ___",           answer:"rouge",      wrong:["vert",      "bleu",      "jaune"],      g:"couleur"},
+  {text:"la nuit est ___",           answer:"noire",      wrong:["rouge",     "bleue",     "jaune"],      g:"couleur"},
+  {text:"j'efface avec une ___",     answer:"gomme",      wrong:["règle",     "crayon",    "cahier"],     g:"école"},
+  {text:"je mesure avec une ___",    answer:"règle",      wrong:["gomme",     "crayon",    "cahier"],     g:"école"},
+  {text:"j'écris dans un ___",       answer:"cahier",     wrong:["gomme",     "règle",     "livre"],      g:"école"},
+  {text:"le prof écrit au ___",      answer:"tableau",    wrong:["cahier",    "stylo",     "sac"],        g:"école"},
+  {text:"je porte mon ___ à l'école",answer:"sac",        wrong:["cahier",    "tableau",   "gomme"],      g:"école"},
+  {text:"je marche avec mes ___",    answer:"pieds",      wrong:["mains",     "bras",      "yeux"],       g:"corps"},
+  {text:"je vois avec mes ___",      answer:"yeux",       wrong:["pieds",     "mains",     "oreilles"],   g:"corps"},
+  {text:"j'entends avec mes ___",    answer:"oreilles",   wrong:["yeux",      "pieds",     "mains"],      g:"corps"},
+  {text:"je mange avec ma ___",      answer:"bouche",     wrong:["main",      "oreille",   "jambe"],      g:"corps"},
+  {text:"j'applaudis avec mes ___",  answer:"mains",      wrong:["pieds",     "yeux",      "oreilles"],   g:"corps"},
+  {text:"le poisson vit dans ___",   answer:"l'eau",      wrong:["le ciel",   "la neige",  "le sable"],   g:"nature"},
+  {text:"on voit les étoiles la ___",answer:"nuit",       wrong:["matin",     "midi",      "soir"],       g:"nature"},
+  {text:"il fait chaud en ___",      answer:"été",        wrong:["hiver",     "automne",   "printemps"],  g:"nature"},
+  {text:"il neige en ___",           answer:"hiver",      wrong:["été",       "printemps", "automne"],    g:"nature"},
+  {text:"les feuilles tombent en ___",answer:"automne",   wrong:["été",       "hiver",     "printemps"],  g:"nature"},
+  {text:"la pomme est un ___",       answer:"fruit",      wrong:["légume",    "animal",    "jouet"],      g:"nourriture"},
+  {text:"la carotte est un ___",     answer:"légume",     wrong:["fruit",     "animal",    "jouet"],      g:"nourriture"},
+  {text:"je bois du ___",            answer:"lait",       wrong:["pain",      "riz",       "fromage"],    g:"nourriture"},
+  {text:"je mange du ___",           answer:"pain",       wrong:["lait",      "jus",       "eau"],        g:"nourriture"},
+  {text:"je dors dans mon ___",      answer:"lit",        wrong:["arbre",     "stylo",     "cahier"],     g:"maison"},
+  {text:"je regarde la ___",         answer:"télé",       wrong:["règle",     "gomme",     "crayon"],     g:"maison"},
+  {text:"j'entre par la ___",        answer:"porte",      wrong:["fenêtre",   "table",     "chaise"],     g:"maison"},
+  {text:"je m'assieds sur une ___",  answer:"chaise",     wrong:["porte",     "fenêtre",   "lit"],        g:"maison"},
+  {text:"je ___ une chanson",        answer:"chante",     wrong:["mange",     "bois",      "lis"],        g:"verbe"},
+  {text:"je ___ un livre",           answer:"lis",        wrong:["chante",    "mange",     "bois"],       g:"verbe"},
+  {text:"je ___ au ballon",          answer:"joue",       wrong:["mange",     "lis",       "chante"],     g:"verbe"},
+  {text:"je ___ mes devoirs",        answer:"fais",       wrong:["chante",    "lis",       "joue"],       g:"verbe"},
+  {text:"il ___ la porte",           answer:"ouvre",      wrong:["mange",     "lit",       "chante"],     g:"verbe"},
+  {text:"nous ___ du pain",          answer:"mangeons",   wrong:["buvons",    "lisons",    "courons"],    g:"verbe"},
+];
+
+let hits = 0, misses = 0, round = null, lock = false;
+let voices = [], voicesReady = false;
+function loadVoices(){ voices = speechSynthesis.getVoices(); if(voices.length) voicesReady = true; }
+speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+
+function speak(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices.find(v => v.lang.startsWith("fr"));
+  if(v) u.voice = v;
+  u.lang = "fr-FR"; u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+function fullSentence(s){ return s.text.replace("___", s.answer); }
+function partialSpeak(s){ speak(s.text.replace("___", "...")); }
+
+function shuffle(a){ return [...a].sort(()=>Math.random()-0.5); }
+
+function renderSentence(s){
+  const parts = s.text.split("___");
+  const el = document.getElementById("sentence");
+  el.innerHTML = parts[0] + '<span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>' + (parts[1] || "");
+}
+
+function nextRound(){
+  lock = false;
+  const target = SENTENCES[Math.floor(Math.random()*SENTENCES.length)];
+  const sameG = SENTENCES.filter(s => s !== target && s.g === target.g);
+  const pool  = sameG.length >= 3 ? sameG : SENTENCES.filter(s => s !== target);
+  const wrongItems = shuffle(pool).slice(0,3);
+  // choices are just the answer words
+  const choices = shuffle([
+    {label: target.answer,       correct: true},
+    {label: wrongItems[0].answer, correct: false},
+    {label: wrongItems[1].answer, correct: false},
+    {label: wrongItems[2].answer, correct: false},
+  ]);
+  round = {target, choices};
+  renderSentence(target);
+  document.getElementById("question").textContent = "Quel mot manque ?";
+  renderChoices(choices);
+  setTimeout(() => partialSpeak(target), 400);
+}
+
+function renderChoices(choices){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  choices.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.textContent = c.label;
+    b.onclick = () => {
+      if(lock) return;
+      if(c.correct){
+        lock = true; hits++;
+        document.getElementById("hits").textContent = hits;
+        b.classList.add("good");
+        // Show completed sentence and speak it
+        const el = document.getElementById("sentence");
+        el.textContent = fullSentence(round.target);
+        document.getElementById("question").textContent = "✓ " + c.label;
+        speak(fullSentence(round.target));
+        setTimeout(nextRound, 1400);
+      } else {
+        misses++;
+        document.getElementById("misses").textContent = misses;
+        b.classList.add("bad");
+        speak(c.label);
+        setTimeout(() => b.classList.remove("bad"), 400);
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+document.getElementById("start").onclick = () => { speechSynthesis.resume(); nextRound(); };
+document.getElementById("repeat").onclick = () => { speechSynthesis.resume(); if(round) partialSpeak(round.target); };
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeu des animaux</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+.app{ width:100%; max-width:420px; display:flex; flex-direction:column; gap:10px; }
+.top{ display:flex; justify-content:space-between; font-weight:bold; font-size:18px; }
+.main{ background:white; padding:12px; border-radius:16px; display:flex; flex-direction:column; gap:10px; }
+.animal-name{
+  text-align:center;
+  font-size:30px;
+  font-weight:900;
+  padding:12px 8px 4px;
+  min-height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.question{ text-align:center; font-size:15px; font-weight:600; color:#555; min-height:20px; }
+.img-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.img-choice{
+  border-radius:12px;
+  overflow:hidden;
+  border:3px solid #000;
+  cursor:pointer;
+  aspect-ratio:1;
+  background:#e8f4f8;
+  padding:0;
+}
+.img-choice img{ width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+.img-choice.good{ border-color:#00c853; border-width:4px; }
+.img-choice.bad{  border-color:#d50000; border-width:4px; }
+.controls{ display:flex; gap:6px; }
+button.ctrl{ flex:1; padding:10px; font-size:16px; border:none; border-radius:12px; background:#222; color:white; font-weight:bold; cursor:pointer; }
+button.ctrl:disabled{ background:#aaa; cursor:default; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div class="animal-name" id="animal-name">?</div>
+    <div class="question" id="question">Chargement des images…</div>
+    <div id="grid" class="img-grid"></div>
+    <div class="controls">
+      <button class="ctrl" id="start" disabled>Jouer</button>
+      <button class="ctrl" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+<script>
+// g = groupe pour mauvaises réponses similaires
+const ANIMALS = [
+  {name:"Chat",      wiki:"Cat",          g:"ferme"},
+  {name:"Chien",     wiki:"Dog",          g:"ferme"},
+  {name:"Cheval",    wiki:"Horse",        g:"ferme"},
+  {name:"Vache",     wiki:"Cattle",       g:"ferme"},
+  {name:"Cochon",    wiki:"Pig",          g:"ferme"},
+  {name:"Mouton",    wiki:"Sheep",        g:"ferme"},
+  {name:"Lapin",     wiki:"Rabbit",       g:"ferme"},
+  {name:"Canard",    wiki:"Duck",         g:"ferme"},
+  {name:"Lion",      wiki:"Lion",         g:"savane"},
+  {name:"Tigre",     wiki:"Tiger",        g:"savane"},
+  {name:"Éléphant",  wiki:"Elephant",     g:"savane"},
+  {name:"Girafe",    wiki:"Giraffe",      g:"savane"},
+  {name:"Zèbre",     wiki:"Zebra",        g:"savane"},
+  {name:"Gorille",   wiki:"Gorilla",      g:"savane"},
+  {name:"Ours",      wiki:"Bear",         g:"forêt"},
+  {name:"Loup",      wiki:"Wolf",         g:"forêt"},
+  {name:"Renard",    wiki:"Red_fox",      g:"forêt"},
+  {name:"Cerf",      wiki:"Deer",         g:"forêt"},
+  {name:"Dauphin",   wiki:"Dolphin",      g:"mer"},
+  {name:"Baleine",   wiki:"Whale",        g:"mer"},
+  {name:"Requin",    wiki:"Shark",        g:"mer"},
+  {name:"Aigle",     wiki:"Eagle",        g:"ciel"},
+  {name:"Hibou",     wiki:"Owl",          g:"ciel"},
+  {name:"Serpent",   wiki:"Snake",        g:"autres"},
+  {name:"Grenouille",wiki:"Frog",         g:"autres"},
+  {name:"Tortue",    wiki:"Turtle",       g:"autres"},
+];
+
+let hits = 0, misses = 0, round = null, lock = false, available = [];
+let voices = [], voicesReady = false;
+function loadVoices(){ voices = speechSynthesis.getVoices(); if(voices.length) voicesReady = true; }
+speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+
+function speak(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices.find(v => v.lang.startsWith("fr"));
+  if(v) u.voice = v;
+  u.lang = "fr-FR"; u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+function shuffle(a){ return [...a].sort(()=>Math.random()-0.5); }
+
+async function fetchImage(animal){
+  try {
+    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(animal.wiki)}`);
+    const data = await res.json();
+    let url = data.thumbnail?.source || null;
+    if(url) url = url.replace(/\/\d+px-/, '/500px-');
+    animal.img = url;
+  } catch(e){ animal.img = null; }
+}
+
+async function init(){
+  await Promise.all(ANIMALS.map(fetchImage));
+  available = ANIMALS.filter(a => a.img);
+  if(available.length < 4){ document.getElementById("question").textContent = "Erreur de chargement."; return; }
+  document.getElementById("animal-name").textContent = "?";
+  document.getElementById("question").textContent = "Prêt !";
+  document.getElementById("start").disabled = false;
+  document.getElementById("start").onclick = () => { speechSynthesis.resume(); nextRound(); };
+  document.getElementById("repeat").onclick = () => { speechSynthesis.resume(); if(round) speak(round.target.name); };
+}
+
+function nextRound(){
+  lock = false;
+  const target = available[Math.floor(Math.random()*available.length)];
+  const sameG = available.filter(a => a !== target && a.g === target.g);
+  const pool  = sameG.length >= 3 ? sameG : available.filter(a => a !== target);
+  const choices = shuffle([target, ...shuffle(pool).slice(0,3)]);
+  round = {target, choices};
+  document.getElementById("animal-name").textContent = target.name;
+  document.getElementById("question").textContent = "Clique sur le bon animal";
+  renderChoices(choices);
+  setTimeout(() => speak(target.name), 300);
+}
+
+function renderChoices(choices){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  choices.forEach(c => {
+    const btn = document.createElement("button");
+    btn.className = "img-choice";
+    btn.innerHTML = `<img src="${c.img}" alt="${c.name}">`;
+    btn.onclick = () => {
+      if(lock) return;
+      if(c === round.target){
+        lock = true; hits++;
+        document.getElementById("hits").textContent = hits;
+        btn.classList.add("good");
+        document.getElementById("question").textContent = "✓ " + c.name;
+        speak(c.name);
+        setTimeout(nextRound, 1200);
+      } else {
+        misses++;
+        document.getElementById("misses").textContent = misses;
+        btn.classList.add("bad");
+        speak(c.name);
+        setTimeout(() => btn.classList.remove("bad"), 400);
+      }
+    };
+    grid.appendChild(btn);
+  });
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traduction phrases</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+
+.app{
+  width:100%;
+  max-width:420px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.prompt{
+  text-align:center;
+  font-size:22px;
+  font-weight:900;
+  padding:10px 4px 4px;
+  min-height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1.3;
+}
+
+.question{
+  text-align:center;
+  font-size:14px;
+  color:#555;
+  font-weight:600;
+  min-height:18px;
+}
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.choice{
+  padding:14px 8px;
+  font-size:13px;
+  font-weight:700;
+  border-radius:12px;
+  background:#ffffff;
+  border:2px solid #000;
+  color:#000;
+  cursor:pointer;
+  line-height:1.4;
+}
+
+.good{ background:#00c853; color:white; border-color:#00c853; }
+.bad{  background:#d50000; color:white; border-color:#d50000; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div class="prompt" id="prompt">…</div>
+    <div class="question" id="question">Quelle est la traduction ?</div>
+    <div id="grid" class="grid"></div>
+    <div class="controls">
+      <button id="start">Jouer</button>
+      <button id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const PHRASES = [
+  {fr:"je vais à l'école",           en:"I go to school"},
+  {fr:"je mange une pomme",          en:"I eat an apple"},
+  {fr:"il boit de l'eau",            en:"he drinks water"},
+  {fr:"elle lit un livre",           en:"she reads a book"},
+  {fr:"nous allons au parc",         en:"we go to the park"},
+  {fr:"tu prends le bus",            en:"you take the bus"},
+  {fr:"je vois un chien",            en:"I see a dog"},
+  {fr:"elle a un chat",              en:"she has a cat"},
+  {fr:"il ouvre la porte",           en:"he opens the door"},
+  {fr:"je ferme la fenêtre",         en:"I close the window"},
+
+  {fr:"nous mangeons du pain",       en:"we eat bread"},
+  {fr:"tu bois du lait",             en:"you drink milk"},
+  {fr:"il regarde la télé",          en:"he watches TV"},
+  {fr:"elle écrit un mot",           en:"she writes a word"},
+  {fr:"je prends un stylo",          en:"I take a pen"},
+  {fr:"nous lisons ensemble",        en:"we read together"},
+  {fr:"tu poses une question",       en:"you ask a question"},
+  {fr:"il donne une réponse",        en:"he gives an answer"},
+  {fr:"elle aime la musique",        en:"she likes music"},
+  {fr:"je joue au ballon",           en:"I play with the ball"},
+
+  {fr:"nous marchons vite",          en:"we walk fast"},
+  {fr:"tu cours dehors",             en:"you run outside"},
+  {fr:"il saute haut",               en:"he jumps high"},
+  {fr:"elle danse bien",             en:"she dances well"},
+  {fr:"je chante une chanson",       en:"I sing a song"},
+  {fr:"nous regardons le ciel",      en:"we look at the sky"},
+  {fr:"tu vois la lune",             en:"you see the moon"},
+  {fr:"il aime le soleil",           en:"he likes the sun"},
+  {fr:"elle regarde les étoiles",    en:"she looks at the stars"},
+  {fr:"je marche dans la rue",       en:"I walk in the street"},
+
+  {fr:"nous allons à la maison",     en:"we go home"},
+  {fr:"tu ouvres ton sac",           en:"you open your bag"},
+  {fr:"il ferme son cahier",         en:"he closes his notebook"},
+  {fr:"elle prend un livre",         en:"she takes a book"},
+  {fr:"je pose mon téléphone",       en:"I put down my phone"},
+  {fr:"nous écrivons un texte",      en:"we write a text"},
+  {fr:"tu lis une phrase",           en:"you read a sentence"},
+  {fr:"il compte les nombres",       en:"he counts the numbers"},
+  {fr:"elle apprend à lire",         en:"she learns to read"},
+  {fr:"je fais un dessin",           en:"I draw a picture"},
+
+  {fr:"nous mangeons ensemble",      en:"we eat together"},
+  {fr:"tu prends une cuillère",      en:"you take a spoon"},
+  {fr:"il coupe le pain",            en:"he cuts the bread"},
+  {fr:"elle boit du jus",            en:"she drinks juice"},
+  {fr:"je mange une banane",         en:"I eat a banana"},
+  {fr:"nous préparons le repas",     en:"we prepare the meal"},
+  {fr:"tu cuisines avec moi",        en:"you cook with me"},
+  {fr:"il lave les mains",           en:"he washes his hands"},
+  {fr:"elle met la table",           en:"she sets the table"},
+  {fr:"je nettoie la cuisine",       en:"I clean the kitchen"},
+
+  {fr:"nous allons en ville",        en:"we go to town"},
+  {fr:"tu prends le métro",          en:"you take the subway"},
+  {fr:"il conduit la voiture",       en:"he drives the car"},
+  {fr:"elle marche au parc",         en:"she walks in the park"},
+  {fr:"je vois un arbre",            en:"I see a tree"},
+  {fr:"nous regardons la rivière",   en:"we look at the river"},
+  {fr:"tu traverses la rue",         en:"you cross the street"},
+  {fr:"il monte le pont",            en:"he goes up the bridge"},
+  {fr:"elle descend la colline",     en:"she goes down the hill"},
+  {fr:"je marche sur le chemin",     en:"I walk on the path"},
+
+  {fr:"nous jouons à un jeu",        en:"we play a game"},
+  {fr:"tu gagnes un point",          en:"you win a point"},
+  {fr:"il perd la partie",           en:"he loses the game"},
+  {fr:"elle choisit une carte",      en:"she chooses a card"},
+  {fr:"je lance le dé",              en:"I roll the die"},
+  {fr:"nous continuons le jeu",      en:"we continue the game"},
+  {fr:"tu fais une erreur",          en:"you make a mistake"},
+  {fr:"il trouve la réponse",        en:"he finds the answer"},
+  {fr:"elle réussit bien",           en:"she does well"},
+  {fr:"je recommence encore",        en:"I start again"},
+
+  {fr:"nous sommes à l'école",       en:"we are at school"},
+  {fr:"tu parles au prof",           en:"you talk to the teacher"},
+  {fr:"il écoute bien",              en:"he listens well"},
+  {fr:"elle écrit au tableau",       en:"she writes on the board"},
+  {fr:"je réponds à la question",    en:"I answer the question"},
+  {fr:"nous faisons un exercice",    en:"we do an exercise"},
+  {fr:"tu corriges la phrase",       en:"you correct the sentence"},
+  {fr:"il comprend la leçon",        en:"he understands the lesson"},
+  {fr:"elle étudie le soir",         en:"she studies in the evening"},
+  {fr:"je fais mes devoirs",         en:"I do my homework"},
+
+  {fr:"nous partons le matin",       en:"we leave in the morning"},
+  {fr:"tu arrives à l'heure",        en:"you arrive on time"},
+  {fr:"il attend dehors",            en:"he waits outside"},
+  {fr:"elle entre dans la classe",   en:"she enters the classroom"},
+  {fr:"je sors à midi",              en:"I leave at noon"},
+  {fr:"nous rentrons à la maison",   en:"we go back home"},
+  {fr:"tu ouvres la porte",          en:"you open the door"},
+  {fr:"il enlève son manteau",       en:"he takes off his coat"},
+  {fr:"elle pose son sac",           en:"she puts down her bag"},
+  {fr:"je me repose un peu",         en:"I rest a little"},
+];
+
+let hits = 0, misses = 0;
+let round = null, lock = false;
+let voices = [], voicesReady = false;
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  if(voices.length) voicesReady = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speakFr(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices.find(v => v.lang.startsWith("fr"));
+  if(v) u.voice = v;
+  u.lang = "fr-FR";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+function speakEn(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices.find(v => v.lang.startsWith("en"));
+  if(v) u.voice = v;
+  u.lang = "en-US";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+function shuffle(a){ return [...a].sort(() => Math.random() - 0.5); }
+
+function nextRound(){
+  lock = false;
+  const target = PHRASES[Math.floor(Math.random() * PHRASES.length)];
+  const wrongs = shuffle(PHRASES.filter(p => p !== target)).slice(0, 3);
+  const choices = shuffle([target, ...wrongs]);
+  round = {target, choices};
+
+  document.getElementById("prompt").textContent = target.fr;
+  document.getElementById("question").textContent = "Quelle est la traduction ?";
+  renderChoices(choices);
+  setTimeout(() => speakFr(target.fr), 400);
+}
+
+function renderChoices(choices){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  choices.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.textContent = c.en;
+    b.onclick = () => {
+      if(lock) return;
+      speakEn(c.en);
+      if(c === round.target){
+        lock = true;
+        hits++;
+        document.getElementById("hits").textContent = hits;
+        b.classList.add("good");
+        document.getElementById("question").textContent = "✓ " + c.en;
+        setTimeout(nextRound, 1300);
+      } else {
+        misses++;
+        document.getElementById("misses").textContent = misses;
+        b.classList.add("bad");
+        setTimeout(() => b.classList.remove("bad"), 400);
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speakFr(round.target.fr);
+};
+
+</script>
+</body>
+</html>

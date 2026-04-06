@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mots français–anglais</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+.app{ width:100%; max-width:420px; display:flex; flex-direction:column; gap:10px; }
+.top{ display:flex; justify-content:space-between; font-weight:bold; font-size:18px; }
+.main{ background:white; padding:12px; border-radius:16px; display:flex; flex-direction:column; gap:10px; }
+.word-display{
+  text-align:center;
+  font-size:52px;
+  font-weight:900;
+  padding:16px 8px 8px;
+  min-height:90px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.question{ text-align:center; font-size:15px; font-weight:600; color:#555; min-height:20px; }
+.controls{ display:flex; gap:6px; }
+button{ flex:1; padding:10px; font-size:16px; border:none; border-radius:12px; background:#222; color:white; font-weight:bold; cursor:pointer; }
+.grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.choice{ padding:14px 8px; font-size:15px; font-weight:700; border-radius:12px; background:#fff; border:2px solid #000; color:#000; cursor:pointer; line-height:1.3; }
+.good{ background:#00c853; color:white; border-color:#00c853; }
+.bad{  background:#d50000; color:white; border-color:#d50000; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div class="word-display" id="word">?</div>
+    <div class="question" id="question">Quelle est la traduction ?</div>
+    <div id="grid" class="grid"></div>
+    <div class="controls">
+      <button id="start">Jouer</button>
+      <button id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+<script>
+const WORDS = [
+  {fr:"chien",     en:"dog",          g:"animal"},
+  {fr:"chat",      en:"cat",          g:"animal"},
+  {fr:"cheval",    en:"horse",        g:"animal"},
+  {fr:"vache",     en:"cow",          g:"animal"},
+  {fr:"cochon",    en:"pig",          g:"animal"},
+  {fr:"mouton",    en:"sheep",        g:"animal"},
+  {fr:"lapin",     en:"rabbit",       g:"animal"},
+  {fr:"canard",    en:"duck",         g:"animal"},
+  {fr:"oiseau",    en:"bird",         g:"animal"},
+  {fr:"poisson",   en:"fish",         g:"animal"},
+  {fr:"pomme",     en:"apple",        g:"nourriture"},
+  {fr:"pain",      en:"bread",        g:"nourriture"},
+  {fr:"lait",      en:"milk",         g:"nourriture"},
+  {fr:"eau",       en:"water",        g:"nourriture"},
+  {fr:"jus",       en:"juice",        g:"nourriture"},
+  {fr:"fromage",   en:"cheese",       g:"nourriture"},
+  {fr:"banane",    en:"banana",       g:"nourriture"},
+  {fr:"orange",    en:"orange",       g:"nourriture"},
+  {fr:"riz",       en:"rice",         g:"nourriture"},
+  {fr:"soupe",     en:"soup",         g:"nourriture"},
+  {fr:"stylo",     en:"pen",          g:"école"},
+  {fr:"crayon",    en:"pencil",       g:"école"},
+  {fr:"livre",     en:"book",         g:"école"},
+  {fr:"cahier",    en:"notebook",     g:"école"},
+  {fr:"sac",       en:"bag",          g:"école"},
+  {fr:"règle",     en:"ruler",        g:"école"},
+  {fr:"tableau",   en:"board",        g:"école"},
+  {fr:"gomme",     en:"eraser",       g:"école"},
+  {fr:"porte",     en:"door",         g:"maison"},
+  {fr:"fenêtre",   en:"window",       g:"maison"},
+  {fr:"table",     en:"table",        g:"maison"},
+  {fr:"chaise",    en:"chair",        g:"maison"},
+  {fr:"lit",       en:"bed",          g:"maison"},
+  {fr:"cuisine",   en:"kitchen",      g:"maison"},
+  {fr:"salon",     en:"living room",  g:"maison"},
+  {fr:"arbre",     en:"tree",         g:"nature"},
+  {fr:"fleur",     en:"flower",       g:"nature"},
+  {fr:"soleil",    en:"sun",          g:"nature"},
+  {fr:"lune",      en:"moon",         g:"nature"},
+  {fr:"étoile",    en:"star",         g:"nature"},
+  {fr:"rivière",   en:"river",        g:"nature"},
+  {fr:"mer",       en:"sea",          g:"nature"},
+  {fr:"montagne",  en:"mountain",     g:"nature"},
+  {fr:"ciel",      en:"sky",          g:"nature"},
+  {fr:"nuage",     en:"cloud",        g:"nature"},
+  {fr:"tête",      en:"head",         g:"corps"},
+  {fr:"main",      en:"hand",         g:"corps"},
+  {fr:"pied",      en:"foot",         g:"corps"},
+  {fr:"bras",      en:"arm",          g:"corps"},
+  {fr:"jambe",     en:"leg",          g:"corps"},
+  {fr:"œil",       en:"eye",          g:"corps"},
+  {fr:"bouche",    en:"mouth",        g:"corps"},
+  {fr:"nez",       en:"nose",         g:"corps"},
+  {fr:"rouge",     en:"red",          g:"couleur"},
+  {fr:"bleu",      en:"blue",         g:"couleur"},
+  {fr:"vert",      en:"green",        g:"couleur"},
+  {fr:"jaune",     en:"yellow",       g:"couleur"},
+  {fr:"blanc",     en:"white",        g:"couleur"},
+  {fr:"noir",      en:"black",        g:"couleur"},
+  {fr:"rose",      en:"pink",         g:"couleur"},
+  {fr:"gris",      en:"grey",         g:"couleur"},
+  {fr:"manger",    en:"to eat",       g:"verbe"},
+  {fr:"boire",     en:"to drink",     g:"verbe"},
+  {fr:"dormir",    en:"to sleep",     g:"verbe"},
+  {fr:"courir",    en:"to run",       g:"verbe"},
+  {fr:"lire",      en:"to read",      g:"verbe"},
+  {fr:"écrire",    en:"to write",     g:"verbe"},
+  {fr:"jouer",     en:"to play",      g:"verbe"},
+  {fr:"chanter",   en:"to sing",      g:"verbe"},
+  {fr:"danser",    en:"to dance",     g:"verbe"},
+  {fr:"parler",    en:"to speak",     g:"verbe"},
+];
+
+let hits = 0, misses = 0, round = null, lock = false;
+let voices = [], voicesReady = false;
+function loadVoices(){ voices = speechSynthesis.getVoices(); if(voices.length) voicesReady = true; }
+speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+function speakFr(t){ _speak(t,"fr"); }
+function speakEn(t){ _speak(t,"en"); }
+function _speak(t, lang){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t);
+  const v = voices.find(v => v.lang.startsWith(lang));
+  if(v) u.voice = v;
+  u.lang = lang === "fr" ? "fr-FR" : "en-US";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+function shuffle(a){ return [...a].sort(()=>Math.random()-0.5); }
+
+function nextRound(){
+  lock = false;
+  const target = WORDS[Math.floor(Math.random()*WORDS.length)];
+  const sameG = WORDS.filter(w => w !== target && w.g === target.g);
+  const pool  = sameG.length >= 3 ? sameG : WORDS.filter(w => w !== target);
+  const choices = shuffle([target, ...shuffle(pool).slice(0,3)]);
+  round = {target, choices};
+  document.getElementById("word").textContent = target.fr;
+  document.getElementById("question").textContent = "Quelle est la traduction ?";
+  renderChoices(choices);
+  setTimeout(() => speakFr(target.fr), 300);
+}
+
+function renderChoices(choices){
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  choices.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.textContent = c.en;
+    b.onclick = () => {
+      if(lock) return;
+      speakEn(c.en);
+      if(c === round.target){
+        lock = true; hits++;
+        document.getElementById("hits").textContent = hits;
+        b.classList.add("good");
+        document.getElementById("question").textContent = "✓ " + c.en;
+        setTimeout(nextRound, 1100);
+      } else {
+        misses++;
+        document.getElementById("misses").textContent = misses;
+        b.classList.add("bad");
+        setTimeout(() => b.classList.remove("bad"), 400);
+      }
+    };
+    grid.appendChild(b);
+  });
+}
+
+document.getElementById("start").onclick = () => { speechSynthesis.resume(); nextRound(); };
+document.getElementById("repeat").onclick = () => { speechSynthesis.resume(); if(round) speakFr(round.target.fr); };
+</script>
+</body>
+</html>
