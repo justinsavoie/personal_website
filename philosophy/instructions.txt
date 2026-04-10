@@ -1,0 +1,21 @@
+I want you to code a philosophy compass app. It's like vote compass (respondent answers 30 questions, positions himself in 2d space vis a vis political parties) but for philosophy and vis a vis philosophers.
+
+I want a single page simple app. This is a demo project for my blog. Neat, but simple. No login, etc.
+
+Landing page
+
+Respondent answers 30 questions about philosophy (key philosophical questions) Hard code these questions somewhere so I can change them in future if I want; in an object I can modify
+
+Respondent is positioned vis a vis philsophers. Hard code philosophers, but in an object I can modify. SO you make a 2d graph in javascript or whatever.
+
+Now we need stats too. Come up with fake positions for the philosophers. I want positions on likert items (all likerts).
+
+Positions is calculated with 2 dim factor analysis.
+
+We also have justification text for philosophers that is displayed on results page. Like in Vote Compass. Like in a normal voter engagement application.
+
+You will also write another script which I can run which call ollama go with ministral-3:8b for now. This call ollama to generate the likert positions of the philosophers on the questions + justifications. Since this is going to be long, hard code fake stuff to be replaced.
+
+Let me know if you have questions. The analysis should be in Python. The single web page should be on whatever thing that can work on my static website. Hardcode (or pass as objects in the html) what you need like names of philosophers, questions, answers, positions, justifications, factor weights and corr matrices whatever needed to calculate the position in 2d space. Let me know if you have questions.
+
+

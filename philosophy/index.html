@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Philosophy Compass</title>
+    <base href="./" />
+    <link rel="stylesheet" href="assets/style.css?v=20260402" />
+  </head>
+  <body>
+    <main>
+      <section id="intro">
+        <div class="hero">
+          <div class="hero-icon">&#x2BC0;</div>
+          <h1>Philosophy Compass</h1>
+          <p class="hero-sub">Answer 30 questions. Discover which philosophers think like you.</p>
+          <div class="hero-tags">
+            <span>Ethics</span><span>Epistemology</span><span>Metaphysics</span><span>Free Will</span><span>Politics</span>
+          </div>
+          <button id="start-btn" type="button" class="hero-btn">Begin &rarr;</button>
+          <p class="hero-note">30 questions &middot; ~5 minutes &middot; no sign-up</p>
+        </div>
+      </section>
+
+      <section id="carousel-section" class="hidden">
+        <div class="carousel">
+          <div class="progress"><span id="progress-text">Question 1 of 30</span></div>
+          <div class="qwrap">
+            <div class="q-header">
+              <div id="q-text" class="q-text"></div>
+              <button id="q-info-btn" type="button" class="info-btn q-info-open" aria-label="More info about this question" onclick="(function(){try{var m=document.getElementById('modal');var t=document.getElementById('modal-title');var b=document.getElementById('modal-body');var qt=document.getElementById('q-text');var btn=document.getElementById('q-info-btn');if(t) t.textContent = qt? qt.textContent : 'Question'; var info = (btn && btn.dataset ? btn.dataset.info : '') || (window.__pcGetInfo&&window.__pcGetInfo()) || ''; if(b){ b.innerHTML=''; var p=document.createElement('p'); p.style.lineHeight='1.7'; p.textContent= info && String(info).trim()? info : 'No additional info for this question.'; b.appendChild(p);} if(m) m.classList.remove('hidden'); }catch(e){ try{console.error(e);}catch(_){}} })()">?</button>
+            </div>
+            <div id="q-domain" class="domain"></div>
+          </div>
+          <div id="likert-container" class="likert likert-buttons"></div>
+          <div class="nav">
+            <button id="prev-btn" type="button" class="secondary">← Previous</button>
+            <div class="spacer"></div>
+            <button id="next-btn" type="button" class="secondary">Next →</button>
+            <button id="see-results-btn" type="button" class="primary hidden">See Results</button>
+            <button id="reset-btn" type="button" class="secondary">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="results" class="hidden">
+        <div class="results-grid">
+          <div class="plot">
+            <canvas id="scatter" width="640" height="480"></canvas>
+            <div class="legend">
+              <span class="dot user"></span> You
+              <span class="dot phil"></span> Philosopher
+            </div>
+            <div class="plot-actions">
+              <button id="biplot-btn" type="button" class="secondary">See biplot</button>
+            </div>
+          </div>
+          <div class="nearest">
+            <h3>Closest Philosophers</h3>
+            <ol id="nearest-list"></ol>
+          </div>
+        </div>
+        <div class="justifications">
+          <h3>Justifications</h3>
+          <div id="justifications"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Global modal (used for question info and positions) -->
+    <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title">Details</h3>
+          <button id="modal-close" class="secondary" type="button">Close</button>
+        </div>
+        <div id="modal-body" class="modal-body"></div>
+      </div>
+    </div>
+
+    <script src="assets/app.js?v=20260402"></script>
+  </body>
+  </html>
