@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habitats du Monde</title>
+    <style>
+        body { margin:0; padding:20px; font-family:system-ui; background:#e0f7fa; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+        .stats { font-size:18px; font-weight:bold; margin-bottom:20px; }
+        .animal-display { font-size:80px; background:white; width:150px; height:150px; display:flex; align-items:center; justify-content:center; border-radius:50%; margin-bottom:20px; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+        .question { font-size:22px; font-weight:900; margin-bottom:30px; text-align:center; }
+        .habitats-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; width:100%; max-width:400px; }
+        .habitat { background:white; border-radius:15px; padding:20px; cursor:pointer; text-align:center; transition:transform 0.1s; border:3px solid transparent; }
+        .habitat:active { transform:scale(0.95); }
+        .habitat-emoji { font-size:40px; display:block; margin-bottom:5px; }
+        .habitat-name { font-weight:bold; color:#555; }
+        .good { border-color:#00c853; }
+        .bad { border-color:#d50000; }
+        .btn { margin-top:30px; padding:15px 40px; font-size:18px; background:#222; color:white; border:none; border-radius:12px; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div class="stats">✅ <span id="hits">0</span> | ❌ <span id="misses">0</span></div>
+    <div id="game-content" style="display:none; text-align:center; align-items:center; flex-direction:column;">
+        <div class="animal-display" id="animal">🦁</div>
+        <div class="question" id="question">Où vit cet animal ?</div>
+        <div class="habitats-grid" id="grid"></div>
+    </div>
+    <button class="btn" id="start">Jouer</button>
+
+    <script>
+        const HABITATS = [
+            { id:'savane', name:'la Savane', emoji:'🦁', habitatEmoji:'☀️', color:'#ffe082' },
+            { id:'ocean', name:"l'Océan", emoji:'🐳', habitatEmoji:'🌊', color:'#81d4fa' },
+            { id:'banquise', name:'la Banquise', emoji:'🐻‍❄️', habitatEmoji:'❄️', color:'#e0f7fa' },
+            { id:'foret', name:'la Forêt', emoji:'🐒', habitatEmoji:'🌳', color:'#a5d6a7' }
+        ];
+        const ANIMALS = [
+            { emoji:'🦁', habitat:'savane', name:'le lion' },
+            { emoji:'🐘', habitat:'savane', name:"l'éléphant" },
+            { emoji:'🐳', habitat:'ocean', name:'la baleine' },
+            { emoji:'🦈', habitat:'ocean', name:'le requin' },
+            { emoji:'🐻‍❄️', habitat:'banquise', name:"l'ours polaire" },
+            { emoji:'🐧', habitat:'banquise', name:'le pingouin' },
+            { emoji:'🐒', habitat:'foret', name:'le singe' },
+            { emoji:'🦉', habitat:'foret', name:'le hibou' }
+        ];
+
+        let hits=0, misses=0, currentTarget=null, lock=false;
+        function speak(t){
+            const u=new SpeechSynthesisUtterance(t); u.lang='fr-FR'; u.rate=0.9;
+            speechSynthesis.cancel(); speechSynthesis.speak(u);
+        }
+
+        function nextRound() {
+            lock=false;
+            currentTarget = ANIMALS[Math.floor(Math.random()*ANIMALS.length)];
+            document.getElementById('animal').textContent = currentTarget.emoji;
+            speak("Où vit " + currentTarget.name + " ?");
+
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            HABITATS.forEach(h => {
+                const div = document.createElement('div');
+                div.className = 'habitat';
+                div.innerHTML = `<span class="habitat-emoji">${h.habitatEmoji}</span><span class="habitat-name">${h.name}</span>`;
+                div.onclick = () => {
+                    if(lock) return;
+                    if(h.id === currentTarget.habitat) {
+                        lock=true; hits++; document.getElementById('hits').textContent=hits;
+                        div.classList.add('good'); speak("Bravo !"); setTimeout(nextRound, 1500);
+                    } else {
+                        misses++; document.getElementById('misses').textContent=misses;
+                        div.classList.add('bad'); speak("Non, cherche encore."); setTimeout(()=>div.classList.remove('bad'), 500);
+                    }
+                };
+                grid.appendChild(div);
+            });
+        }
+        document.getElementById('start').onclick = () => { 
+            speechSynthesis.resume(); 
+            document.getElementById('game-content').style.display='flex';
+            document.getElementById('start').style.display='none';
+            nextRound(); 
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apprendre l'heure</title>
+    <style>
+        body { margin:0; padding:20px; font-family:system-ui; background:#f0f2f5; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+        .stats { font-size:18px; font-weight:bold; margin-bottom:20px; }
+        .question { font-size:24px; font-weight:900; background:white; padding:20px; border-radius:15px; margin-bottom:20px; text-align:center; width:100%; max-width:400px; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+        .clock-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; width:100%; max-width:400px; }
+        .clock-option { background:white; border:3px solid transparent; border-radius:15px; padding:10px; cursor:pointer; transition:transform 0.1s; }
+        .clock-option:active { transform:scale(0.95); }
+        .clock-option.good { border-color:#00c853; }
+        .clock-option.bad { border-color:#d50000; }
+        .clock-face { width:100px; height:100px; border:3px solid #333; border-radius:50%; position:relative; margin:0 auto; }
+        .hand { position:absolute; bottom:50%; left:50%; transform-origin:bottom; background:#333; border-radius:5px; }
+        .hour-hand { width:4px; height:25%; transform:rotate(0deg); }
+        .minute-hand { width:2px; height:40%; transform:rotate(0deg); }
+        .center-dot { position:absolute; top:50%; left:50%; width:6px; height:6px; background:#333; border-radius:50%; transform:translate(-50%, -50%); }
+        .btn { margin-top:30px; padding:15px 40px; font-size:18px; background:#222; color:white; border:none; border-radius:12px; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div class="stats">✅ <span id="hits">0</span> | ❌ <span id="misses">0</span></div>
+    <div class="question" id="question">Appuie sur Jouer !</div>
+    <div class="clock-grid" id="grid"></div>
+    <button class="btn" id="start">Jouer</button>
+
+    <script>
+        let hits=0, misses=0, currentTarget=null, lock=false;
+        function speak(t){
+            const u=new SpeechSynthesisUtterance(t); u.lang='fr-FR'; u.rate=0.9;
+            speechSynthesis.cancel(); speechSynthesis.speak(u);
+        }
+
+        function createClock(h, m) {
+            const hDeg = (h % 12) * 30 + m * 0.5;
+            const mDeg = m * 6;
+            return `
+                <div class="clock-face">
+                    <div class="hand hour-hand" style="transform: rotate(${hDeg}deg)"></div>
+                    <div class="hand minute-hand" style="transform: rotate(${mDeg}deg)"></div>
+                    <div class="center-dot"></div>
+                </div>
+            `;
+        }
+
+        function nextRound() {
+            lock=false;
+            const h = Math.floor(Math.random()*12) || 12;
+            const m = [0, 30][Math.floor(Math.random()*2)];
+            currentTarget = {h, m};
+            
+            const timeStr = m === 0 ? `${h} heure${h>1?'s':''}` : `${h} heure${h>1?'s':''} et demi`;
+            document.getElementById('question').textContent = "Quelle horloge affiche " + timeStr + " ?";
+            speak("Quelle horloge affiche " + timeStr + " ?");
+
+            const options = [{h, m}];
+            while(options.length < 4) {
+                const rh = Math.floor(Math.random()*12) || 12;
+                const rm = [0, 30][Math.floor(Math.random()*2)];
+                if(!options.find(o => o.h===rh && o.m===rm)) options.push({h:rh, m:rm});
+            }
+            options.sort(() => Math.random()-0.5);
+
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            options.forEach(o => {
+                const div = document.createElement('div');
+                div.className = 'clock-option';
+                div.innerHTML = createClock(o.h, o.m);
+                div.onclick = () => {
+                    if(lock) return;
+                    if(o.h===currentTarget.h && o.m===currentTarget.m) {
+                        lock=true; hits++; document.getElementById('hits').textContent=hits;
+                        div.classList.add('good'); speak("Bravo !"); setTimeout(nextRound, 1500);
+                    } else {
+                        misses++; document.getElementById('misses').textContent=misses;
+                        div.classList.add('bad'); speak("Non, regarde bien."); setTimeout(()=>div.classList.remove('bad'), 500);
+                    }
+                };
+                grid.appendChild(div);
+            });
+        }
+        document.getElementById('start').onclick = () => { speechSynthesis.resume(); nextRound(); document.getElementById('start').style.display='none'; };
+    </script>
+</body>
+</html>

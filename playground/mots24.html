@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Corps Humain</title>
+    <style>
+        body { margin:0; padding:20px; font-family:system-ui; background:#fff; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-x:hidden; }
+        .stats { font-size:18px; font-weight:bold; margin-bottom:20px; z-index:10; }
+        .question { font-size:22px; font-weight:900; background:rgba(255,255,255,0.9); padding:15px; border-radius:12px; margin-bottom:20px; text-align:center; box-shadow:0 4px 6px rgba(0,0,0,0.1); z-index:10; }
+        .body-container { position:relative; width:300px; height:500px; background:#f9f9f9; border-radius:30px; border:4px solid #333; }
+        .part { position:absolute; border-radius:50%; cursor:pointer; background:rgba(0,0,0,0.05); transition:background 0.3s; }
+        .part:active { background:rgba(0,0,0,0.2); }
+        .good { background:rgba(0,200,83,0.5) !important; }
+        .bad { background:rgba(213,0,0,0.5) !important; }
+        .btn { margin-top:30px; padding:15px 40px; font-size:18px; background:#222; color:white; border:none; border-radius:12px; cursor:pointer; }
+        
+        /* Body parts positioning */
+        .head { top:20px; left:100px; width:100px; height:100px; }
+        .eye-l { top:45px; left:120px; width:20px; height:20px; }
+        .eye-r { top:45px; left:160px; width:20px; height:20px; }
+        .nose { top:60px; left:142px; width:16px; height:16px; }
+        .mouth { top:85px; left:130px; width:40px; height:15px; border-radius:10px; }
+        .neck { top:120px; left:135px; width:30px; height:30px; }
+        .chest { top:160px; left:100px; width:100px; height:120px; border-radius:20px; }
+        .arm-l { top:160px; left:30px; width:60px; height:180px; border-radius:30px; }
+        .arm-r { top:160px; left:210px; width:60px; height:180px; border-radius:30px; }
+        .belly { top:290px; left:110px; width:80px; height:80px; }
+        .leg-l { top:350px; left:100px; width:45px; height:130px; border-radius:20px; }
+        .leg-r { top:350px; left:155px; width:45px; height:130px; border-radius:20px; }
+    </style>
+</head>
+<body>
+    <div class="stats">✅ <span id="hits">0</span> | ❌ <span id="misses">0</span></div>
+    <div class="question" id="question">Appuie sur Jouer !</div>
+    <div class="body-container" id="body" style="display:none;">
+        <div class="part head" data-id="la tête"></div>
+        <div class="part eye-l" data-id="l'œil"></div>
+        <div class="part eye-r" data-id="l'œil"></div>
+        <div class="part nose" data-id="le nez"></div>
+        <div class="part mouth" data-id="la bouche"></div>
+        <div class="part chest" data-id="la poitrine"></div>
+        <div class="part arm-l" data-id="le bras"></div>
+        <div class="part arm-r" data-id="le bras"></div>
+        <div class="part belly" data-id="le ventre"></div>
+        <div class="part leg-l" data-id="la jambe"></div>
+        <div class="part leg-r" data-id="la jambe"></div>
+    </div>
+    <button class="btn" id="start">Jouer</button>
+
+    <script>
+        const PARTS = ["la tête", "l'œil", "le nez", "la bouche", "la poitrine", "le bras", "le ventre", "la jambe"];
+        let hits=0, misses=0, currentTarget=null, lock=false;
+
+        function speak(t){
+            const u=new SpeechSynthesisUtterance(t); u.lang='fr-FR'; u.rate=0.9;
+            speechSynthesis.cancel(); speechSynthesis.speak(u);
+        }
+
+        function nextRound() {
+            lock=false;
+            currentTarget = PARTS[Math.floor(Math.random()*PARTS.length)];
+            document.getElementById('question').textContent = "Où est " + currentTarget + " ?";
+            speak("Où est " + currentTarget + " ?");
+        }
+
+        document.querySelectorAll('.part').forEach(p => {
+            p.onclick = () => {
+                if(lock) return;
+                const partName = p.getAttribute('data-id');
+                if(partName === currentTarget) {
+                    lock=true; hits++; document.getElementById('hits').textContent=hits;
+                    p.classList.add('good'); speak("Bravo !"); 
+                    setTimeout(() => { p.classList.remove('good'); nextRound(); }, 1500);
+                } else {
+                    misses++; document.getElementById('misses').textContent=misses;
+                    p.classList.add('bad'); speak("Non, ça c'est " + partName);
+                    setTimeout(() => p.classList.remove('bad'), 500);
+                }
+            };
+        });
+
+        document.getElementById('start').onclick = () => { 
+            speechSynthesis.resume(); 
+            document.getElementById('body').style.display='block';
+            document.getElementById('start').style.display='none';
+            nextRound(); 
+        };
+    </script>
+</body>
+</html>
