@@ -111,6 +111,23 @@
             z-index: 100;
         }
         .feedback.visible { opacity: 1; transition: opacity 0.2s; }
+
+        /* Mobile optimization */
+        @media (max-width: 500px) {
+            .slot { width: 55px; height: 55px; }
+            .sun { width: 55px; height: 55px; }
+            .mercure { width: 18px; height: 18px; }
+            .venus { width: 28px; height: 28px; }
+            .terre { width: 32px; height: 32px; }
+            .mars { width: 24px; height: 24px; }
+            .jupiter { width: 45px; height: 45px; }
+            .saturne { width: 40px; height: 40px; }
+            .uranus { width: 35px; height: 35px; }
+            .neptune { width: 34px; height: 34px; }
+            .slots-container { gap: 8px; padding: 10px; min-height: 110px; }
+            .planets-pool { gap: 12px; padding: 10px; }
+            h1 { font-size: 18px; margin-bottom: 10px; }
+        }
     </style>
 </head>
 <body>
