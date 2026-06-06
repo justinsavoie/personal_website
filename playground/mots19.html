@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trouve la Planète</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #050510;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .question-box {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .question-text {
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .solar-system {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            padding: 40px;
+            overflow-x: auto;
+            width: 100%;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            cursor: grab;
+        }
+
+        .solar-system::-webkit-scrollbar {
+            display: none;
+        }
+
+        .planet-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .planet {
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .planet:hover {
+            transform: scale(1.05);
+        }
+
+        .planet:active {
+            transform: scale(0.95);
+        }
+
+        /* Planets Styles */
+        .sun { width: 120px; height: 120px; background: radial-gradient(circle, #fffa00, #ffaa00); box-shadow: 0 0 40px #ffaa00; }
+        .mercure { width: 20px; height: 20px; background: #a5a5a5; }
+        .venus { width: 45px; height: 45px; background: #e3bb76; }
+        .terre { width: 50px; height: 50px; background: #2271b3; box-shadow: inset -5px -5px 10px rgba(0,0,0,0.5); }
+        .mars { width: 35px; height: 35px; background: #e27b58; }
+        .jupiter { width: 90px; height: 90px; background: #d39c7e; background: repeating-linear-gradient(45deg, #d39c7e, #d39c7e 10px, #c38c6e 10px, #c38c6e 20px); }
+        .saturne { width: 75px; height: 75px; background: #ead6b8; position: relative; }
+        .saturne::after { 
+            content: ''; position: absolute; width: 140%; height: 20%; 
+            border: 6px solid rgba(234, 214, 184, 0.6); border-radius: 50%; 
+            transform: rotate(15deg);
+        }
+        .uranus { width: 55px; height: 55px; background: #bbe1e4; }
+        .neptune { width: 53px; height: 53px; background: #6081ff; }
+
+        .controls {
+            margin-top: auto;
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+            padding-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            background: #222;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn:disabled { opacity: 0.5; }
+
+        .planet-label {
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .show-label .planet-label {
+            opacity: 1;
+        }
+
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+
+        .visible { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="stats">
+        <span>✅ <span id="hits">0</span></span>
+        <span>❌ <span id="misses">0</span></span>
+    </div>
+
+    <div class="question-box">
+        <div class="question-text" id="question">Appuie sur Jouer !</div>
+    </div>
+
+    <div class="solar-system" id="system">
+        <!-- Planets added via JS -->
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="start-btn">Jouer</button>
+        <button class="btn" id="repeat-btn">🔊</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <script>
+        const PLANETS = [
+            { id: 'sun', name: 'le Soleil', cls: 'sun', color: '#fffa00' },
+            { id: 'mercure', name: 'Mercure', cls: 'mercure', color: '#a5a5a5' },
+            { id: 'venus', name: 'Vénus', cls: 'venus', color: '#e3bb76' },
+            { id: 'terre', name: 'la Terre', cls: 'terre', color: '#2271b3' },
+            { id: 'mars', name: 'Mars', cls: 'mars', color: '#e27b58' },
+            { id: 'jupiter', name: 'Jupiter', cls: 'jupiter', color: '#d39c7e' },
+            { id: 'saturne', name: 'Saturne', cls: 'saturne', color: '#ead6b8' },
+            { id: 'uranus', name: 'Uranus', cls: 'uranus', color: '#bbe1e4' },
+            { id: 'neptune', name: 'Neptune', cls: 'neptune', color: '#6081ff' }
+        ];
+
+        let hits = 0;
+        let misses = 0;
+        let currentTarget = null;
+        let lock = false;
+        let voices = [];
+        let voicesReady = false;
+
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            if (voices.length) voicesReady = true;
+        }
+        speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        function speak(text) {
+            if (!voicesReady) return;
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            const fr = voices.find(v => v.lang.startsWith('fr'));
+            if (fr) u.voice = fr;
+            u.lang = 'fr-FR';
+            u.rate = 0.9;
+            speechSynthesis.speak(u);
+        }
+
+        function initSystem() {
+            const container = document.getElementById('system');
+            PLANETS.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'planet-container';
+                div.innerHTML = `
+                    <div class="planet ${p.cls}" data-id="${p.id}"></div>
+                    <div class="planet-label">${p.name}</div>
+                `;
+                div.querySelector('.planet').onclick = () => handlePlanetClick(p);
+                container.appendChild(div);
+            });
+        }
+
+        function handlePlanetClick(planet) {
+            if (!currentTarget || lock) return;
+
+            if (planet.id === currentTarget.id) {
+                lock = true;
+                hits++;
+                document.getElementById('hits').textContent = hits;
+                showFeedback('✅');
+                speak("Bravo ! C'est " + planet.name);
+                document.getElementById('question').textContent = "C'est bien " + planet.name + " !";
+                setTimeout(nextRound, 1500);
+            } else {
+                misses++;
+                document.getElementById('misses').textContent = misses;
+                showFeedback('❌');
+                speak("Non, ça c'est " + planet.name);
+            }
+        }
+
+        function showFeedback(emoji) {
+            const el = document.getElementById('feedback');
+            el.textContent = emoji;
+            el.classList.add('visible');
+            setTimeout(() => el.classList.remove('visible'), 500);
+        }
+
+        function nextRound() {
+            lock = false;
+            currentTarget = PLANETS[Math.floor(Math.random() * PLANETS.length)];
+            document.getElementById('question').textContent = "Où est " + currentTarget.name + " ?";
+            speak("Où est " + currentTarget.name + " ?");
+        }
+
+        document.getElementById('start-btn').onclick = () => {
+            speechSynthesis.resume();
+            nextRound();
+            document.getElementById('start-btn').textContent = "Suivant";
+        };
+
+        document.getElementById('repeat-btn').onclick = () => {
+            speechSynthesis.resume();
+            if (currentTarget) speak("Où est " + currentTarget.name + " ?");
+        };
+
+        // Scroll with mouse drag
+        const slider = document.getElementById('system');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        slider.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - slider.offsetLeft;
+            scrollLeft = slider.scrollLeft;
+        });
+        slider.addEventListener('mouseleave', () => isDown = false);
+        slider.addEventListener('mouseup', () => isDown = false);
+        slider.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = (x - startX) * 2;
+            slider.scrollLeft = scrollLeft - walk;
+        });
+
+        initSystem();
+    </script>
+</body>
+</html>

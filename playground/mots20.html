@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'ordre des Planètes</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #050510;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            touch-action: manipulation;
+        }
+
+        h1 { font-size: 22px; margin-bottom: 20px; text-align: center; }
+
+        .slots-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            overflow-x: auto;
+            width: 100%;
+            min-height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .slot {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .slot.filled { border-style: solid; border-color: rgba(255, 255, 255, 0.5); }
+
+        .planets-pool {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .planet {
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .planet:active { transform: scale(0.9); }
+
+        .planet.hidden { visibility: hidden; pointer-events: none; }
+
+        /* Planets Styles */
+        .sun { width: 80px; height: 80px; background: radial-gradient(circle, #fffa00, #ffaa00); box-shadow: 0 0 20px #ffaa00; flex-shrink: 0; border-radius: 50%; }
+        .mercure { width: 30px; height: 30px; background: #a5a5a5; }
+        .venus { width: 45px; height: 45px; background: #e3bb76; }
+        .terre { width: 50px; height: 50px; background: #2271b3; }
+        .mars { width: 40px; height: 40px; background: #e27b58; }
+        .jupiter { width: 70px; height: 70px; background: #d39c7e; }
+        .saturne { width: 60px; height: 60px; background: #ead6b8; }
+        .saturne::after { 
+            content: ''; position: absolute; width: 140%; height: 20%; 
+            border: 3px solid rgba(234, 214, 184, 0.6); border-radius: 50%; 
+            transform: rotate(15deg);
+        }
+        .uranus { width: 50px; height: 50px; background: #bbe1e4; }
+        .neptune { width: 48px; height: 48px; background: #6081ff; }
+
+        .controls { margin-top: auto; padding-bottom: 20px; }
+        .btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            background: #00c853;
+            color: white;
+            cursor: pointer;
+            display: none;
+        }
+
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 100;
+        }
+        .feedback.visible { opacity: 1; transition: opacity 0.2s; }
+    </style>
+</head>
+<body>
+    <h1>Remets les planètes dans l'ordre !</h1>
+
+    <div class="slots-container" id="slots">
+        <div class="sun"></div>
+        <!-- 8 slots for planets -->
+    </div>
+
+    <div class="planets-pool" id="pool">
+        <!-- Planets to pick -->
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="reset-btn">Rejouer</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <script>
+        const PLANETS = [
+            { id: 'mercure', name: 'Mercure', cls: 'mercure' },
+            { id: 'venus', name: 'Vénus', cls: 'venus' },
+            { id: 'terre', name: 'la Terre', cls: 'terre' },
+            { id: 'mars', name: 'Mars', cls: 'mars' },
+            { id: 'jupiter', name: 'Jupiter', cls: 'jupiter' },
+            { id: 'saturne', name: 'Saturne', cls: 'saturne' },
+            { id: 'uranus', name: 'Uranus', cls: 'uranus' },
+            { id: 'neptune', name: 'Neptune', cls: 'neptune' }
+        ];
+
+        let currentSlotIndex = 0;
+        let voices = [];
+        let voicesReady = false;
+
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            if (voices.length) voicesReady = true;
+        }
+        speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        function speak(text) {
+            if (!voicesReady) return;
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            const fr = voices.find(v => v.lang.startsWith('fr'));
+            if (fr) u.voice = fr;
+            u.lang = 'fr-FR';
+            u.rate = 1.0;
+            speechSynthesis.speak(u);
+        }
+
+        function initGame() {
+            const slotsContainer = document.getElementById('slots');
+            const poolContainer = document.getElementById('pool');
+            
+            // Clear
+            slotsContainer.innerHTML = '<div class="sun"></div>';
+            poolContainer.innerHTML = '';
+            currentSlotIndex = 0;
+            document.getElementById('reset-btn').style.display = 'none';
+
+            // Create slots
+            PLANETS.forEach(() => {
+                const slot = document.createElement('div');
+                slot.className = 'slot';
+                slotsContainer.appendChild(slot);
+            });
+
+            // Create shuffled planets
+            const shuffled = [...PLANETS].sort(() => Math.random() - 0.5);
+            shuffled.forEach(p => {
+                const div = document.createElement('div');
+                div.className = `planet ${p.cls}`;
+                div.id = `planet-${p.id}`;
+                div.onclick = () => handlePlanetPick(p);
+                poolContainer.appendChild(div);
+            });
+            
+            speak("Remets les planètes dans l'ordre, en commençant par la plus proche du Soleil.");
+        }
+
+        function handlePlanetPick(planet) {
+            const targetPlanet = PLANETS[currentSlotIndex];
+            
+            if (planet.id === targetPlanet.id) {
+                // Success
+                const planetEl = document.getElementById(`planet-${planet.id}`);
+                planetEl.classList.add('hidden');
+                
+                const slots = document.querySelectorAll('.slot');
+                const slot = slots[currentSlotIndex];
+                slot.classList.add('filled');
+                slot.innerHTML = `<div class="planet ${planet.cls}"></div>`;
+                
+                currentSlotIndex++;
+                speak(planet.name);
+                showFeedback('✅');
+
+                if (currentSlotIndex === PLANETS.length) {
+                    setTimeout(() => {
+                        speak("Bravo ! Tu as rangé toutes les planètes !");
+                        document.getElementById('reset-btn').style.display = 'block';
+                    }, 1000);
+                }
+            } else {
+                // Fail
+                showFeedback('❌');
+                speak("Non, ce n'est pas celle-là.");
+            }
+        }
+
+        function showFeedback(emoji) {
+            const el = document.getElementById('feedback');
+            el.textContent = emoji;
+            el.classList.add('visible');
+            setTimeout(() => el.classList.remove('visible'), 400);
+        }
+
+        document.getElementById('reset-btn').onclick = initGame;
+
+        initGame();
+    </script>
+</body>
+</html>

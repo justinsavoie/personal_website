@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeu des Capitales – Trouve la ville</title>
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:system-ui;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  min-height:100vh;
+  background:#f0f2f5;
+  padding:10px;
+}
+
+.app{
+  width:100%;
+  max-width:520px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.main{
+  background:white;
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+#map-wrap{
+  border-radius:10px;
+  overflow:hidden;
+  background:#cce8f4;
+  cursor:default;
+  user-select:none;
+}
+
+#map{ display:block; }
+
+.question{
+  text-align:center;
+  font-size:20px;
+  font-weight:900;
+  min-height:28px;
+}
+
+.num-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:8px;
+}
+
+.num-btn{
+  padding:14px 8px;
+  font-size:22px;
+  font-weight:900;
+  border-radius:12px;
+  background:#1a1a2e;
+  border:2px solid #1a1a2e;
+  color:white;
+  cursor:pointer;
+}
+
+.num-btn:disabled{ opacity:0.4; cursor:default; }
+.num-btn.good{ background:#00c853; border-color:#00c853; }
+.num-btn.bad{  background:#d50000; border-color:#d50000; }
+
+.controls{
+  display:flex;
+  gap:6px;
+}
+
+button.ctrl{
+  flex:1;
+  padding:10px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button.ctrl:disabled{ background:#aaa; cursor:default; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+  <div class="main">
+    <div id="map-wrap"><svg id="map"></svg></div>
+    <div class="question" id="question">Chargement…</div>
+    <div class="num-buttons">
+      <button class="num-btn" id="btn0" disabled>1</button>
+      <button class="num-btn" id="btn1" disabled>2</button>
+      <button class="num-btn" id="btn2" disabled>3</button>
+      <button class="num-btn" id="btn3" disabled>4</button>
+    </div>
+    <div class="controls">
+      <button class="ctrl" id="start" disabled>Jouer</button>
+      <button class="ctrl" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+
+const CAPITALS = [
+  {country: "Canada", capital: "Ottawa", lat: 45.4215, lon: -75.6972, region: "am"},
+  {country: "États-Unis", capital: "Washington", lat: 38.9072, lon: -77.0369, region: "am"},
+  {country: "Mexique", capital: "Mexico", lat: 19.4326, lon: -99.1332, region: "am"},
+  {country: "Brésil", capital: "Brasilia", lat: -15.7942, lon: -47.8825, region: "am"},
+  {country: "Argentine", capital: "Buenos Aires", lat: -34.6037, lon: -58.3816, region: "am"},
+  {country: "Chili", capital: "Santiago", lat: -33.4489, lon: -70.6693, region: "am"},
+  {country: "Colombie", capital: "Bogota", lat: 4.7110, lon: -74.0721, region: "am"},
+  {country: "Pérou", capital: "Lima", lat: -12.0464, lon: -77.0428, region: "am"},
+  {country: "France", capital: "Paris", lat: 48.8566, lon: 2.3522, region: "eu"},
+  {country: "Royaume-Uni", capital: "Londres", lat: 51.5074, lon: -0.1278, region: "eu"},
+  {country: "Allemagne", capital: "Berlin", lat: 52.5200, lon: 13.4050, region: "eu"},
+  {country: "Italie", capital: "Rome", lat: 41.9028, lon: 12.4964, region: "eu"},
+  {country: "Espagne", capital: "Madrid", lat: 40.4168, lon: -3.7038, region: "eu"},
+  {country: "Portugal", capital: "Lisbonne", lat: 38.7223, lon: -9.1393, region: "eu"},
+  {country: "Grèce", capital: "Athènes", lat: 37.9838, lon: 23.7275, region: "eu"},
+  {country: "Russie", capital: "Moscou", lat: 55.7558, lon: 37.6173, region: "eu"},
+  {country: "Chine", capital: "Pékin", lat: 39.9042, lon: 116.4074, region: "as"},
+  {country: "Japon", capital: "Tokyo", lat: 35.6895, lon: 139.6917, region: "as"},
+  {country: "Inde", capital: "New Delhi", lat: 28.6139, lon: 77.2090, region: "as"},
+  {country: "Australie", capital: "Canberra", lat: -35.2809, lon: 149.1287, region: "oc"},
+  {country: "Égypte", capital: "Le Caire", lat: 30.0444, lon: 31.2357, region: "af"},
+  {country: "Afrique du Sud", capital: "Pretoria", lat: -25.7479, lon: 28.1881, region: "af"},
+  {country: "Kenya", capital: "Nairobi", lat: -1.2921, lon: 36.8219, region: "af"},
+  {country: "Nigeria", capital: "Abuja", lat: 9.0579, lon: 7.4951, region: "af"},
+  {country: "Maroc", capital: "Rabat", lat: 33.9716, lon: -6.8498, region: "af"},
+  {country: "Algérie", capital: "Alger", lat: 36.7538, lon: 3.0588, region: "af"},
+  {country: "Thaïlande", capital: "Bangkok", lat: 13.7563, lon: 100.5018, region: "as"},
+  {country: "Indonésie", capital: "Jakarta", lat: -6.2088, lon: 106.8456, region: "as"},
+  {country: "Corée du Sud", capital: "Séoul", lat: 37.5665, lon: 126.9780, region: "as"},
+  {country: "Arabie saoudite", capital: "Riyad", lat: 24.7136, lon: 46.7386, region: "as"},
+  {country: "Turquie", capital: "Ankara", lat: 39.9334, lon: 32.8597, region: "as"},
+  {country: "Vietnam", capital: "Hanoï", lat: 21.0285, lon: 105.8542, region: "as"},
+  {country: "Iran", capital: "Téhéran", lat: 35.6892, lon: 51.3890, region: "as"},
+  {country: "Irak", capital: "Bagdad", lat: 33.3152, lon: 44.3661, region: "as"},
+  {country: "Israël", capital: "Jérusalem", lat: 31.7683, lon: 35.2137, region: "as"},
+  {country: "Suisse", capital: "Berne", lat: 46.9480, lon: 7.4474, region: "eu"},
+  {country: "Suède", capital: "Stockholm", lat: 59.3293, lon: 18.0686, region: "eu"},
+  {country: "Norvège", capital: "Oslo", lat: 59.9139, lon: 10.7522, region: "eu"},
+  {country: "Pays-Bas", capital: "Amsterdam", lat: 52.3676, lon: 4.9041, region: "eu"},
+  {country: "Belgique", capital: "Bruxelles", lat: 50.8503, lon: 4.3517, region: "eu"},
+  {country: "Autriche", capital: "Vienne", lat: 48.2082, lon: 16.3738, region: "eu"},
+  {country: "Pologne", capital: "Varsovie", lat: 52.2297, lon: 21.0122, region: "eu"},
+  {country: "Tchéquie", capital: "Prague", lat: 50.0755, lon: 14.4378, region: "eu"},
+  {country: "Hongrie", capital: "Budapest", lat: 47.4979, lon: 19.0402, region: "eu"},
+  {country: "Ukraine", capital: "Kyiv", lat: 50.4501, lon: 30.5234, region: "eu"},
+  {country: "Roumanie", capital: "Bucarest", lat: 44.4268, lon: 26.1025, region: "eu"},
+  {country: "Philippines", capital: "Manille", lat: 14.5995, lon: 120.9842, region: "as"},
+  {country: "Nouvelle-Zélande", capital: "Wellington", lat: -41.2865, lon: 174.7762, region: "oc"},
+  {country: "Pakistan", capital: "Islamabad", lat: 33.6844, lon: 73.0479, region: "as"},
+  {country: "Éthiopie", capital: "Addis-Abeba", lat: 9.0306, lon: 38.7468, region: "af"},
+  {country: "Sénégal", capital: "Dakar", lat: 14.7167, lon: -17.4677, region: "af"},
+];
+
+// ── D3 setup ─────────────────────────────────────────────────────────────────
+const W = Math.min(window.innerWidth - 24, 520);
+const H = Math.round(W * 0.58);
+
+document.getElementById("map").setAttribute("width",  W);
+document.getElementById("map").setAttribute("height", H);
+
+const projection = d3.geoNaturalEarth1()
+  .scale(W / 6.3)
+  .translate([W / 2, H / 2]);
+
+const path = d3.geoPath().projection(projection);
+const svg  = d3.select("#map");
+const g    = svg.append("g");
+
+let currentK = 1;
+
+const zoomBeh = d3.zoom()
+  .scaleExtent([1, 60])
+  .on("zoom", e => {
+    g.attr("transform", e.transform);
+    currentK = e.transform.k;
+    g.selectAll(".marker-circle")
+      .attr("r", markerR())
+      .attr("stroke-width", 1.5 / currentK);
+    g.selectAll(".marker-text")
+      .attr("font-size", markerFs());
+  });
+
+svg.call(zoomBeh).on("dblclick.zoom", null);
+
+function markerR()  { return Math.max(3, 11 / currentK); }
+function markerFs() { return Math.max(3.5, 8 / currentK); }
+
+// ── State ────────────────────────────────────────────────────────────────────
+let round = null;
+let lock  = false;
+let hits  = 0, misses = 0;
+
+// ── TTS ──────────────────────────────────────────────────────────────────────
+let voices = [], voicesReady = false;
+function loadVoices(){ voices = speechSynthesis.getVoices(); if(voices.length) voicesReady = true; }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  if(!voicesReady) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const fr = voices.find(v => v.lang.startsWith("fr"));
+  if(fr) u.voice = fr;
+  u.lang = "fr-FR";
+  u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function shuffle(a){ return [...a].sort(() => Math.random() - 0.5); }
+
+function zoomToAll(items){
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  items.forEach(it => {
+    const [x, y] = projection([it.lon, it.lat]);
+    minX = Math.min(minX, x - 20);
+    minY = Math.min(minY, y - 20);
+    maxX = Math.max(maxX, x + 20);
+    maxY = Math.max(maxY, y + 20);
+  });
+  const dx = maxX - minX;
+  const dy = maxY - minY;
+  const scale = Math.min(14, 0.80 / Math.max(dx / W, dy / H));
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  svg.transition().duration(800)
+    .call(zoomBeh.transform,
+      d3.zoomIdentity.translate(W/2, H/2).scale(scale).translate(-cx, -cy));
+}
+
+function placeMarkers(items, targetCapital){
+  g.selectAll(".marker").remove();
+  items.forEach((it, i) => {
+    const [cx, cy] = projection([it.lon, it.lat]);
+    const num = i + 1;
+    const grp = g.append("g")
+      .attr("class", "marker")
+      .style("cursor", "pointer")
+      .on("click", () => handleAnswer(it.capital, i));
+
+    grp.append("circle")
+      .attr("class", "marker-circle")
+      .attr("cx", cx).attr("cy", cy)
+      .attr("r", markerR())
+      .attr("fill", "#1a1a2e")
+      .attr("stroke", "white")
+      .attr("stroke-width", 1.5 / currentK);
+
+    grp.append("text")
+      .attr("class", "marker-text")
+      .attr("x", cx).attr("y", cy)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "central")
+      .attr("fill", "white")
+      .attr("font-size", markerFs())
+      .attr("font-weight", "bold")
+      .style("pointer-events", "none")
+      .text(num);
+  });
+}
+
+// ── Answer handling ───────────────────────────────────────────────────────────
+function handleAnswer(capitalName, btnIdx){
+  if(lock) return;
+  const btn = document.getElementById("btn" + btnIdx);
+
+  if(capitalName === round.target.capital){
+    lock = true;
+    hits++;
+    document.getElementById("hits").textContent = hits;
+    btn.classList.add("good");
+    document.getElementById("question").textContent = "✓ " + capitalName;
+    speak(capitalName);
+    setTimeout(nextRound, 1200);
+  } else {
+    misses++;
+    document.getElementById("misses").textContent = misses;
+    speak(capitalName);
+    btn.classList.add("bad");
+    setTimeout(() => {
+      btn.classList.remove("bad");
+    }, 400);
+  }
+}
+
+// ── Round ─────────────────────────────────────────────────────────────────────
+function nextRound(){
+  lock = false;
+
+  const target = CAPITALS[Math.floor(Math.random() * CAPITALS.length)];
+  
+  const sameR  = CAPITALS.filter(c => c.capital !== target.capital && c.region === target.region);
+  const pool   = sameR.length >= 3 ? sameR : CAPITALS.filter(c => c.capital !== target.capital);
+  const wrong  = shuffle(pool).slice(0, 3);
+  const all    = shuffle([target, ...wrong]);
+
+  round = {target, all};
+
+  // Wire up number buttons
+  for(let i = 0; i < 4; i++){
+    const btn = document.getElementById("btn" + i);
+    btn.disabled = false;
+    btn.className = "num-btn";
+    btn.onclick = () => handleAnswer(all[i].capital, i);
+  }
+
+  placeMarkers(all, target.capital);
+  zoomToAll(all);
+
+  document.getElementById("question").textContent = "Où est la capitale de : " + target.country + " ?";
+  setTimeout(() => speak(target.country), 900);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init(){
+  const world = await d3.json(
+    "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
+  );
+  const geo = topojson.feature(world, world.objects.countries);
+
+  g.selectAll(".country")
+    .data(geo.features)
+    .join("path")
+    .attr("class",        "country")
+    .attr("d",            path)
+    .attr("fill",         "#f5f5f0")
+    .attr("stroke",       "#aaa")
+    .attr("stroke-width", 0.3);
+
+  document.getElementById("question").textContent = "Prêt !";
+  document.getElementById("start").disabled = false;
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(round.target.country);
+};
+
+init();
+</script>
+</body>
+</html>
