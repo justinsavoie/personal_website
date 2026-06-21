@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feux de Circulation</title>
+    <style>
+        body { margin:0; padding:16px; font-family:system-ui; background:#f1f5f9; color:#1e293b; display:flex; flex-direction:column; align-items:center; min-height:100vh; touch-action:manipulation; }
+        .stats { font-size:18px; font-weight:900; margin-bottom:10px; }
+        .question { font-size:23px; font-weight:900; text-align:center; margin-bottom:12px; min-height:64px; max-width:430px; display:flex; align-items:center; justify-content:center; }
+        .scene { width:min(94vw, 430px); aspect-ratio:1; background:#86efac; border-radius:22px; position:relative; overflow:hidden; border:7px solid #166534; box-shadow:0 5px 12px rgba(0,0,0,0.18); }
+        .road-h { position:absolute; left:0; right:0; top:42%; height:16%; background:#475569; }
+        .road-v { position:absolute; top:0; bottom:0; left:42%; width:16%; background:#475569; }
+        .line-h { position:absolute; left:0; right:0; top:49%; height:3px; background:repeating-linear-gradient(90deg, white 0 24px, transparent 24px 44px); }
+        .line-v { position:absolute; top:0; bottom:0; left:49%; width:3px; background:repeating-linear-gradient(0deg, white 0 24px, transparent 24px 44px); }
+        .stop-h { position:absolute; left:30%; top:39%; width:5px; height:22%; background:white; z-index:1; }
+        .stop-v { position:absolute; left:39%; top:30%; width:22%; height:5px; background:white; z-index:1; }
+        .center { position:absolute; left:41%; top:41%; width:18%; height:18%; border-radius:14px; background:#334155; display:flex; align-items:center; justify-content:center; color:white; font-size:34px; z-index:1; }
+        .light { position:absolute; width:56px; height:56px; border-radius:50%; border:5px solid #111827; background:#ef4444; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900; color:white; z-index:4; }
+        .light.green { background:#22c55e; }
+        .light-left { left:22%; top:27%; }
+        .light-top { right:25%; top:22%; }
+        .car { position:absolute; font-size:48px; z-index:3; filter:drop-shadow(0 3px 2px rgba(0,0,0,0.25)); transition:left 0.55s ease, top 0.55s ease, transform 0.15s ease; }
+        .car-left { left:8%; top:42%; }
+        .car-top { left:43%; top:8%; }
+        .badge { position:absolute; min-width:54px; min-height:42px; border-radius:14px; background:white; border:4px solid #0f172a; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900; z-index:5; box-shadow:0 3px 8px rgba(0,0,0,0.18); }
+        .badge-left { left:12%; top:59%; }
+        .badge-top { left:58%; top:9%; }
+        .controls { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; max-width:430px; margin-top:16px; }
+        .control, .btn { border:none; border-radius:16px; background:#111827; color:white; font-size:18px; font-weight:900; min-height:74px; cursor:pointer; padding:12px; box-shadow:0 5px 0 rgba(0,0,0,0.16); }
+        .control:active, .btn:active { transform:scale(0.97); }
+        .control.good { background:#16a34a; }
+        .control.bad { background:#dc2626; }
+        .actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+        .btn { margin-top:12px; min-height:54px; min-width:150px; font-size:17px; }
+        @media (max-width:390px) {
+            .question { font-size:21px; min-height:76px; }
+            .car { font-size:42px; }
+            .light { width:48px; height:48px; font-size:22px; }
+            .badge { min-width:48px; min-height:38px; font-size:23px; }
+            .control { font-size:16px; min-height:70px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stats">✅ <span id="hits">0</span> | ❌ <span id="misses">0</span> | 🚦 Niveau <span id="level">1</span></div>
+    <div class="question" id="question">Appuie sur Jouer.</div>
+    <div class="scene">
+        <div class="road-h"></div>
+        <div class="road-v"></div>
+        <div class="line-h"></div>
+        <div class="line-v"></div>
+        <div class="stop-h"></div>
+        <div class="stop-v"></div>
+        <div class="center">🚦</div>
+        <div class="light light-left" id="lightLeft">→</div>
+        <div class="light light-top" id="lightTop">↓</div>
+        <div class="car car-left" id="carLeft">🚗</div>
+        <div class="car car-top" id="carTop">🚙</div>
+        <div class="badge badge-left" id="badgeLeft">1</div>
+        <div class="badge badge-top" id="badgeTop">2</div>
+    </div>
+    <div class="controls">
+        <button class="control" id="leftBtn">Feu vert à gauche →</button>
+        <button class="control" id="topBtn">Feu vert en haut ↓</button>
+    </div>
+    <div class="actions">
+        <button class="btn" id="start">Jouer</button>
+        <button class="btn" id="repeat">Répéter</button>
+    </div>
+
+    <script>
+        const ROUNDS = [
+            {ask:'Laisse passer le numéro 1.', left:'1', top:'2', answer:'left'},
+            {ask:'Laisse passer le numéro 2.', left:'1', top:'2', answer:'top'},
+            {ask:'Laisse passer la voiture rouge.', left:'🔴', top:'🔵', answer:'left'},
+            {ask:'Laisse passer la voiture bleue.', left:'🟡', top:'🔵', answer:'top'},
+            {ask:'Laisse passer le camion de pompier.', left:'🚒', top:'🚕', answer:'left'},
+            {ask:"Laisse passer l'ambulance.", left:'🚗', top:'🚑', answer:'top'},
+            {ask:'Laisse passer le plus grand nombre.', left:'3', top:'5', answer:'top'},
+            {ask:'Laisse passer le plus petit nombre.', left:'2', top:'4', answer:'left'}
+        ];
+        let hits = 0, misses = 0, level = 0, current = null, lock = false;
+
+        function speak(text) {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'fr-FR'; u.rate = 0.9;
+            speechSynthesis.cancel(); speechSynthesis.speak(u);
+        }
+
+        function setLight(which) {
+            document.getElementById('lightLeft').classList.toggle('green', which === 'left');
+            document.getElementById('lightTop').classList.toggle('green', which === 'top');
+        }
+
+        function resetCars() {
+            const left = document.getElementById('carLeft');
+            const top = document.getElementById('carTop');
+            left.style.left = '8%';
+            left.style.top = '42%';
+            top.style.left = '43%';
+            top.style.top = '8%';
+            left.style.transform = 'scale(1)';
+            top.style.transform = 'scale(1)';
+            setLight(null);
+        }
+
+        function nextRound() {
+            lock = false;
+            resetCars();
+            current = ROUNDS[level % ROUNDS.length];
+            document.getElementById('level').textContent = (level % ROUNDS.length) + 1;
+            document.getElementById('question').textContent = current.ask;
+            document.getElementById('badgeLeft').textContent = current.left;
+            document.getElementById('badgeTop').textContent = current.top;
+            document.getElementById('leftBtn').className = 'control';
+            document.getElementById('topBtn').className = 'control';
+            document.getElementById('start').style.display = 'none';
+            speak(current.ask);
+        }
+
+        function animatePass(which) {
+            setLight(which);
+            const car = document.getElementById(which === 'left' ? 'carLeft' : 'carTop');
+            if (which === 'left') {
+                car.style.left = '112%';
+            } else {
+                car.style.top = '112%';
+            }
+        }
+
+        function choose(which) {
+            if (!current || lock) return;
+            const btn = document.getElementById(which === 'left' ? 'leftBtn' : 'topBtn');
+            if (which === current.answer) {
+                lock = true;
+                hits++;
+                document.getElementById('hits').textContent = hits;
+                btn.classList.add('good');
+                document.getElementById('question').textContent = 'Bravo, bon feu vert !';
+                animatePass(which);
+                speak('Bravo, bon feu vert !');
+                setTimeout(() => { level++; nextRound(); }, 1500);
+            } else {
+                misses++;
+                document.getElementById('misses').textContent = misses;
+                btn.classList.add('bad');
+                document.getElementById('question').textContent = 'Non, regarde le panneau de chaque voiture.';
+                speak('Non, regarde le panneau.');
+                setTimeout(() => btn.classList.remove('bad'), 650);
+            }
+        }
+
+        document.getElementById('leftBtn').onclick = () => choose('left');
+        document.getElementById('topBtn').onclick = () => choose('top');
+        document.getElementById('start').onclick = () => { speechSynthesis.resume(); nextRound(); };
+        document.getElementById('repeat').onclick = () => {
+            speechSynthesis.resume();
+            if (current) speak(current.ask);
+            else speak('Appuie sur jouer.');
+        };
+        resetCars();
+    </script>
+</body>
+</html>

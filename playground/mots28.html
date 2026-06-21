@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Rush Hour</title>
+    <style>
+        body { margin:0; padding:16px; font-family:system-ui; background:#eef2ff; color:#1f2937; display:flex; flex-direction:column; align-items:center; min-height:100vh; touch-action:manipulation; }
+        .stats { font-size:18px; font-weight:900; margin-bottom:10px; }
+        .question { font-size:24px; font-weight:900; text-align:center; margin-bottom:12px; }
+        .board { width:min(94vw, 430px); aspect-ratio:1; display:grid; grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(5, 1fr); gap:7px; background:#64748b; border:7px solid #475569; border-radius:18px; padding:8px; position:relative; box-shadow:0 5px 12px rgba(0,0,0,0.18); }
+        .slot { background:#cbd5e1; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:900; }
+        .slot.exit { background:#fde68a; color:#92400e; }
+        .vehicle { border:none; border-radius:14px; color:white; font-size:30px; font-weight:900; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; z-index:2; min-width:0; }
+        .vehicle:active { transform:scale(0.97); }
+        .vehicle.selected { outline:5px solid #facc15; }
+        .red { background:#ef4444; }
+        .blue { background:#3b82f6; }
+        .green { background:#22c55e; }
+        .purple { background:#a855f7; }
+        .orange { background:#f97316; }
+        .teal { background:#14b8a6; }
+        .controls { display:grid; grid-template-columns:78px 78px 78px; gap:10px; margin-top:16px; justify-content:center; }
+        .move, .btn { border:none; border-radius:14px; background:#111827; color:white; font-size:24px; font-weight:900; min-height:60px; cursor:pointer; }
+        .move.blank { visibility:hidden; }
+        .move:active, .btn:active { transform:scale(0.96); }
+        .actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+        .btn { margin-top:14px; padding:12px 22px; font-size:17px; min-height:52px; }
+        .message { min-height:30px; font-size:19px; font-weight:800; margin-top:10px; text-align:center; max-width:430px; }
+        @media (max-width:390px) {
+            .slot, .vehicle { font-size:25px; }
+            .controls { grid-template-columns:70px 70px 70px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stats">🏁 Niveau <span id="level">1</span> | 🚗 Coups <span id="moves">0</span> | ✅ <span id="wins">0</span></div>
+    <div class="question">Libère la voiture rouge !</div>
+    <div class="board" id="board"></div>
+    <div class="message" id="message">Les voitures glissent seulement dans leur sens.</div>
+    <div class="controls">
+        <button class="move blank"></button>
+        <button class="move" data-dir="up">↑</button>
+        <button class="move blank"></button>
+        <button class="move" data-dir="left">←</button>
+        <button class="move" data-dir="down">↓</button>
+        <button class="move" data-dir="right">→</button>
+    </div>
+    <div class="actions">
+        <button class="btn" id="again">Recommencer</button>
+        <button class="btn" id="next">Niveau suivant</button>
+    </div>
+
+    <script>
+        const SIZE = 5;
+        const LEVELS = [
+            [
+                {id:'red', emoji:'🚗', color:'red', r:2, c:0, len:2, dir:'h', target:true},
+                {id:'blue', emoji:'🚙', color:'blue', r:1, c:2, len:2, dir:'v'},
+                {id:'green', emoji:'🚕', color:'green', r:0, c:3, len:2, dir:'v'},
+                {id:'orange', emoji:'🚚', color:'orange', r:3, c:0, len:2, dir:'h'}
+            ],
+            [
+                {id:'red', emoji:'🚗', color:'red', r:2, c:0, len:2, dir:'h', target:true},
+                {id:'blue', emoji:'🚙', color:'blue', r:1, c:2, len:2, dir:'v'},
+                {id:'green', emoji:'🚕', color:'green', r:0, c:0, len:2, dir:'h'},
+                {id:'purple', emoji:'🚐', color:'purple', r:2, c:3, len:2, dir:'v'},
+                {id:'orange', emoji:'🚚', color:'orange', r:4, c:1, len:2, dir:'h'}
+            ],
+            [
+                {id:'red', emoji:'🚗', color:'red', r:3, c:0, len:2, dir:'h', target:true},
+                {id:'blue', emoji:'🚙', color:'blue', r:1, c:2, len:3, dir:'v'},
+                {id:'green', emoji:'🚕', color:'green', r:0, c:1, len:2, dir:'h'},
+                {id:'purple', emoji:'🚐', color:'purple', r:2, c:3, len:2, dir:'v'},
+                {id:'orange', emoji:'🚚', color:'orange', r:4, c:0, len:2, dir:'h'},
+                {id:'teal', emoji:'🚛', color:'teal', r:0, c:4, len:2, dir:'v'}
+            ]
+        ];
+        let levelIndex = 0, wins = 0, moves = 0, selected = 'red', vehicles = [];
+
+        function speak(text) {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'fr-FR'; u.rate = 0.9;
+            speechSynthesis.cancel(); speechSynthesis.speak(u);
+        }
+
+        function exitRow() {
+            return LEVELS[levelIndex].find(v => v.target).r;
+        }
+
+        function cellsFor(v, r=v.r, c=v.c) {
+            return Array.from({length:v.len}, (_, i) => ({r:r + (v.dir === 'v' ? i : 0), c:c + (v.dir === 'h' ? i : 0)}));
+        }
+
+        function loadLevel() {
+            vehicles = LEVELS[levelIndex].map(v => ({...v}));
+            selected = 'red';
+            moves = 0;
+            document.getElementById('level').textContent = levelIndex + 1;
+            document.getElementById('moves').textContent = moves;
+            document.getElementById('message').textContent = 'Les voitures glissent seulement dans leur sens.';
+            render();
+        }
+
+        function render() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let r=0; r<SIZE; r++) {
+                for (let c=0; c<SIZE; c++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    if (r === exitRow() && c === SIZE - 1) {
+                        slot.classList.add('exit');
+                        slot.textContent = '🏁';
+                    }
+                    board.appendChild(slot);
+                }
+            }
+            vehicles.forEach(v => {
+                const btn = document.createElement('button');
+                btn.className = `vehicle ${v.color}${v.id === selected ? ' selected' : ''}`;
+                btn.textContent = v.emoji;
+                btn.style.gridRow = `${v.r + 1} / span ${v.dir === 'v' ? v.len : 1}`;
+                btn.style.gridColumn = `${v.c + 1} / span ${v.dir === 'h' ? v.len : 1}`;
+                btn.onclick = () => { selected = v.id; render(); speak('Voiture choisie'); };
+                board.appendChild(btn);
+            });
+        }
+
+        function blocked(v, nr, nc) {
+            const nextCells = cellsFor(v, nr, nc);
+            if (nextCells.some(cell => cell.r < 0 || cell.r >= SIZE || cell.c < 0 || cell.c >= SIZE)) return true;
+            return vehicles.some(other => other.id !== v.id && cellsFor(other).some(a => nextCells.some(b => a.r === b.r && a.c === b.c)));
+        }
+
+        function move(dir) {
+            const v = vehicles.find(x => x.id === selected);
+            if (!v) return;
+            if ((v.dir === 'h' && (dir === 'up' || dir === 'down')) || (v.dir === 'v' && (dir === 'left' || dir === 'right'))) {
+                document.getElementById('message').textContent = 'Cette voiture ne glisse pas dans ce sens.';
+                speak('Pas dans ce sens');
+                return;
+            }
+            const delta = {up:[-1,0], down:[1,0], left:[0,-1], right:[0,1]}[dir];
+            const nr = v.r + delta[0], nc = v.c + delta[1];
+            if (blocked(v, nr, nc)) {
+                document.getElementById('message').textContent = 'Bloqué !';
+                speak('Bloqué');
+                return;
+            }
+            v.r = nr; v.c = nc; moves++;
+            document.getElementById('moves').textContent = moves;
+            const red = vehicles.find(x => x.target);
+            if (red.r === exitRow() && red.c + red.len - 1 === SIZE - 1) {
+                wins++;
+                document.getElementById('wins').textContent = wins;
+                document.getElementById('message').textContent = `Bravo ! Sortie en ${moves} coups.`;
+                speak('Bravo, la voiture rouge est sortie !');
+                render();
+                setTimeout(() => { levelIndex = (levelIndex + 1) % LEVELS.length; loadLevel(); }, 1800);
+                return;
+            }
+            render();
+        }
+
+        document.querySelectorAll('.move').forEach(btn => btn.onclick = () => move(btn.dataset.dir));
+        document.getElementById('again').onclick = () => { speechSynthesis.resume(); loadLevel(); };
+        document.getElementById('next').onclick = () => { speechSynthesis.resume(); levelIndex = (levelIndex + 1) % LEVELS.length; loadLevel(); };
+        loadLevel();
+    </script>
+</body>
+</html>
