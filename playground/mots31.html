@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construis la Route</title>
+    <style>
+        body { margin:0; padding:16px; font-family:system-ui; background:#ecfccb; color:#365314; display:flex; flex-direction:column; align-items:center; min-height:100vh; touch-action:manipulation; }
+        .stats { font-size:18px; font-weight:900; margin-bottom:10px; }
+        .question { font-size:24px; font-weight:900; text-align:center; margin-bottom:12px; max-width:440px; min-height:34px; }
+        .board { width:min(94vw, 430px); aspect-ratio:1; display:grid; grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(5, 1fr); gap:7px; background:#65a30d; border:7px solid #4d7c0f; border-radius:18px; padding:8px; box-shadow:0 5px 12px rgba(0,0,0,0.18); }
+        .cell { border:none; border-radius:12px; background:#bef264; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:900; min-width:0; min-height:0; padding:0; cursor:pointer; line-height:1; }
+        .cell.fixed { background:#fef3c7; cursor:default; }
+        .cell.road { background:#94a3b8; color:white; }
+        .cell.car { background:#fde68a; outline:5px solid #f59e0b; }
+        .cell.home { background:#bbf7d0; outline:5px solid #16a34a; }
+        .cell.bad { outline:5px solid #dc2626; }
+        .cell.good { outline:5px solid #22c55e; }
+        .tools { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; width:100%; max-width:430px; margin-top:14px; }
+        .tool, .btn { border:none; border-radius:14px; background:#1f2937; color:white; min-height:58px; font-size:24px; font-weight:900; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,0.16); }
+        .tool.selected { background:#16a34a; outline:4px solid #bbf7d0; }
+        .tool:active, .btn:active { transform:scale(0.96); }
+        .actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+        .btn { margin-top:14px; padding:12px 22px; font-size:18px; min-height:54px; min-width:120px; }
+        @media (max-width:390px) {
+            .cell { font-size:28px; }
+            .tool { font-size:22px; }
+            .question { font-size:22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stats">🛣️ Niveau <span id="level">1</span> | ✅ <span id="wins">0</span></div>
+    <div class="question" id="question">Construis une route jusqu'à la maison.</div>
+    <div class="board" id="board"></div>
+    <div class="tools">
+        <button class="tool selected" data-piece="h">━</button>
+        <button class="tool" data-piece="v">┃</button>
+        <button class="tool" data-piece="tr">┗</button>
+        <button class="tool" data-piece="tl">┛</button>
+        <button class="tool" data-piece="br">┏</button>
+        <button class="tool" data-piece="bl">┓</button>
+        <button class="tool" data-piece="empty">🧽</button>
+        <button class="tool" data-piece="hint">💡</button>
+    </div>
+    <div class="actions">
+        <button class="btn" id="go">Go 🚗</button>
+        <button class="btn" id="again">Recommencer</button>
+        <button class="btn" id="next">Niveau suivant</button>
+    </div>
+
+    <script>
+        const PIECES = {
+            h: {icon:'━', dirs:['L','R']},
+            v: {icon:'┃', dirs:['U','D']},
+            tr: {icon:'┗', dirs:['U','R']},
+            tl: {icon:'┛', dirs:['U','L']},
+            br: {icon:'┏', dirs:['D','R']},
+            bl: {icon:'┓', dirs:['D','L']}
+        };
+        const DIRS = {
+            U: [-1, 0],
+            D: [1, 0],
+            L: [0, -1],
+            R: [0, 1]
+        };
+        const OPPOSITE = {U:'D', D:'U', L:'R', R:'L'};
+        const LEVELS = [
+            {start:[4,0], startDir:'R', home:[4,4], entry:'L', hints:[[4,1,'h'], [4,2,'h'], [4,3,'h']]},
+            {start:[4,0], startDir:'R', home:[1,3], entry:'D', hints:[[4,1,'h'], [4,2,'tl'], [3,2,'v'], [2,2,'br'], [2,3,'tl']]},
+            {start:[0,0], startDir:'R', home:[4,4], entry:'U', hints:[[0,1,'h'], [0,2,'bl'], [1,2,'v'], [2,2,'tr'], [2,3,'h'], [2,4,'bl'], [3,4,'v']]},
+            {start:[2,0], startDir:'R', home:[0,4], entry:'D', hints:[[2,1,'h'], [2,2,'tl'], [1,2,'br'], [1,3,'h'], [1,4,'tl']]},
+            {start:[4,1], startDir:'U', home:[0,3], entry:'L', hints:[[3,1,'v'], [2,1,'br'], [2,2,'h'], [2,3,'tl'], [1,3,'v']]},
+            {start:[0,4], startDir:'D', home:[4,0], entry:'R', hints:[[1,4,'v'], [2,4,'tl'], [2,3,'h'], [2,2,'h'], [2,1,'br'], [3,1,'v'], [4,1,'tl']]},
+            {start:[4,4], startDir:'L', home:[0,0], entry:'D', hints:[[4,3,'h'], [4,2,'tr'], [3,2,'v'], [2,2,'bl'], [2,1,'h'], [2,0,'tr'], [1,0,'v']]},
+            {start:[1,0], startDir:'R', home:[3,4], entry:'U', hints:[[1,1,'h'], [1,2,'bl'], [2,2,'tr'], [2,3,'h'], [2,4,'bl']]},
+            {start:[4,2], startDir:'U', home:[0,4], entry:'L', hints:[[3,2,'v'], [2,2,'br'], [2,3,'h'], [2,4,'tl'], [1,4,'v']]},
+            {start:[0,1], startDir:'D', home:[4,3], entry:'U', hints:[[1,1,'v'], [2,1,'tr'], [2,2,'h'], [2,3,'bl'], [3,3,'v']]}
+        ];
+        let levelIndex = 0, wins = 0, selected = 'h', board = [], car = null, running = false;
+
+        function speak(text) {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'fr-FR'; u.rate = 0.9;
+            speechSynthesis.cancel(); speechSynthesis.speak(u);
+        }
+
+        function same(a, b) {
+            return a[0] === b[0] && a[1] === b[1];
+        }
+
+        function resetLevel() {
+            board = Array.from({length:5}, () => Array(5).fill(null));
+            car = null;
+            running = false;
+            document.getElementById('level').textContent = levelIndex + 1;
+            document.getElementById('question').textContent = "Construis une route jusqu'à la maison.";
+            render();
+        }
+
+        function render(mark = null) {
+            const level = LEVELS[levelIndex];
+            const box = document.getElementById('board');
+            box.innerHTML = '';
+            for (let r=0; r<5; r++) {
+                for (let c=0; c<5; c++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'cell';
+                    const pos = [r, c];
+                    if (car && same(car, pos)) {
+                        btn.classList.add('car');
+                        btn.textContent = '🚗';
+                    } else if (same(level.start, pos)) {
+                        btn.classList.add('fixed', 'car');
+                        btn.textContent = '🚗';
+                    } else if (same(level.home, pos)) {
+                        btn.classList.add('fixed', 'home');
+                        btn.textContent = '🏠';
+                    } else if (board[r][c]) {
+                        btn.classList.add('road');
+                        btn.textContent = PIECES[board[r][c]].icon;
+                    } else {
+                        btn.textContent = '';
+                    }
+                    if (mark && mark.r === r && mark.c === c) btn.classList.add(mark.good ? 'good' : 'bad');
+                    btn.onclick = () => place(r, c);
+                    box.appendChild(btn);
+                }
+            }
+        }
+
+        function place(r, c) {
+            if (running) return;
+            const level = LEVELS[levelIndex];
+            if (same(level.start, [r,c]) || same(level.home, [r,c])) return;
+            if (selected === 'hint') {
+                showHint();
+                return;
+            }
+            board[r][c] = selected === 'empty' ? null : selected;
+            render();
+        }
+
+        function showHint() {
+            const level = LEVELS[levelIndex];
+            const missing = level.hints.find(([r, c, piece]) => board[r][c] !== piece);
+            if (!missing) {
+                speak('La route semble complète. Appuie sur Go.');
+                document.getElementById('question').textContent = 'La route semble complète. Appuie sur Go.';
+                return;
+            }
+            board[missing[0]][missing[1]] = missing[2];
+            render({r:missing[0], c:missing[1], good:true});
+            speak('Voici une pièce de route.');
+        }
+
+        function dirsAt(r, c) {
+            const level = LEVELS[levelIndex];
+            if (same(level.start, [r,c])) return [level.startDir];
+            if (same(level.home, [r,c])) return [level.entry];
+            return board[r][c] ? PIECES[board[r][c]].dirs : [];
+        }
+
+        function nextStep(pos, cameFrom) {
+            const dirs = dirsAt(pos[0], pos[1]);
+            if (cameFrom && !dirs.includes(cameFrom)) return null;
+            const exit = dirs.find(d => d !== cameFrom);
+            if (!exit) return null;
+            const delta = DIRS[exit];
+            const next = [pos[0] + delta[0], pos[1] + delta[1]];
+            return {next, enter: OPPOSITE[exit]};
+        }
+
+        function runCar() {
+            if (running) return;
+            running = true;
+            const level = LEVELS[levelIndex];
+            let pos = [...level.start];
+            let cameFrom = null;
+            let steps = 0;
+            car = pos;
+            render();
+            const timer = setInterval(() => {
+                const step = nextStep(pos, cameFrom);
+                if (!step || step.next[0] < 0 || step.next[0] > 4 || step.next[1] < 0 || step.next[1] > 4 || steps > 25) {
+                    clearInterval(timer);
+                    running = false;
+                    document.getElementById('question').textContent = 'Oups, la route est coupée.';
+                    speak('Oups, la route est coupée.');
+                    render({r:pos[0], c:pos[1], good:false});
+                    return;
+                }
+                pos = step.next;
+                cameFrom = step.enter;
+                car = pos;
+                steps++;
+                if (same(pos, level.home)) {
+                    clearInterval(timer);
+                    running = false;
+                    wins++;
+                    document.getElementById('wins').textContent = wins;
+                    document.getElementById('question').textContent = 'Bravo, la voiture est arrivée !';
+                    speak('Bravo, la voiture est arrivée !');
+                    render({r:pos[0], c:pos[1], good:true});
+                    setTimeout(() => { levelIndex = (levelIndex + 1) % LEVELS.length; resetLevel(); }, 1600);
+                    return;
+                }
+                render();
+            }, 420);
+        }
+
+        document.querySelectorAll('.tool').forEach(btn => {
+            btn.onclick = () => {
+                selected = btn.dataset.piece;
+                document.querySelectorAll('.tool').forEach(tool => tool.classList.remove('selected'));
+                btn.classList.add('selected');
+            };
+        });
+        document.getElementById('go').onclick = () => { speechSynthesis.resume(); runCar(); };
+        document.getElementById('again').onclick = () => { speechSynthesis.resume(); resetLevel(); };
+        document.getElementById('next').onclick = () => { speechSynthesis.resume(); levelIndex = (levelIndex + 1) % LEVELS.length; resetLevel(); };
+        resetLevel();
+    </script>
+</body>
+</html>
