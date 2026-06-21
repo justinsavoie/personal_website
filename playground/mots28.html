@@ -9,11 +9,12 @@
         .stats { font-size:18px; font-weight:900; margin-bottom:10px; }
         .question { font-size:24px; font-weight:900; text-align:center; margin-bottom:12px; }
         .board { width:min(94vw, 430px); aspect-ratio:1; display:grid; grid-template-columns:repeat(5, 1fr); grid-template-rows:repeat(5, 1fr); gap:7px; background:#64748b; border:7px solid #475569; border-radius:18px; padding:8px; position:relative; box-shadow:0 5px 12px rgba(0,0,0,0.18); }
-        .slot { background:#cbd5e1; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:900; }
+        .slot { background:#cbd5e1; border:none; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:900; min-width:0; min-height:0; padding:0; line-height:1; }
         .slot.exit { background:#fde68a; color:#92400e; }
-        .vehicle { border:none; border-radius:14px; color:white; font-size:30px; font-weight:900; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; z-index:2; min-width:0; }
+        .vehicle { color:white; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,0.18); }
         .vehicle:active { transform:scale(0.97); }
         .vehicle.selected { outline:5px solid #facc15; }
+        .vehicle.middle { box-shadow:none; }
         .red { background:#ef4444; }
         .blue { background:#3b82f6; }
         .green { background:#22c55e; }
@@ -56,24 +57,23 @@
         const LEVELS = [
             [
                 {id:'red', emoji:'🚗', color:'red', r:2, c:0, len:2, dir:'h', target:true},
-                {id:'blue', emoji:'🚙', color:'blue', r:1, c:2, len:2, dir:'v'},
-                {id:'green', emoji:'🚕', color:'green', r:0, c:3, len:2, dir:'v'},
+                {id:'blue', emoji:'🚙', color:'blue', r:1, c:3, len:2, dir:'v'},
+                {id:'green', emoji:'🚕', color:'green', r:0, c:1, len:2, dir:'h'},
                 {id:'orange', emoji:'🚚', color:'orange', r:3, c:0, len:2, dir:'h'}
             ],
             [
                 {id:'red', emoji:'🚗', color:'red', r:2, c:0, len:2, dir:'h', target:true},
-                {id:'blue', emoji:'🚙', color:'blue', r:1, c:2, len:2, dir:'v'},
+                {id:'blue', emoji:'🚙', color:'blue', r:1, c:3, len:2, dir:'v'},
                 {id:'green', emoji:'🚕', color:'green', r:0, c:0, len:2, dir:'h'},
-                {id:'purple', emoji:'🚐', color:'purple', r:2, c:3, len:2, dir:'v'},
-                {id:'orange', emoji:'🚚', color:'orange', r:4, c:1, len:2, dir:'h'}
+                {id:'purple', emoji:'🚐', color:'purple', r:3, c:2, len:2, dir:'v'},
+                {id:'orange', emoji:'🚚', color:'orange', r:4, c:0, len:2, dir:'h'}
             ],
             [
                 {id:'red', emoji:'🚗', color:'red', r:3, c:0, len:2, dir:'h', target:true},
-                {id:'blue', emoji:'🚙', color:'blue', r:1, c:2, len:3, dir:'v'},
-                {id:'green', emoji:'🚕', color:'green', r:0, c:1, len:2, dir:'h'},
-                {id:'purple', emoji:'🚐', color:'purple', r:2, c:3, len:2, dir:'v'},
-                {id:'orange', emoji:'🚚', color:'orange', r:4, c:0, len:2, dir:'h'},
-                {id:'teal', emoji:'🚛', color:'teal', r:0, c:4, len:2, dir:'v'}
+                {id:'blue', emoji:'🚙', color:'blue', r:1, c:3, len:3, dir:'v'},
+                {id:'green', emoji:'🚕', color:'green', r:0, c:0, len:2, dir:'h'},
+                {id:'purple', emoji:'🚐', color:'purple', r:1, c:4, len:2, dir:'v'},
+                {id:'orange', emoji:'🚚', color:'orange', r:4, c:0, len:2, dir:'h'}
             ]
         ];
         let levelIndex = 0, wins = 0, moves = 0, selected = 'red', vehicles = [];
@@ -107,24 +107,27 @@
             board.innerHTML = '';
             for (let r=0; r<SIZE; r++) {
                 for (let c=0; c<SIZE; c++) {
-                    const slot = document.createElement('div');
-                    slot.className = 'slot';
+                    const vehicle = vehicleAt(r, c);
+                    const slot = document.createElement(vehicle ? 'button' : 'div');
+                    slot.className = vehicle ? `slot vehicle ${vehicle.color}` : 'slot';
                     if (r === exitRow() && c === SIZE - 1) {
                         slot.classList.add('exit');
-                        slot.textContent = '🏁';
                     }
+                    if (vehicle && vehicle.id === selected) slot.classList.add('selected');
+                    if (vehicle && !isVehicleHead(vehicle, r, c)) slot.classList.add('middle');
+                    slot.textContent = vehicle ? (isVehicleHead(vehicle, r, c) ? vehicle.emoji : '•') : (slot.classList.contains('exit') ? '🏁' : '');
+                    if (vehicle) slot.onclick = () => { selected = vehicle.id; render(); speak('Voiture choisie'); };
                     board.appendChild(slot);
                 }
             }
-            vehicles.forEach(v => {
-                const btn = document.createElement('button');
-                btn.className = `vehicle ${v.color}${v.id === selected ? ' selected' : ''}`;
-                btn.textContent = v.emoji;
-                btn.style.gridRow = `${v.r + 1} / span ${v.dir === 'v' ? v.len : 1}`;
-                btn.style.gridColumn = `${v.c + 1} / span ${v.dir === 'h' ? v.len : 1}`;
-                btn.onclick = () => { selected = v.id; render(); speak('Voiture choisie'); };
-                board.appendChild(btn);
-            });
+        }
+
+        function vehicleAt(r, c) {
+            return vehicles.find(v => cellsFor(v).some(cell => cell.r === r && cell.c === c));
+        }
+
+        function isVehicleHead(v, r, c) {
+            return v.r === r && v.c === c;
         }
 
         function blocked(v, nr, nc) {

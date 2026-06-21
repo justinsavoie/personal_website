@@ -20,9 +20,9 @@
         .light.green { background:#22c55e; }
         .light-left { left:22%; top:27%; }
         .light-top { right:25%; top:22%; }
-        .car { position:absolute; font-size:48px; z-index:3; filter:drop-shadow(0 3px 2px rgba(0,0,0,0.25)); transition:left 0.55s ease, top 0.55s ease, transform 0.15s ease; }
+        .car { position:absolute; font-size:48px; z-index:3; filter:drop-shadow(0 3px 2px rgba(0,0,0,0.25)); transition:left 0.55s ease, top 0.55s ease, transform 0.15s ease; transform-origin:center; }
         .car-left { left:8%; top:42%; }
-        .car-top { left:43%; top:8%; }
+        .car-top { left:43%; top:8%; transform:rotate(90deg); }
         .badge { position:absolute; min-width:54px; min-height:42px; border-radius:14px; background:white; border:4px solid #0f172a; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900; z-index:5; box-shadow:0 3px 8px rgba(0,0,0,0.18); }
         .badge-left { left:12%; top:59%; }
         .badge-top { left:58%; top:9%; }
@@ -71,14 +71,14 @@
 
     <script>
         const ROUNDS = [
-            {ask:'Laisse passer le numéro 1.', left:'1', top:'2', answer:'left'},
-            {ask:'Laisse passer le numéro 2.', left:'1', top:'2', answer:'top'},
-            {ask:'Laisse passer la voiture rouge.', left:'🔴', top:'🔵', answer:'left'},
-            {ask:'Laisse passer la voiture bleue.', left:'🟡', top:'🔵', answer:'top'},
-            {ask:'Laisse passer le camion de pompier.', left:'🚒', top:'🚕', answer:'left'},
-            {ask:"Laisse passer l'ambulance.", left:'🚗', top:'🚑', answer:'top'},
-            {ask:'Laisse passer le plus grand nombre.', left:'3', top:'5', answer:'top'},
-            {ask:'Laisse passer le plus petit nombre.', left:'2', top:'4', answer:'left'}
+            {ask:'Laisse passer le numéro 1.', leftLabel:'1', topLabel:'2', leftCar:'🚗', topCar:'🚙', answer:'left'},
+            {ask:'Laisse passer le numéro 2.', leftLabel:'1', topLabel:'2', leftCar:'🚕', topCar:'🚗', answer:'top'},
+            {ask:'Laisse passer la voiture rouge.', leftLabel:'🔴', topLabel:'🔵', leftCar:'🚗', topCar:'🚙', answer:'left'},
+            {ask:'Laisse passer la voiture bleue.', leftLabel:'🟡', topLabel:'🔵', leftCar:'🚕', topCar:'🚙', answer:'top'},
+            {ask:'Laisse passer le camion de pompier.', leftLabel:'🚒', topLabel:'🚕', leftCar:'🚒', topCar:'🚕', answer:'left'},
+            {ask:"Laisse passer l'ambulance.", leftLabel:'🚗', topLabel:'🚑', leftCar:'🚗', topCar:'🚑', answer:'top'},
+            {ask:'Laisse passer le plus grand nombre.', leftLabel:'3', topLabel:'5', leftCar:'🚗', topCar:'🚙', answer:'top'},
+            {ask:'Laisse passer le plus petit nombre.', leftLabel:'2', topLabel:'4', leftCar:'🚕', topCar:'🚗', answer:'left'}
         ];
         let hits = 0, misses = 0, level = 0, current = null, lock = false;
 
@@ -101,7 +101,7 @@
             top.style.left = '43%';
             top.style.top = '8%';
             left.style.transform = 'scale(1)';
-            top.style.transform = 'scale(1)';
+            top.style.transform = 'rotate(90deg) scale(1)';
             setLight(null);
         }
 
@@ -111,8 +111,10 @@
             current = ROUNDS[level % ROUNDS.length];
             document.getElementById('level').textContent = (level % ROUNDS.length) + 1;
             document.getElementById('question').textContent = current.ask;
-            document.getElementById('badgeLeft').textContent = current.left;
-            document.getElementById('badgeTop').textContent = current.top;
+            document.getElementById('badgeLeft').textContent = current.leftLabel;
+            document.getElementById('badgeTop').textContent = current.topLabel;
+            document.getElementById('carLeft').textContent = current.leftCar;
+            document.getElementById('carTop').textContent = current.topCar;
             document.getElementById('leftBtn').className = 'control';
             document.getElementById('topBtn').className = 'control';
             document.getElementById('start').style.display = 'none';
