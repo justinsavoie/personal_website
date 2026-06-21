@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dictée de lettres</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:#fef9c3;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:18px;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 5px 12px rgba(0,0,0,0.12);
+}
+
+.prompt{
+  min-height:34px;
+  text-align:center;
+  font-size:22px;
+  font-weight:900;
+}
+
+.word{
+  min-height:74px;
+  border-radius:16px;
+  background:#e0f2fe;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:42px;
+  font-weight:900;
+  letter-spacing:3px;
+  color:#0f172a;
+}
+
+.word.hidden{
+  background:#e5e7eb;
+  color:#6b7280;
+  font-size:30px;
+  letter-spacing:0;
+}
+
+.answer{
+  min-height:68px;
+  border-radius:16px;
+  background:#f8fafc;
+  border:3px dashed #94a3b8;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  flex-wrap:wrap;
+  padding:8px;
+}
+
+.answer span{
+  min-width:34px;
+  height:44px;
+  border-radius:10px;
+  background:#1f2937;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+.letters{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:10px;
+}
+
+button{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+}
+
+button:active{
+  transform:scale(0.96);
+}
+
+.letter{
+  min-height:64px;
+  font-size:30px;
+  text-transform:uppercase;
+}
+
+.letter.used{
+  opacity:0.25;
+  pointer-events:none;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+}
+
+.control{
+  min-height:54px;
+  font-size:18px;
+}
+
+.good{
+  background:#16a34a !important;
+}
+
+.bad{
+  background:#dc2626 !important;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="prompt" id="prompt">Appuie sur Jouer.</div>
+    <div class="word" id="wordBox">mot</div>
+    <div class="answer" id="answer"></div>
+    <div class="letters" id="letters"></div>
+    <div class="controls">
+      <button class="control" id="start">Jouer</button>
+      <button class="control" id="repeat">🔊</button>
+      <button class="control" id="peek">👀</button>
+      <button class="control" id="undo">Effacer</button>
+      <button class="control" id="clear">Recommencer</button>
+      <button class="control" id="next">Passer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const WORDS = [
+  "chat", "chien", "papa", "maman", "lune", "soleil", "pomme", "banane",
+  "maison", "ballon", "robot", "livre", "table", "porte", "route", "fleur",
+  "vélo", "taxi", "camion", "voiture", "bateau", "train", "avion", "lapin",
+  "souris", "canard", "orange", "tomate", "salade", "école", "ami", "bébé"
+];
+
+let hits = 0;
+let misses = 0;
+let round = null;
+let answer = [];
+let hideTimer = null;
+let voices = [];
+let ready = false;
+
+const hitsEl = document.getElementById("hits");
+const missesEl = document.getElementById("misses");
+const promptEl = document.getElementById("prompt");
+const wordBox = document.getElementById("wordBox");
+const answerEl = document.getElementById("answer");
+const lettersEl = document.getElementById("letters");
+
+function shuffle(items){
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  ready = voices.length > 0;
+}
+
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.85;
+  speechSynthesis.speak(utter);
+}
+
+function splitWord(word){
+  return Array.from(word);
+}
+
+function showWord(ms = 5000){
+  clearTimeout(hideTimer);
+  wordBox.classList.remove("hidden");
+  wordBox.textContent = round.word;
+  hideTimer = setTimeout(hideWord, ms);
+}
+
+function hideWord(){
+  wordBox.classList.add("hidden");
+  wordBox.textContent = "Écris le mot";
+}
+
+function nextRound(){
+  clearTimeout(hideTimer);
+  const word = WORDS[Math.floor(Math.random() * WORDS.length)];
+  const letters = splitWord(word).map((letter, index) => ({letter, index}));
+  round = {word, letters: shuffle(letters)};
+  answer = [];
+  promptEl.textContent = "Regarde, écoute, puis écris le mot.";
+  render();
+  showWord(5000);
+  setTimeout(() => speak(word), 250);
+}
+
+function render(){
+  answerEl.innerHTML = "";
+  answer.forEach(item => {
+    const span = document.createElement("span");
+    span.textContent = item.letter;
+    answerEl.appendChild(span);
+  });
+  while(answerEl.children.length < splitWord(round.word).length){
+    const span = document.createElement("span");
+    span.textContent = "_";
+    span.style.background = "#cbd5e1";
+    span.style.color = "#475569";
+    answerEl.appendChild(span);
+  }
+
+  lettersEl.innerHTML = "";
+  round.letters.forEach(item => {
+    const btn = document.createElement("button");
+    btn.className = "letter";
+    btn.textContent = item.letter;
+    if(answer.some(chosen => chosen.index === item.index)) btn.classList.add("used");
+    btn.onclick = () => chooseLetter(item);
+    lettersEl.appendChild(btn);
+  });
+}
+
+function chooseLetter(item){
+  if(!round || answer.some(chosen => chosen.index === item.index)) return;
+  answer.push(item);
+  render();
+  if(answer.length === splitWord(round.word).length) checkAnswer();
+}
+
+function checkAnswer(){
+  const typed = answer.map(item => item.letter).join("");
+  if(typed === round.word){
+    hits++;
+    hitsEl.textContent = hits;
+    promptEl.textContent = "Bravo !";
+    wordBox.classList.remove("hidden");
+    wordBox.classList.add("good");
+    wordBox.textContent = round.word;
+    speak("Bravo !");
+    setTimeout(() => {
+      wordBox.classList.remove("good");
+      nextRound();
+    }, 1300);
+  } else {
+    misses++;
+    missesEl.textContent = misses;
+    promptEl.textContent = "Presque. Essaie encore.";
+    wordBox.classList.add("bad");
+    speak("Essaie encore.");
+    setTimeout(() => {
+      wordBox.classList.remove("bad");
+      answer = [];
+      render();
+      hideWord();
+    }, 900);
+  }
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(round.word);
+};
+
+document.getElementById("peek").onclick = () => {
+  if(round) showWord(1800);
+};
+
+document.getElementById("undo").onclick = () => {
+  answer.pop();
+  if(round) render();
+};
+
+document.getElementById("clear").onclick = () => {
+  answer = [];
+  if(round) render();
+};
+
+document.getElementById("next").onclick = () => {
+  speechSynthesis.resume();
+  nextRound();
+};
+
+wordBox.classList.add("hidden");
+wordBox.textContent = "mot caché";
+</script>
+</body>
+</html>
