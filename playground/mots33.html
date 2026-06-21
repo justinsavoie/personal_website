@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course des additions</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:#e0f2fe;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:18px;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 5px 12px rgba(0,0,0,0.12);
+}
+
+.road{
+  height:118px;
+  background:#475569;
+  border:6px solid #1e293b;
+  border-radius:22px;
+  position:relative;
+  overflow:hidden;
+}
+
+.line{
+  position:absolute;
+  left:0;
+  right:0;
+  top:53px;
+  height:8px;
+  background:repeating-linear-gradient(90deg, white 0 30px, transparent 30px 56px);
+  opacity:0.9;
+}
+
+.finish{
+  position:absolute;
+  right:10px;
+  top:10px;
+  bottom:10px;
+  width:16px;
+  background:repeating-linear-gradient(0deg, white 0 12px, #111 12px 24px);
+  border-radius:4px;
+}
+
+.car{
+  position:absolute;
+  left:6px;
+  top:28px;
+  font-size:54px;
+  transition:left 0.35s ease;
+  filter:drop-shadow(0 4px 2px rgba(0,0,0,0.25));
+}
+
+.progress{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:17px;
+}
+
+.bar{
+  height:20px;
+  border-radius:999px;
+  background:#cbd5e1;
+  overflow:hidden;
+}
+
+.fill{
+  height:100%;
+  width:0%;
+  background:#22c55e;
+  transition:width 0.35s ease;
+}
+
+.prompt{
+  text-align:center;
+  font-size:42px;
+  font-weight:900;
+  letter-spacing:2px;
+  min-height:62px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+button{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+}
+
+button:active{
+  transform:scale(0.96);
+}
+
+.choice{
+  min-height:74px;
+  font-size:32px;
+  background:#fff;
+  color:#111;
+  border:3px solid #111;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.control{
+  min-height:54px;
+  font-size:18px;
+}
+
+.good{
+  background:#16a34a !important;
+  color:white !important;
+  border-color:#16a34a !important;
+}
+
+.bad{
+  background:#dc2626 !important;
+  color:white !important;
+  border-color:#dc2626 !important;
+}
+
+.message{
+  min-height:28px;
+  text-align:center;
+  font-size:20px;
+  font-weight:900;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="road">
+      <div class="line"></div>
+      <div class="finish"></div>
+      <div class="car" id="car">🚗</div>
+    </div>
+
+    <div class="progress">
+      <span>Départ</span>
+      <span><span id="position">0</span> / 50</span>
+      <span>Arrivée</span>
+    </div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+
+    <div class="prompt" id="prompt">?</div>
+    <div class="message" id="message">Réussis 50 additions pour arriver.</div>
+    <div class="grid" id="grid"></div>
+
+    <div class="controls">
+      <button class="control" id="start">Jouer</button>
+      <button class="control" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FINISH = 50;
+
+let hits = 0;
+let misses = 0;
+let position = 0;
+let round = null;
+let lock = false;
+let voices = [];
+let ready = false;
+
+const hitsEl = document.getElementById("hits");
+const missesEl = document.getElementById("misses");
+const positionEl = document.getElementById("position");
+const fillEl = document.getElementById("fill");
+const carEl = document.getElementById("car");
+const promptEl = document.getElementById("prompt");
+const messageEl = document.getElementById("message");
+const grid = document.getElementById("grid");
+
+function shuffle(items){
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  ready = voices.length > 0;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function randInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function uniqueWrongAnswers(correct, count){
+  const wrong = new Set();
+  while(wrong.size < count){
+    const candidate = correct + randInt(-10, 10);
+    if(candidate !== correct && candidate >= 0) wrong.add(candidate);
+  }
+  return [...wrong];
+}
+
+function updateRoad(){
+  const pct = Math.min(100, (position / FINISH) * 100);
+  positionEl.textContent = position;
+  fillEl.style.width = `${pct}%`;
+  carEl.style.left = `calc(${pct}% - ${pct * 0.52}px + 6px)`;
+}
+
+function makeRound(){
+  lock = false;
+  const a = randInt(0, 14);
+  const b = randInt(0, 9);
+  const pair = Math.random() < 0.5 ? [a, b] : [b, a];
+  const left = pair[0];
+  const right = pair[1];
+  const answer = left + right;
+  round = {
+    left,
+    right,
+    answer,
+    choices: shuffle([answer, ...uniqueWrongAnswers(answer, 3)])
+  };
+  promptEl.textContent = `${left} + ${right} = ?`;
+  messageEl.textContent = "Bonne réponse: avance de 1. Erreur: recule de 2.";
+  renderChoices();
+  setTimeout(() => speak(`${left} plus ${right}`), 350);
+}
+
+function renderChoices(){
+  grid.innerHTML = "";
+  round.choices.forEach(value => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = value;
+    btn.onclick = () => choose(value, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function choose(value, btn){
+  if(lock || !round) return;
+  if(value === round.answer){
+    lock = true;
+    hits++;
+    position = Math.min(FINISH, position + 1);
+    hitsEl.textContent = hits;
+    btn.classList.add("good");
+    promptEl.textContent = `${round.left} + ${round.right} = ${round.answer}`;
+    updateRoad();
+    if(position >= FINISH){
+      messageEl.textContent = "Bravo, tu es arrivé au bout du chemin !";
+      speak("Bravo, tu es arrivé !");
+      setTimeout(resetGame, 2200);
+    } else {
+      messageEl.textContent = "Bravo ! Tu avances.";
+      speak("Bravo !");
+      setTimeout(makeRound, 900);
+    }
+  } else {
+    misses++;
+    position = Math.max(0, position - 2);
+    missesEl.textContent = misses;
+    btn.classList.add("bad");
+    updateRoad();
+    messageEl.textContent = "Oups ! Tu recules de 2.";
+    speak("Oups, tu recules.");
+    setTimeout(() => btn.classList.remove("bad"), 450);
+  }
+}
+
+function resetGame(){
+  hits = 0;
+  misses = 0;
+  position = 0;
+  hitsEl.textContent = hits;
+  missesEl.textContent = misses;
+  updateRoad();
+  makeRound();
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  resetGame();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(`${round.left} plus ${round.right}`);
+};
+
+updateRoad();
+</script>
+</body>
+</html>
