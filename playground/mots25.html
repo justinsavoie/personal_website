@@ -67,6 +67,10 @@
         ];
         let levelIndex = 0, wins = 0, cars = [], selected = 'red';
 
+        function exitRow() {
+            return LEVELS[levelIndex].find(car => car.target).r;
+        }
+
         function speak(text) {
             const u = new SpeechSynthesisUtterance(text);
             u.lang = 'fr-FR'; u.rate = 0.9;
@@ -89,7 +93,7 @@
                     const car = cars.find(x => x.r === r && x.c === c);
                     const cell = document.createElement(car ? 'button' : 'div');
                     cell.className = car ? `cell car ${car.color}` : 'cell';
-                    if (r === cars.find(x => x.target).r && c === 3) cell.classList.add('exit');
+                    if (r === exitRow() && c === 3) cell.classList.add('exit');
                     if (car && car.id === selected) cell.classList.add('selected');
                     cell.textContent = car ? car.emoji : (cell.classList.contains('exit') ? '🏁' : '');
                     if (car) cell.onclick = () => { selected = car.id; render(); speak('Voiture choisie'); };
@@ -115,7 +119,7 @@
             }
             car.r = nr; car.c = nc;
             const target = cars.find(x => x.target);
-            if (target.c === 3) {
+            if (target.r === exitRow() && target.c === 3) {
                 wins++;
                 document.getElementById('wins').textContent = wins;
                 document.getElementById('message').textContent = 'Bravo, la voiture est sortie !';
