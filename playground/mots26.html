@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course des Couleurs</title>
+    <style>
+        body { margin:0; padding:20px; font-family:system-ui; background:#fff8e1; display:flex; flex-direction:column; align-items:center; min-height:100vh; color:#263238; }
+        .stats { font-size:18px; font-weight:800; margin-bottom:16px; }
+        .question { background:white; border-radius:18px; padding:18px; width:100%; max-width:430px; text-align:center; font-size:24px; font-weight:900; box-shadow:0 4px 8px rgba(0,0,0,0.12); margin-bottom:20px; }
+        .road-wrap { width:100%; max-width:440px; margin-bottom:22px; }
+        .road { height:120px; background:#455a64; border-radius:24px; position:relative; overflow:hidden; border:6px solid #263238; }
+        .line { position:absolute; left:0; right:0; top:55px; height:10px; background:repeating-linear-gradient(90deg, #fff 0 34px, transparent 34px 62px); opacity:0.9; }
+        .car { position:absolute; left:10px; top:28px; font-size:58px; transition:left 0.55s ease; filter:drop-shadow(0 4px 2px rgba(0,0,0,0.25)); }
+        .finish { position:absolute; right:12px; top:10px; bottom:10px; width:16px; background:repeating-linear-gradient(0deg, white 0 12px, #111 12px 24px); border-radius:4px; }
+        .choices { display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%; max-width:430px; }
+        .choice { min-height:86px; border:none; border-radius:18px; font-size:22px; font-weight:900; cursor:pointer; box-shadow:0 5px 0 rgba(0,0,0,0.16); }
+        .choice:active { transform:scale(0.96); }
+        .choice.good { outline:5px solid #00c853; }
+        .choice.bad { outline:5px solid #d50000; }
+        .btn { margin-top:26px; padding:15px 40px; font-size:18px; font-weight:800; background:#222; color:white; border:none; border-radius:12px; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div class="stats">✅ <span id="hits">0</span> | ❌ <span id="misses">0</span></div>
+    <div class="question" id="question">Appuie sur Jouer !</div>
+    <div class="road-wrap">
+        <div class="road">
+            <div class="line"></div>
+            <div class="finish"></div>
+            <div class="car" id="car">🏎️</div>
+        </div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <button class="btn" id="start">Jouer</button>
+
+    <script>
+        const COLORS = [
+            {name:'rouge', css:'#ef5350'},
+            {name:'bleu', css:'#42a5f5'},
+            {name:'jaune', css:'#ffca28'},
+            {name:'vert', css:'#66bb6a'},
+            {name:'rose', css:'#ec407a'},
+            {name:'orange', css:'#ff8a65'}
+        ];
+        const NUMBERS = [
+            {name:'un', value:'1'}, {name:'deux', value:'2'}, {name:'trois', value:'3'}, {name:'quatre', value:'4'}
+        ];
+        let hits = 0, misses = 0, progress = 0, answer = null, lock = false;
+
+        function speak(text) {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'fr-FR'; u.rate = 0.9;
+            speechSynthesis.cancel(); speechSynthesis.speak(u);
+        }
+
+        function shuffle(items) {
+            return [...items].sort(() => Math.random() - 0.5);
+        }
+
+        function setCar() {
+            document.getElementById('car').style.left = `${10 + progress * 72}px`;
+        }
+
+        function nextRound() {
+            lock = false;
+            document.getElementById('start').style.display = 'none';
+            const useColor = Math.random() < 0.65;
+            const pool = useColor ? COLORS : NUMBERS;
+            answer = pool[Math.floor(Math.random() * pool.length)];
+            const question = useColor ? `Trouve le garage ${answer.name}.` : `Trouve le garage numéro ${answer.name}.`;
+            document.getElementById('question').textContent = question;
+            speak(question);
+
+            const choices = document.getElementById('choices');
+            choices.innerHTML = '';
+            const options = shuffle(pool).slice(0, 4);
+            if (!options.includes(answer)) options[Math.floor(Math.random() * 4)] = answer;
+            shuffle(options).forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'choice';
+                btn.textContent = useColor ? option.name : option.value;
+                btn.style.background = useColor ? option.css : '#ffffff';
+                btn.style.color = useColor && option.name !== 'jaune' ? 'white' : '#263238';
+                btn.onclick = () => pick(btn, option);
+                choices.appendChild(btn);
+            });
+        }
+
+        function pick(btn, option) {
+            if (lock) return;
+            if (option.name === answer.name) {
+                lock = true;
+                hits++;
+                progress = Math.min(progress + 1, 5);
+                document.getElementById('hits').textContent = hits;
+                btn.classList.add('good');
+                setCar();
+                if (progress === 5) {
+                    speak('Bravo, tu as gagné la course !');
+                    document.getElementById('question').textContent = 'Bravo, tu as gagné la course !';
+                    setTimeout(() => { progress = 0; setCar(); nextRound(); }, 1800);
+                } else {
+                    speak('Bravo !');
+                    setTimeout(nextRound, 1200);
+                }
+            } else {
+                misses++;
+                document.getElementById('misses').textContent = misses;
+                btn.classList.add('bad');
+                speak('Essaie encore.');
+                setTimeout(() => btn.classList.remove('bad'), 600);
+            }
+        }
+
+        document.getElementById('start').onclick = () => {
+            speechSynthesis.resume();
+            nextRound();
+        };
+        setCar();
+    </script>
+</body>
+</html>

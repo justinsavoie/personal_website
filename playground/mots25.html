@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petit Rush Hour</title>
+    <style>
+        body { margin:0; padding:18px; font-family:system-ui; background:#e3f2fd; display:flex; flex-direction:column; align-items:center; min-height:100vh; color:#1f2937; }
+        .stats { font-size:18px; font-weight:800; margin-bottom:14px; }
+        .question { font-size:24px; font-weight:900; text-align:center; margin-bottom:14px; }
+        .board { width:min(92vw, 420px); aspect-ratio:1; display:grid; grid-template-columns:repeat(4, 1fr); grid-template-rows:repeat(4, 1fr); gap:8px; background:#90a4ae; border:8px solid #607d8b; border-radius:18px; padding:8px; position:relative; box-shadow:0 5px 12px rgba(0,0,0,0.18); }
+        .cell { background:#cfd8dc; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:34px; font-weight:900; }
+        .exit { background:#ffe082; color:#8d6e63; }
+        .car { border:none; border-radius:14px; font-size:36px; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,0.18); transition:transform 0.1s, outline 0.1s; }
+        .car:active { transform:scale(0.95); }
+        .car.selected { outline:5px solid #ffeb3b; }
+        .red { background:#ef5350; }
+        .blue { background:#42a5f5; }
+        .green { background:#66bb6a; }
+        .purple { background:#ab47bc; }
+        .controls { display:grid; grid-template-columns:80px 80px 80px; gap:10px; margin-top:18px; align-items:center; justify-content:center; }
+        .move, .btn { border:none; border-radius:14px; background:#263238; color:white; font-size:24px; font-weight:900; min-height:62px; cursor:pointer; }
+        .move:active, .btn:active { transform:scale(0.96); }
+        .move.blank { visibility:hidden; }
+        .btn { margin-top:18px; padding:14px 26px; font-size:18px; }
+        .message { min-height:28px; font-size:20px; font-weight:800; margin-top:12px; text-align:center; }
+        @media (max-width:420px) {
+            .cell, .car { font-size:30px; }
+            .controls { grid-template-columns:72px 72px 72px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stats">🏁 Niveau <span id="level">1</span> | ✅ <span id="wins">0</span></div>
+    <div class="question">Sors la voiture rouge !</div>
+    <div class="board" id="board"></div>
+    <div class="message" id="message">Choisis une voiture, puis une flèche.</div>
+    <div class="controls">
+        <button class="move blank"></button>
+        <button class="move" data-dir="up">↑</button>
+        <button class="move blank"></button>
+        <button class="move" data-dir="left">←</button>
+        <button class="move" data-dir="down">↓</button>
+        <button class="move" data-dir="right">→</button>
+    </div>
+    <button class="btn" id="reset">Recommencer</button>
+
+    <script>
+        const LEVELS = [
+            [
+                {id:'red', emoji:'🚗', color:'red', r:1, c:0, target:true},
+                {id:'blue', emoji:'🚙', color:'blue', r:1, c:2},
+                {id:'green', emoji:'🚕', color:'green', r:2, c:1}
+            ],
+            [
+                {id:'red', emoji:'🚗', color:'red', r:1, c:0, target:true},
+                {id:'blue', emoji:'🚙', color:'blue', r:1, c:1},
+                {id:'green', emoji:'🚕', color:'green', r:0, c:2},
+                {id:'purple', emoji:'🚐', color:'purple', r:2, c:2}
+            ],
+            [
+                {id:'red', emoji:'🚗', color:'red', r:2, c:0, target:true},
+                {id:'blue', emoji:'🚙', color:'blue', r:2, c:1},
+                {id:'green', emoji:'🚕', color:'green', r:1, c:1},
+                {id:'purple', emoji:'🚐', color:'purple', r:3, c:2}
+            ]
+        ];
+        let levelIndex = 0, wins = 0, cars = [], selected = 'red';
+
+        function speak(text) {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'fr-FR'; u.rate = 0.9;
+            speechSynthesis.cancel(); speechSynthesis.speak(u);
+        }
+
+        function loadLevel() {
+            cars = LEVELS[levelIndex].map(car => ({...car}));
+            selected = 'red';
+            document.getElementById('level').textContent = levelIndex + 1;
+            document.getElementById('message').textContent = 'Choisis une voiture, puis une flèche.';
+            render();
+        }
+
+        function render() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let r=0; r<4; r++) {
+                for (let c=0; c<4; c++) {
+                    const car = cars.find(x => x.r === r && x.c === c);
+                    const cell = document.createElement(car ? 'button' : 'div');
+                    cell.className = car ? `cell car ${car.color}` : 'cell';
+                    if (r === cars.find(x => x.target).r && c === 3) cell.classList.add('exit');
+                    if (car && car.id === selected) cell.classList.add('selected');
+                    cell.textContent = car ? car.emoji : (cell.classList.contains('exit') ? '🏁' : '');
+                    if (car) cell.onclick = () => { selected = car.id; render(); speak('Voiture choisie'); };
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function isFree(r, c) {
+            if (r < 0 || r > 3 || c < 0 || c > 3) return false;
+            return !cars.some(car => car.r === r && car.c === c);
+        }
+
+        function move(dir) {
+            const car = cars.find(x => x.id === selected);
+            if (!car) return;
+            const delta = {up:[-1,0], down:[1,0], left:[0,-1], right:[0,1]}[dir];
+            const nr = car.r + delta[0], nc = car.c + delta[1];
+            if (!isFree(nr, nc)) {
+                document.getElementById('message').textContent = 'Bloqué ! Essaie une autre flèche.';
+                speak('Bloqué');
+                return;
+            }
+            car.r = nr; car.c = nc;
+            const target = cars.find(x => x.target);
+            if (target.c === 3) {
+                wins++;
+                document.getElementById('wins').textContent = wins;
+                document.getElementById('message').textContent = 'Bravo, la voiture est sortie !';
+                speak('Bravo, la voiture est sortie !');
+                render();
+                setTimeout(() => { levelIndex = (levelIndex + 1) % LEVELS.length; loadLevel(); }, 1600);
+            } else {
+                render();
+            }
+        }
+
+        document.querySelectorAll('.move').forEach(btn => {
+            btn.onclick = () => move(btn.dataset.dir);
+        });
+        document.getElementById('reset').onclick = () => { speechSynthesis.resume(); loadLevel(); };
+        loadLevel();
+    </script>
+</body>
+</html>
