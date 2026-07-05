@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Pont des Additions</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f0f4f8;
+  color: #1e293b;
+  touch-action: manipulation;
+}
+
+.app {
+  width: 100%;
+  max-width: 420px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 800;
+  font-size: 18px;
+  background: white;
+  padding: 10px 14px;
+  border-radius: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+}
+
+.main {
+  background: white;
+  padding: 16px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* 🌅 Sky & Bridge Scene */
+.scene {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(to bottom, #bae6fd, #e0f2fe);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 3px solid #0284c7;
+}
+
+.sky {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.cliffs {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.cliff {
+  width: 60px;
+  height: 40px;
+  background: #854d0e;
+  border-top: 6px solid #166534;
+  position: relative;
+}
+
+.left-cliff {
+  border-top-right-radius: 4px;
+}
+
+.right-cliff {
+  border-top-left-radius: 4px;
+}
+
+.car-emoji {
+  font-size: 32px;
+  position: absolute;
+  bottom: 35px;
+  left: 10px;
+  transition: left 2s ease-in-out;
+  z-index: 10;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
+}
+
+.house-emoji {
+  font-size: 34px;
+  position: absolute;
+  bottom: 35px;
+  right: 8px;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
+}
+
+.bridge-gap {
+  flex: 1;
+  height: 24px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 2px;
+  padding: 0 4px;
+}
+
+/* 🧱 Lego Cells styling */
+.bridge-cell {
+  flex: 1;
+  height: 100%;
+  border-radius: 4px;
+  position: relative;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.bridge-cell::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 4px;
+  background: inherit;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  border: inherit;
+  border-bottom: none;
+}
+
+.bridge-cell.empty {
+  border: 2px dashed #0284c7;
+  background: rgba(2, 132, 199, 0.08);
+}
+
+.bridge-cell.empty::after {
+  border: 2px dashed #0284c7;
+  border-bottom: none;
+  background: transparent;
+}
+
+.bridge-cell.block-a {
+  background: #f97316;
+  border: 1.5px solid #c2410c;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15);
+}
+
+.bridge-cell.block-b {
+  background: #3b82f6;
+  border: 1.5px solid #1d4ed8;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15);
+}
+
+.bridge-cell.placed {
+  background: #10b981;
+  border: 1.5px solid #047857;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bridge-cell.incorrect {
+  background: #ef4444;
+  border: 1.5px solid #b91c1c;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); }
+  100% { transform: scale(1); }
+}
+
+/* 🧮 Equation Display */
+.equation-box {
+  text-align: center;
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 8px 0;
+  color: #0f172a;
+}
+
+/* 🎛️ Lego Choices Grid */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.choice-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  font-size: 22px;
+  font-weight: 900;
+  border-radius: 14px;
+  background: white;
+  border: 3px solid #0f172a;
+  color: #0f172a;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #0f172a;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.choice-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0px 0 #0f172a;
+}
+
+.choice-btn.bad {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #ef4444;
+  box-shadow: 0 4px 0 #ef4444;
+}
+
+.lego-preview {
+  display: flex;
+  height: 12px;
+  gap: 1px;
+}
+
+.preview-cell {
+  width: 8px;
+  height: 100%;
+  background: #3b82f6;
+  border: 1px solid #1d4ed8;
+  border-radius: 2px;
+  position: relative;
+}
+
+.preview-cell::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 3px;
+  background: inherit;
+  border: inherit;
+  border-bottom: none;
+  border-top-left-radius: 1px;
+  border-top-right-radius: 1px;
+}
+
+/* 🎈 Rewards: Balloons */
+.balloon {
+  position: absolute;
+  top: 100%;
+  width: 32px;
+  height: 38px;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  cursor: pointer;
+  z-index: 15;
+  animation: floatUp linear forwards;
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,0.15);
+  pointer-events: auto;
+}
+
+.balloon::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid rgba(0,0,0,0.2);
+}
+
+.balloon-string {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  width: 1px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+@keyframes floatUp {
+  0% {
+    top: 100%;
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(12px) rotate(4deg);
+  }
+  100% {
+    top: -50px;
+    transform: translateX(-12px) rotate(-4deg);
+  }
+}
+
+.pop-effect {
+  position: absolute;
+  font-size: 26px;
+  animation: popFade 0.4s ease-out forwards;
+  pointer-events: none;
+  z-index: 20;
+}
+
+@keyframes popFade {
+  0% {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* 🎮 Control Toolbar */
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+button.ctrl {
+  flex: 1;
+  padding: 12px;
+  font-size: 18px;
+  border: none;
+  border-radius: 12px;
+  background: #1e293b;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #0f172a;
+}
+
+button.ctrl:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #0f172a;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top-bar">
+    <div class="stats">
+      <div>🧩 Niv. <span id="level">1</span></div>
+      <div>⭐ <span id="stars">0</span></div>
+    </div>
+    <div id="reset-btn" style="cursor:pointer; font-size:15px;" onclick="restartGame()">🔄</div>
+  </div>
+
+  <div class="main">
+    <div class="scene" id="scene">
+      <div class="sky" id="sky"></div>
+      <div class="cliffs">
+        <div class="cliff left-cliff">
+          <div id="car" class="car-emoji">🚗</div>
+        </div>
+        <div id="bridge-gap" class="bridge-gap"></div>
+        <div class="cliff right-cliff">
+          <div class="house-emoji">🏠</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="equation-box" id="equation">?</div>
+    <div id="grid" class="grid"></div>
+
+    <div class="controls">
+      <button class="ctrl" id="start">Jouer</button>
+      <button class="ctrl" id="repeat" style="max-width: 70px;">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ⚙️ Levels configuration
+const LEVELS = [
+  { w: 5,  a: 3, b: 2, pos: "right" },
+  { w: 8,  a: 5, b: 3, pos: "right" },
+  { w: 7,  a: 3, b: 4, pos: "left" },
+  { w: 10, a: 6, b: 4, pos: "right" },
+  { w: 11, a: 6, b: 5, pos: "left" },
+  { w: 12, a: 7, b: 5, pos: "right" },
+  { w: 13, a: 8, b: 5, pos: "right" },
+  { w: 10, a: [4, 3], b: 3, pos: "right" },
+  { w: 12, a: [5, 4], b: 3, pos: "right" },
+  { w: 15, a: [6, 5], b: 4, pos: "right" }
+];
+
+let levelIndex = 0;
+let stars = 0;
+let lock = false;
+let voices = [];
+let ready = false;
+let audioCtx = null;
+
+// 🔊 Text-To-Speech Loading
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (voices.length > 0) ready = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text) {
+  if (!ready) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if (frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+// 🎹 Web Audio Sound Synthesizer
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+
+function playSound(freqs, type, duration, slide = false) {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = type;
+    const t = ctx.currentTime;
+    if (slide && freqs.length > 1) {
+      osc.frequency.setValueAtTime(freqs[0], t);
+      osc.frequency.exponentialRampToValueAtTime(freqs[1], t + duration);
+    } else {
+      osc.frequency.setValueAtTime(freqs[0], t);
+    }
+    
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(t);
+    osc.stop(t + duration + 0.05);
+  } catch (e) {
+    console.log("Audio API not supported or blocked");
+  }
+}
+
+function sfxPop() { playSound([400, 900], 'sine', 0.1, true); }
+function sfxWrong() { playSound([180, 80], 'sawtooth', 0.45, true); }
+function sfxEngine() { playSound([90, 165], 'triangle', 2.0, true); }
+
+function sfxCorrect() {
+  const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+  notes.forEach((f, i) => {
+    setTimeout(() => playSound([f], 'triangle', 0.25), i * 110);
+  });
+}
+
+function sfxWin() {
+  const notes = [523.25, 659.25, 783.99, 1046.50];
+  notes.forEach((f, i) => {
+    setTimeout(() => playSound([f], 'sine', 0.4), i * 130);
+  });
+}
+
+// 🔀 Helpers
+function shuffle(a) {
+  return [...a].sort(() => Math.random() - 0.5);
+}
+
+function getChoices(correctVal) {
+  const set = new Set();
+  set.add(correctVal);
+  while (set.size < 4) {
+    const offset = Math.floor(Math.random() * 5) - 2; // -2, -1, 0, 1, 2
+    const val = correctVal + offset;
+    if (val > 0 && val !== correctVal && val <= 10) set.add(val);
+  }
+  let fallback = 1;
+  while (set.size < 4) {
+    if (fallback !== correctVal) set.add(fallback);
+    fallback++;
+  }
+  return shuffle([...set]);
+}
+
+// 🕹️ Game Core
+function restartGame() {
+  speechSynthesis.resume();
+  levelIndex = 0;
+  stars = 0;
+  document.getElementById("stars").textContent = stars;
+  loadLevel();
+}
+
+function loadLevel() {
+  lock = false;
+  
+  // Reset car transition and teleport back
+  const car = document.getElementById("car");
+  car.style.transition = "none";
+  car.style.left = "10px";
+  car.offsetHeight; // force reflow
+  car.style.transition = "left 2s ease-in-out";
+
+  const level = LEVELS[levelIndex];
+  document.getElementById("level").textContent = levelIndex + 1;
+
+  // Clear previous balloons
+  document.getElementById("sky").innerHTML = "";
+
+  // 1. Draw bridge cells
+  const gap = document.getElementById("bridge-gap");
+  gap.innerHTML = "";
+
+  const cellConfig = [];
+  if (Array.isArray(level.a)) {
+    // 3-block logic
+    const a1 = level.a[0];
+    const a2 = level.a[1];
+    for (let i = 0; i < a1; i++) cellConfig.push("block-a");
+    for (let i = 0; i < a2; i++) cellConfig.push("block-b");
+    for (let i = 0; i < level.b; i++) cellConfig.push("empty");
+  } else {
+    // 2-block logic
+    if (level.pos === "left") {
+      for (let i = 0; i < level.a; i++) cellConfig.push("empty");
+      for (let i = 0; i < level.b; i++) cellConfig.push("block-b");
+    } else {
+      for (let i = 0; i < level.a; i++) cellConfig.push("block-a");
+      for (let i = 0; i < level.b; i++) cellConfig.push("empty");
+    }
+  }
+
+  cellConfig.forEach(type => {
+    const cell = document.createElement("div");
+    cell.className = `bridge-cell ${type}`;
+    gap.appendChild(cell);
+  });
+
+  // 2. Render Equation
+  let eqText = "";
+  if (Array.isArray(level.a)) {
+    eqText = `${level.a[0]} + ${level.a[1]} + ? = ${level.w}`;
+  } else {
+    if (level.pos === "left") {
+      eqText = `? + ${level.b} = ${level.w}`;
+    } else {
+      eqText = `${level.a} + ? = ${level.w}`;
+    }
+  }
+  document.getElementById("equation").textContent = eqText;
+
+  // 3. Render Choices
+  const choices = getChoices(level.b);
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  choices.forEach(val => {
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    
+    // Lego preview rendering
+    let previewHTML = `<div class="lego-preview">`;
+    for(let i=0; i<val; i++) {
+      previewHTML += `<div class="preview-cell"></div>`;
+    }
+    previewHTML += `</div>`;
+
+    btn.innerHTML = `<span style="line-height:1;">${val}</span>${previewHTML}`;
+    btn.onclick = () => selectOption(val, btn);
+    grid.appendChild(btn);
+  });
+
+  // Speak Prompt
+  setTimeout(speakPrompt, 800);
+}
+
+function speakPrompt() {
+  const level = LEVELS[levelIndex];
+  if (Array.isArray(level.a)) {
+    speak(`${level.a[0]} plus ${level.a[1]} plus combien pour faire ${level.w} ?`);
+  } else {
+    if (level.pos === "left") {
+      speak(`Combien plus ${level.b} égale ${level.w} ?`);
+    } else {
+      speak(`${level.a} plus combien égale ${level.w} ?`);
+    }
+  }
+}
+
+function spawnBalloons() {
+  const sky = document.getElementById("sky");
+  const colors = ["#f87171", "#60a5fa", "#34d399", "#fbbf24", "#f472b6", "#a78bfa"];
+  
+  for (let i = 0; i < 7; i++) {
+    const balloon = document.createElement("div");
+    balloon.className = "balloon";
+    const bgCol = colors[Math.floor(Math.random() * colors.length)];
+    balloon.style.backgroundColor = bgCol;
+    balloon.style.left = `${10 + Math.random() * 80}%`;
+    balloon.style.animationDelay = `${Math.random() * 1.0}s`;
+    balloon.style.animationDuration = `${3.2 + Math.random() * 1.8}s`;
+
+    // String
+    const str = document.createElement("div");
+    str.className = "balloon-string";
+    balloon.appendChild(str);
+
+    // Tap handler
+    balloon.onclick = (e) => {
+      e.stopPropagation();
+      popBalloon(balloon);
+    };
+
+    sky.appendChild(balloon);
+  }
+}
+
+function popBalloon(balloon) {
+  sfxPop();
+  
+  // Coordinates for pop explosion positioning
+  const rect = balloon.getBoundingClientRect();
+  const pRect = document.getElementById("scene").getBoundingClientRect();
+  
+  const pop = document.createElement("div");
+  pop.className = "pop-effect";
+  pop.textContent = "💥";
+  pop.style.left = `${rect.left - pRect.left}px`;
+  pop.style.top = `${rect.top - pRect.top}px`;
+  document.getElementById("scene").appendChild(pop);
+
+  // Balloon clean-up
+  if (balloon.parentNode) balloon.parentNode.removeChild(balloon);
+  setTimeout(() => {
+    if (pop.parentNode) pop.parentNode.removeChild(pop);
+  }, 400);
+
+  // Reward Stars
+  stars += 1;
+  document.getElementById("stars").textContent = stars;
+}
+
+function selectOption(val, btn) {
+  if (lock) return;
+  const level = LEVELS[levelIndex];
+
+  if (val === level.b) {
+    // CORRECT ANSWER
+    lock = true;
+    sfxCorrect();
+    stars += 3;
+    document.getElementById("stars").textContent = stars;
+
+    // Turn gap cells green
+    document.querySelectorAll(".bridge-cell.empty").forEach(cell => {
+      cell.className = "bridge-cell placed";
+    });
+
+    // Update complete equation
+    let completeText = "";
+    if (Array.isArray(level.a)) {
+      completeText = `${level.a[0]} + ${level.a[1]} + ${level.b} = ${level.w}`;
+    } else {
+      completeText = `${level.a} + ${level.b} = ${level.w}`;
+    }
+    document.getElementById("equation").textContent = completeText;
+
+    // Animate car driving across
+    sfxEngine();
+    document.getElementById("car").style.left = "calc(100% - 46px)";
+
+    // Spawn popping rewards
+    setTimeout(spawnBalloons, 350);
+
+    // Praise speech
+    if (Array.isArray(level.a)) {
+      speak(`Bravo ! ${level.a[0]} plus ${level.a[1]} plus ${level.b} font ${level.w} !`);
+    } else {
+      speak(`Génial ! ${level.a} plus ${level.b} égale ${level.w} !`);
+    }
+
+    // Go to next round
+    setTimeout(() => {
+      levelIndex++;
+      if (levelIndex >= LEVELS.length) {
+        sfxWin();
+        document.getElementById("equation").textContent = "🏆 Champion !";
+        speak("Félicitations, tu as gagné la coupe de mathématiques !");
+        
+        // Final Screen with restart option
+        document.getElementById("grid").innerHTML = `
+          <button class="choice-btn" style="grid-column: span 2; padding: 16px;" onclick="restartGame()">
+            🔄 Recommencer
+          </button>
+        `;
+      } else {
+        loadLevel();
+      }
+    }, 4000);
+
+  } else {
+    // WRONG ANSWER
+    sfxWrong();
+    btn.classList.add("bad");
+    speak("Oups ! Réessaie.");
+
+    // Fill incorrect segments in red temporarily
+    const emptyCells = document.querySelectorAll(".bridge-cell.empty");
+    emptyCells.forEach((cell, i) => {
+      if (i < val) cell.classList.add("incorrect");
+    });
+
+    setTimeout(() => {
+      btn.classList.remove("bad");
+      emptyCells.forEach(cell => cell.classList.remove("incorrect"));
+    }, 750);
+  }
+}
+
+// 🔌 Hook Page Buttons
+document.getElementById("start").onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  loadLevel();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  speakPrompt();
+};
+</script>
+
+</body>
+</html>
