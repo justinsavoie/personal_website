@@ -586,7 +586,8 @@ function loadLevel() {
   document.getElementById("equation").textContent = eqText;
 
   // 3. Render Choices
-  const choices = getChoices(level.b);
+  const targetVal = level.pos === "left" ? level.a : level.b;
+  const choices = getChoices(targetVal);
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
 
@@ -679,8 +680,9 @@ function popBalloon(balloon) {
 function selectOption(val, btn) {
   if (lock) return;
   const level = LEVELS[levelIndex];
+  const targetVal = level.pos === "left" ? level.a : level.b;
 
-  if (val === level.b) {
+  if (val === targetVal) {
     // CORRECT ANSWER
     lock = true;
     sfxCorrect();

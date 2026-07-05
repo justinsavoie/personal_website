@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L'Ascenseur de l'Espace</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #0b0f19;
+  color: #f8fafc;
+  touch-action: manipulation;
+  overflow-x: hidden;
+}
+
+.app {
+  width: 100%;
+  max-width: 420px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 800;
+  font-size: 18px;
+  background: #1e293b;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid #334155;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+}
+
+.main {
+  background: #111827;
+  padding: 16px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid #1f2937;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+/* 🚀 Space & Rocket Shaft Scene */
+.scene {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  background: radial-gradient(circle at center, #1e1b4b 0%, #030712 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 3px solid #4f46e5;
+  box-shadow: inset 0 0 20px rgba(79, 70, 229, 0.4);
+}
+
+/* Starry background details */
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+/* Vertical Elevator Shaft */
+.shaft {
+  position: absolute;
+  top: 0;
+  left: 65px;
+  width: 8px;
+  height: 100%;
+  background: linear-gradient(to bottom, #4f46e5, #06b6d4);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+  opacity: 0.8;
+}
+
+/* Floor Platforms */
+.platform {
+  position: absolute;
+  left: 45px;
+  height: 4px;
+  background: #38bdf8;
+  border-radius: 2px;
+  box-shadow: 0 0 6px #38bdf8;
+  transition: bottom 0.5s ease-in-out;
+}
+
+.platform.start-platform {
+  width: 48px;
+  background: #f97316;
+  box-shadow: 0 0 8px #f97316;
+}
+
+.platform.target-platform {
+  width: 48px;
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+}
+
+.platform-label {
+  position: absolute;
+  left: -40px;
+  top: -8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.start-platform .platform-label { color: #f97316; }
+.target-platform .platform-label { color: #22c55e; }
+
+/* The Rocket */
+.rocket-container {
+  position: absolute;
+  left: 49px;
+  width: 40px;
+  height: 45px;
+  bottom: 0px; /* modified by JS */
+  transition: bottom 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 10;
+}
+
+.rocket-emoji {
+  font-size: 34px;
+  text-align: center;
+  transform: rotate(0deg);
+  display: block;
+}
+
+/* Fire booster animation */
+.booster-flame {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 14px;
+  background: linear-gradient(to bottom, #ff7849, transparent);
+  border-radius: 50%;
+  animation: flicker 0.1s infinite;
+  display: none;
+}
+
+@keyframes flicker {
+  0% { height: 10px; opacity: 0.8; }
+  100% { height: 16px; opacity: 1; }
+}
+
+/* Floating number text */
+.floating-num {
+  position: absolute;
+  color: #f59e0b;
+  font-size: 18px;
+  font-weight: 900;
+  text-shadow: 0 0 5px rgba(0,0,0,0.5);
+  animation: floatUp 0.8s ease-out forwards;
+  z-index: 12;
+  pointer-events: none;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+
+/* Shaking animation for overshoot */
+.shake {
+  animation: shakeRocket 0.15s ease-in-out infinite;
+}
+
+@keyframes shakeRocket {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* 📟 Display Panels */
+.panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  text-align: center;
+}
+
+.panel {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 10px;
+  border: 1px solid #334155;
+}
+
+.panel-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.panel-val {
+  font-size: 26px;
+  font-weight: 900;
+}
+
+#panel-current { color: #38bdf8; }
+#panel-target { color: #22c55e; }
+
+/* 🚀 Thrusters Layout */
+.thrusters-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #0f172a;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid #1e293b;
+}
+
+.thrusters-title {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.thrusters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.booster-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  color: white;
+  cursor: pointer;
+  font-weight: 900;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.booster-btn:active {
+  transform: scale(0.95);
+}
+
+.btn-large {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-color: #f87171;
+  box-shadow: 0 4px 0 #991b1b, 0 0 10px rgba(239, 68, 68, 0.3);
+}
+.btn-medium {
+  background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+  border-color: #facc15;
+  box-shadow: 0 4px 0 #854d0e, 0 0 10px rgba(234, 179, 8, 0.3);
+}
+.btn-small {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  border-color: #22d3ee;
+  box-shadow: 0 4px 0 #155e75, 0 0 10px rgba(6, 182, 212, 0.3);
+}
+
+.btn-large:active  { box-shadow: 0 1px 0 #991b1b; transform: translateY(3px); }
+.btn-medium:active { box-shadow: 0 1px 0 #854d0e; transform: translateY(3px); }
+.btn-small:active  { box-shadow: 0 1px 0 #155e75; transform: translateY(3px); }
+
+.booster-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 2px;
+}
+
+/* 🎈 Rewards: Space Bubbles */
+.bubble {
+  position: absolute;
+  top: 100%;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 60%, rgba(139, 92, 246, 0.3) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  z-index: 15;
+  animation: floatUp linear forwards;
+  pointer-events: auto;
+}
+
+/* 🎮 Control Toolbar */
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+button.ctrl {
+  flex: 1;
+  padding: 12px;
+  font-size: 18px;
+  border: none;
+  border-radius: 12px;
+  background: #1e293b;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #0f172a;
+  border: 1px solid #334155;
+}
+
+button.ctrl:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #0f172a;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top-bar">
+    <div class="stats">
+      <div>🚀 Niv. <span id="level">1</span></div>
+      <div>⭐ <span id="stars">0</span></div>
+    </div>
+    <div id="reset-btn" style="cursor:pointer; font-size:15px;" onclick="clearElevator()">🔄</div>
+  </div>
+
+  <div class="main">
+    <div class="scene" id="scene">
+      <div class="sky" id="sky"></div>
+      <div class="shaft"></div>
+      
+      <!-- Platforms generated dynamically -->
+      <div id="platforms-container"></div>
+      
+      <!-- The Rocket -->
+      <div id="rocket" class="rocket-container">
+        <span class="rocket-emoji">🚀</span>
+        <div id="booster" class="booster-flame"></div>
+      </div>
+    </div>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">Étage Actuel</div>
+        <div class="panel-val" id="panel-current">0</div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Cible</div>
+        <div class="panel-val" id="panel-target">0</div>
+      </div>
+    </div>
+
+    <div class="thrusters-box">
+      <div class="thrusters-title">Sélectionne un Propulseur</div>
+      <div class="thrusters-grid">
+        <button class="booster-btn btn-large" onclick="jump(10)">
+          <span>+10</span>
+          <span class="booster-label">Booster</span>
+        </button>
+        <button class="booster-btn btn-medium" onclick="jump(5)">
+          <span>+5</span>
+          <span class="booster-label">Moteur</span>
+        </button>
+        <button class="booster-btn btn-small" onclick="jump(1)">
+          <span>+1</span>
+          <span class="booster-label">Tuyère</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl" id="start">Piloter</button>
+      <button class="ctrl" id="repeat" style="max-width: 70px;">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ⚙️ Elevator Levels configuration
+const LEVELS = [
+  { s: 20, t: 33, diff: 13 }, // Level 1: +13 (10 + 1 + 1 + 1)
+  { s: 35, t: 48, diff: 13 }, // Level 2: +13
+  { s: 42, t: 65, diff: 23 }, // Level 3: +23 (10 + 10 + 1 + 1 + 1)
+  { s: 50, t: 75, diff: 25 }, // Level 4: +25 (10 + 10 + 5)
+  { s: 18, t: 43, diff: 25 }, // Level 5: +25
+  { s: 64, t: 89, diff: 25 }, // Level 6: +25
+  { s: 33, t: 68, diff: 35 }, // Level 7: +35 (10 + 10 + 10 + 5)
+  { s: 57, t: 92, diff: 35 }, // Level 8: +35
+  { s: 25, t: 70, diff: 45 }, // Level 9: +45
+  { s: 41, t: 99, diff: 58 }  // Level 10: +58 (10*5 + 5 + 1*3)
+];
+
+let levelIndex = 0;
+let stars = 0;
+let currentFloor = 0;
+let lock = false;
+let voices = [];
+let ready = false;
+let audioCtx = null;
+
+// 🌟 Draw starry background
+function createStars() {
+  const sky = document.getElementById("sky");
+  for (let i = 0; i < 35; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.style.width = star.style.height = `${1 + Math.random() * 2.5}px`;
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.top = `${Math.random() * 100}%`;
+    sky.appendChild(star);
+  }
+}
+createStars();
+
+// 🔊 Text-To-Speech Loading
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (voices.length > 0) ready = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text) {
+  if (!ready) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if (frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.95;
+  speechSynthesis.speak(utter);
+}
+
+// 🎹 Web Audio Sound Synthesizer
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+
+function playSound(freqs, type, duration, slide = false) {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = type;
+    const t = ctx.currentTime;
+    if (slide && freqs.length > 1) {
+      osc.frequency.setValueAtTime(freqs[0], t);
+      osc.frequency.exponentialRampToValueAtTime(freqs[1], t + duration);
+    } else {
+      osc.frequency.setValueAtTime(freqs[0], t);
+    }
+    
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(t);
+    osc.stop(t + duration + 0.05);
+  } catch (e) {
+    console.log("Audio API blocked");
+  }
+}
+
+function sfxPop() { playSound([500, 1100], 'sine', 0.08, true); }
+function sfxWrong() { playSound([220, 100], 'sawtooth', 0.5, true); }
+function sfxLaunch() { playSound([80, 480], 'triangle', 2.2, true); }
+
+function sfxJump(value) {
+  if (value === 10) {
+    playSound([150, 400], 'triangle', 0.45, true);
+  } else if (value === 5) {
+    playSound([250, 480], 'triangle', 0.35, true);
+  } else {
+    playSound([350, 520], 'sine', 0.2, true);
+  }
+}
+
+function sfxCorrect() {
+  const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+  notes.forEach((f, i) => {
+    setTimeout(() => playSound([f], 'sine', 0.3), i * 100);
+  });
+}
+
+// 🕹️ Game Core
+function loadLevel() {
+  lock = false;
+  const level = LEVELS[levelIndex];
+  currentFloor = level.s;
+  
+  document.getElementById("level").textContent = levelIndex + 1;
+  document.getElementById("panel-current").textContent = currentFloor;
+  document.getElementById("panel-target").textContent = level.t;
+
+  // Clear space bubbles
+  document.querySelectorAll(".bubble").forEach(b => b.remove());
+
+  // Render shaft platforms
+  const container = document.getElementById("platforms-container");
+  container.innerHTML = "";
+
+  // Helper mapping floors to scene percentage height (20px pad bottom, 250px range)
+  const getPercent = (floor) => {
+    const minF = Math.min(level.s, level.t) - 5;
+    const maxF = Math.max(level.s, level.t) + 10;
+    return ((floor - minF) / (maxF - minF)) * 80 + 10; // 10% to 90% range
+  };
+
+  // Draw Start Platform
+  const startPlat = document.createElement("div");
+  startPlat.className = "platform start-platform";
+  startPlat.style.bottom = `${getPercent(level.s)}%`;
+  startPlat.innerHTML = `<span class="platform-label">Dép. ${level.s}</span>`;
+  container.appendChild(startPlat);
+
+  // Draw Target Platform
+  const targetPlat = document.createElement("div");
+  targetPlat.className = "platform target-platform";
+  targetPlat.style.bottom = `${getPercent(level.t)}%`;
+  targetPlat.innerHTML = `<span class="platform-label">Cible ${level.t}</span>`;
+  container.appendChild(targetPlat);
+
+  // Place Rocket on Start platform
+  const rocket = document.getElementById("rocket");
+  rocket.style.bottom = `calc(${getPercent(level.s)}% - 6px)`;
+  document.getElementById("booster").style.display = "none";
+  rocket.classList.remove("shake");
+
+  setTimeout(speakPrompt, 800);
+}
+
+function speakPrompt() {
+  const level = LEVELS[levelIndex];
+  speak(`Nous sommes à l'étage ${level.s}. Fais plus ${level.diff} pour arriver à l'étage ${level.t} !`);
+}
+
+function clearElevator() {
+  speechSynthesis.resume();
+  loadLevel();
+}
+
+function restartGame() {
+  levelIndex = 0;
+  stars = 0;
+  document.getElementById("stars").textContent = stars;
+  loadLevel();
+}
+
+function triggerBoosterAnimation() {
+  const booster = document.getElementById("booster");
+  booster.style.display = "block";
+  setTimeout(() => {
+    booster.style.display = "none";
+  }, 400);
+}
+
+function jump(value) {
+  if (lock) return;
+  const level = LEVELS[levelIndex];
+
+  // Calculate new floor
+  currentFloor += value;
+  document.getElementById("panel-current").textContent = currentFloor;
+
+  // Sound and Visual booster triggers
+  sfxJump(value);
+  triggerBoosterAnimation();
+
+  // Create floating number popup
+  const scene = document.getElementById("scene");
+  const pop = document.createElement("div");
+  pop.className = "floating-num";
+  pop.textContent = `+${value}`;
+  pop.style.left = "90px";
+  // Match height
+  const rect = document.getElementById("rocket").getBoundingClientRect();
+  const sRect = scene.getBoundingClientRect();
+  pop.style.top = `${rect.top - sRect.top}px`;
+  scene.appendChild(pop);
+  setTimeout(() => pop.remove(), 800);
+
+  // Reposition rocket
+  const minF = Math.min(level.s, level.t) - 5;
+  const maxF = Math.max(level.s, level.t) + 10;
+  const targetPct = ((currentFloor - minF) / (maxF - minF)) * 80 + 10;
+  document.getElementById("rocket").style.bottom = `calc(${targetPct}% - 6px)`;
+
+  // Verify status
+  if (currentFloor === level.t) {
+    // CORRECT! SUCCESSFUL LANDING
+    lock = true;
+    sfxCorrect();
+    stars += 5;
+    document.getElementById("stars").textContent = stars;
+
+    // Speak Praise
+    speak(`Génial ! ${level.s} plus ${level.diff} font ${level.t} !`);
+
+    // Rocket acceleration off screen reward
+    setTimeout(() => {
+      sfxLaunch();
+      const booster = document.getElementById("booster");
+      booster.style.display = "block";
+      booster.style.height = "25px";
+      document.getElementById("rocket").style.bottom = "120%";
+      setTimeout(spawnBubbles, 300);
+    }, 1200);
+
+    // Advance Level
+    setTimeout(() => {
+      levelIndex++;
+      if (levelIndex >= LEVELS.length) {
+        speak("Félicitations commandant, tu as exploré toute la station spatiale !");
+        sfxCorrect();
+        
+        // Show re-play option
+        document.getElementById("grid").innerHTML = `
+          <button class="choice-btn" style="grid-column: span 3; padding: 16px; font-weight:900; font-size:20px; border-radius:12px; background:#10b981; border:none; cursor:pointer;" onclick="restartGame()">
+            🔄 Recommencer l'aventure
+          </button>
+        `;
+      } else {
+        loadLevel();
+      }
+    }, 4500);
+
+  } else if (currentFloor > level.t) {
+    // OVERSHOOT! CRASH WARNING
+    lock = true;
+    sfxWrong();
+    document.getElementById("rocket").classList.add("shake");
+    speak("Oups ! C'est trop haut ! L'ascenseur redescend.");
+
+    // Return to start after penalty delay
+    setTimeout(() => {
+      document.getElementById("rocket").classList.remove("shake");
+      loadLevel();
+    }, 2000);
+  }
+}
+
+// 🎈 Space bubble rewards
+function spawnBubbles() {
+  const sky = document.getElementById("sky");
+  for (let i = 0; i < 6; i++) {
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.style.left = `${10 + Math.random() * 80}%`;
+    bubble.style.animationDelay = `${Math.random() * 0.8}s`;
+    bubble.style.animationDuration = `${2.8 + Math.random() * 1.5}s`;
+
+    bubble.onclick = (e) => {
+      e.stopPropagation();
+      popBubble(bubble);
+    };
+
+    sky.appendChild(bubble);
+  }
+}
+
+function popBubble(bubble) {
+  sfxPop();
+  
+  // Coordinates for pop explosion
+  const rect = bubble.getBoundingClientRect();
+  const pRect = document.getElementById("scene").getBoundingClientRect();
+  
+  const pop = document.createElement("div");
+  pop.className = "pop-effect";
+  pop.textContent = "✨";
+  pop.style.left = `${rect.left - pRect.left}px`;
+  pop.style.top = `${rect.top - pRect.top}px`;
+  document.getElementById("scene").appendChild(pop);
+
+  if (bubble.parentNode) bubble.parentNode.removeChild(bubble);
+  setTimeout(() => {
+    if (pop.parentNode) pop.parentNode.removeChild(pop);
+  }, 400);
+
+  stars += 1;
+  document.getElementById("stars").textContent = stars;
+}
+
+// Hook Buttons
+document.getElementById("start").onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  loadLevel();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  speakPrompt();
+};
+</script>
+
+</body>
+</html>
