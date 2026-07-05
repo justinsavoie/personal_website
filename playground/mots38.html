@@ -11,23 +11,27 @@
   padding: 0;
 }
 
-body {
+html, body {
+  height: 100%;
   margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
   font-family: system-ui, -apple-system, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
   background: #bae6fd; /* Light blue sky */
   color: #0f172a;
   touch-action: manipulation;
-  overflow: hidden;
 }
 
 .app {
   width: 100%;
   max-width: 420px;
-  height: 100vh;
+  height: 100%;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -219,6 +223,27 @@ button.ctrl {
 button.ctrl:active {
   transform: translateY(2px);
   box-shadow: 0 2px 0 #020617;
+}
+
+@media (max-height: 620px) {
+  .app {
+    padding: 8px;
+    gap: 6px;
+  }
+  .cloud-panel {
+    padding: 10px;
+  }
+  .target-val {
+    font-size: 32px;
+  }
+  .sum-val {
+    font-size: 20px;
+  }
+  .balloon {
+    width: 52px;
+    height: 62px;
+    font-size: 16px;
+  }
 }
 </style>
 </head>
