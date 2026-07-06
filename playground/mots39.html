@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Petit Professeur</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f0fdf4; /* Soft green classroom theme */
+  color: #14532d;
+  touch-action: manipulation;
+}
+
+.app {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  position: relative;
+}
+
+/* 📊 Header Stats */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 800;
+  font-size: 17px;
+  background: white;
+  padding: 10px 14px;
+  border-radius: 14px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border: 1px solid #bbf7d0;
+  z-index: 10;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+}
+
+/* 🦉 Blackboard/Professor area */
+.board-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  z-index: 10;
+}
+
+.blackboard {
+  background: #1e3a1e; /* Dark green chalkboard */
+  border: 8px solid #78350f; /* Wood frame */
+  border-radius: 18px;
+  padding: 20px 16px;
+  color: #f8fafc;
+  text-align: center;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.blackboard.correct {
+  border-color: #22c55e;
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+}
+
+.blackboard.wrong {
+  border-color: #ef4444;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+  animation: shakeBoard 0.15s ease-in-out infinite;
+}
+
+@keyframes shakeBoard {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.professor-avatar {
+  font-size: 46px;
+}
+
+.fact-text {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-shadow: 0 2px 2px rgba(0,0,0,0.3);
+}
+
+/* 🗳️ True / False Interactive Buttons */
+.answers-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  z-index: 10;
+}
+
+.btn-choice {
+  border: none;
+  border-radius: 16px;
+  padding: 16px 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-choice:active {
+  transform: translateY(4px);
+}
+
+.btn-true {
+  background: linear-gradient(to bottom, #22c55e, #15803d);
+  border: 3px solid #14532d;
+  box-shadow: 0 6px 0 #14532d;
+}
+.btn-true:active {
+  box-shadow: 0 1px 0 #14532d;
+}
+
+.btn-false {
+  background: linear-gradient(to bottom, #ef4444, #b91c1c);
+  border: 3px solid #7f1d1d;
+  box-shadow: 0 6px 0 #7f1d1d;
+}
+.btn-false:active {
+  box-shadow: 0 1px 0 #7f1d1d;
+}
+
+.btn-choice span {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* 🎈 Rewards: Balloons */
+.balloon-layer {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.balloon {
+  position: absolute;
+  top: 100%;
+  width: 32px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 25;
+  animation: floatUp linear forwards;
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,0.15);
+  pointer-events: auto;
+}
+
+.balloon::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid rgba(0,0,0,0.2);
+}
+
+.balloon-string {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  width: 1px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+@keyframes floatUp {
+  0% { top: 100%; transform: translateX(0); }
+  50% { transform: translateX(12px); }
+  100% { top: -50px; transform: translateX(-12px); }
+}
+
+.pop-effect {
+  position: absolute;
+  font-size: 26px;
+  animation: popFade 0.4s ease-out forwards;
+  pointer-events: none;
+  z-index: 30;
+}
+
+@keyframes popFade {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* 🎮 Control Toolbar */
+.controls {
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+button.ctrl {
+  flex: 1;
+  padding: 12px;
+  font-size: 18px;
+  border: none;
+  border-radius: 12px;
+  background: #1e293b;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #0f172a;
+  border: 1px solid #334155;
+}
+
+button.ctrl:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #0f172a;
+}
+
+/* 📱 Mobile constraint compaction */
+@media (max-height: 600px) {
+  .app {
+    padding: 8px;
+    gap: 6px;
+  }
+  .top-bar {
+    padding: 6px 10px;
+    font-size: 15px;
+  }
+  .blackboard {
+    min-height: 120px;
+    padding: 14px 10px;
+  }
+  .fact-text {
+    font-size: 18px;
+  }
+  .btn-choice {
+    padding: 10px 0;
+    font-size: 18px;
+  }
+  button.ctrl {
+    padding: 10px;
+    font-size: 16px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top-bar">
+    <div class="stats">
+      <div>🦉 Q. <span id="question-count">0</span>/10</div>
+      <div>⭐ <span id="stars">0</span></div>
+    </div>
+    <div id="reset-btn" style="cursor:pointer; font-size:15px;" onclick="restartGame()">🔄</div>
+  </div>
+
+  <div class="board-container">
+    <div class="balloon-layer" id="balloon-container"></div>
+    <div class="blackboard" id="board">
+      <div class="professor-avatar" id="avatar">🦉</div>
+      <div class="fact-text" id="fact-box">Prêt à jouer ?</div>
+    </div>
+  </div>
+
+  <div class="answers-box" id="answers-grid">
+    <button class="btn-choice btn-true" onclick="verifyAnswer(true)">
+      <span>VRAI</span>
+      <div>✅</div>
+    </button>
+    <button class="btn-choice btn-false" onclick="verifyAnswer(false)">
+      <span>FAUX</span>
+      <div>❌</div>
+    </button>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl" id="start">Jouer</button>
+    <button class="ctrl" id="repeat" style="max-width: 70px;">🔊</button>
+  </div>
+</div>
+
+<script>
+// ⚙️ Programmatic generator for 400+ randomized questions in French
+let DATABASE = [];
+
+function generateDatabase() {
+  // 1. Math Questions (Additions and Subtractions, comparisons)
+  // Let's generate about 120 clean ones
+  // Addition T/F
+  for (let i = 1; i <= 8; i++) {
+    for (let j = 1; j <= 8; j++) {
+      if (Math.random() < 0.35) {
+        DATABASE.push({ text: `${i} + ${j} = ${i + j}`, correct: true });
+      } else if (Math.random() < 0.25) {
+        const wrong = i + j + (Math.random() < 0.5 ? 1 : -1);
+        DATABASE.push({ text: `${i} + ${j} = ${wrong}`, correct: false });
+      }
+    }
+  }
+  // Subtraction T/F
+  for (let i = 2; i <= 10; i++) {
+    for (let j = 1; j < i; j++) {
+      if (Math.random() < 0.35) {
+        DATABASE.push({ text: `${i} - ${j} = ${i - j}`, correct: true });
+      } else if (Math.random() < 0.25) {
+        const wrong = i - j + (Math.random() < 0.5 ? 1 : -1);
+        DATABASE.push({ text: `${i} - ${j} = ${wrong}`, correct: false });
+      }
+    }
+  }
+  // Comparisons
+  const compNums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  for (let x = 0; x < 15; x++) {
+    const a = compNums[Math.floor(Math.random() * compNums.length)];
+    let b = compNums[Math.floor(Math.random() * compNums.length)];
+    while(a === b) b = compNums[Math.floor(Math.random() * compNums.length)];
+    if (a > b) {
+      DATABASE.push({ text: `${a} est plus grand que ${b}`, correct: true });
+      DATABASE.push({ text: `${b} est plus grand que ${a}`, correct: false });
+      DATABASE.push({ text: `${b} est plus petit que ${a}`, correct: true });
+      DATABASE.push({ text: `${a} est plus petit que ${b}`, correct: false });
+    }
+  }
+
+  // 2. Flags (Drapeaux)
+  const flagsData = [
+    { country: "Canada", colors: ["rouge", "blanc"], symbols: ["une feuille d'érable"], falseColor: "bleu", falseSymbol: "une étoile jaune" },
+    { country: "France", colors: ["bleu", "blanc", "rouge"], symbols: [], falseColor: "vert", falseSymbol: "un rond noir" },
+    { country: "Italie", colors: ["vert", "blanc", "rouge"], symbols: [], falseColor: "jaune", falseSymbol: "une croix bleue" },
+    { country: "Japon", colors: ["blanc", "rouge"], symbols: ["un grand cercle rouge"], falseColor: "vert", falseSymbol: "une feuille d'érable" },
+    { country: "Suisse", colors: ["rouge", "blanc"], symbols: ["une croix blanche"], falseColor: "noir", falseSymbol: "un triangle bleu" },
+    { country: "Suède", colors: ["bleu", "jaune"], symbols: ["une croix jaune"], falseColor: "rouge", falseSymbol: "un soleil rose" },
+    { country: "Allemagne", colors: ["noir", "rouge", "jaune"], symbols: [], falseColor: "bleu", falseSymbol: "une lune orange" },
+    { country: "Brésil", colors: ["vert", "jaune", "bleu"], symbols: ["un disque bleu avec des étoiles"], falseColor: "rouge", falseSymbol: "une croix noire" },
+    { country: "Espagne", colors: ["rouge", "jaune"], symbols: [], falseColor: "violet", falseSymbol: "un carré vert" }
+  ];
+  flagsData.forEach(fd => {
+    fd.colors.forEach(col => {
+      DATABASE.push({ text: `Le drapeau du ${fd.country} a du ${col}.`, correct: true });
+    });
+    DATABASE.push({ text: `Le drapeau du ${fd.country} a du ${fd.falseColor}.`, correct: false });
+    fd.symbols.forEach(sym => {
+      DATABASE.push({ text: `Le drapeau du ${fd.country} a ${sym}.`, correct: true });
+    });
+    if (fd.falseSymbol) {
+      DATABASE.push({ text: `Le drapeau du ${fd.country} a ${fd.falseSymbol}.`, correct: false });
+    }
+  });
+  DATABASE.push({ text: "Un drapeau peut avoir des étoiles.", correct: true });
+  DATABASE.push({ text: "Un drapeau peut avoir des rayures.", correct: true });
+  DATABASE.push({ text: "Le drapeau des États-Unis a cinquante étoiles.", correct: true });
+  DATABASE.push({ text: "Le drapeau de la France est vert et jaune.", correct: false });
+  DATABASE.push({ text: "Le drapeau du Japon a un cercle bleu.", correct: false });
+
+  // 3. Capitals (Capitales)
+  const capData = [
+    { country: "France", cap: "Paris", wrong: "Lyon" },
+    { country: "Canada", cap: "Ottawa", wrong: "Montréal" },
+    { country: "Royaume-Uni", cap: "Londres", wrong: "Rome" },
+    { country: "Italie", cap: "Rome", wrong: "Milan" },
+    { country: "Japon", cap: "Tokyo", wrong: "Kyoto" },
+    { country: "Espagne", cap: "Madrid", wrong: "Barcelone" },
+    { country: "Allemagne", cap: "Berlin", wrong: "Munich" },
+    { country: "États-Unis", cap: "Washington", wrong: "New York" },
+    { country: "Belgique", cap: "Bruxelles", wrong: "Anvers" },
+    { country: "Suisse", cap: "Berne", wrong: "Genève" },
+    { country: "Portugal", cap: "Lisbonne", wrong: "Porto" },
+    { country: "Grèce", cap: "Athènes", wrong: "Venise" },
+    { country: "Brésil", cap: "Brasilia", wrong: "Rio" },
+    { country: "Russie", cap: "Moscou", wrong: "Pékin" },
+    { country: "Algérie", cap: "Alger", wrong: "Rabat" },
+    { country: "Maroc", cap: "Rabat", wrong: "Tunis" }
+  ];
+  capData.forEach(cd => {
+    DATABASE.push({ text: `La capitale de la ${cd.country === 'Royaume-Uni' || cd.country === 'Canada' || cd.country === 'Japon' || cd.country === 'Brésil' || cd.country === 'Portugal' ? 'du' : cd.country === 'États-Unis' ? 'des' : 'la'} ${cd.country} est ${cd.cap}.`, correct: true });
+    DATABASE.push({ text: `La capitale de la ${cd.country === 'Royaume-Uni' || cd.country === 'Canada' || cd.country === 'Japon' || cd.country === 'Brésil' || cd.country === 'Portugal' ? 'du' : cd.country === 'États-Unis' ? 'des' : 'la'} ${cd.country} est ${cd.wrong}.`, correct: false });
+    DATABASE.push({ text: `${cd.cap} est la capitale de la ${cd.country === 'Royaume-Uni' || cd.country === 'Canada' || cd.country === 'Japon' || cd.country === 'Brésil' || cd.country === 'Portugal' ? 'du' : cd.country === 'États-Unis' ? 'des' : 'la'} ${cd.country}.`, correct: true });
+  });
+
+  // 4. Words & Sentences (Mots)
+  const words = [
+    { word: "chat", start: "C", end: "T", yesChar: "H", noChar: "Z" },
+    { word: "chien", start: "C", end: "N", yesChar: "I", noChar: "X" },
+    { word: "pomme", start: "P", end: "E", yesChar: "M", noChar: "Y" },
+    { word: "soleil", start: "S", end: "L", yesChar: "O", noChar: "W" },
+    { word: "lune", start: "L", end: "E", yesChar: "U", noChar: "K" },
+    { word: "fleur", start: "F", end: "R", yesChar: "E", noChar: "Q" },
+    { word: "arbre", start: "A", end: "E", yesChar: "R", noChar: "J" },
+    { word: "ballon", start: "B", end: "N", yesChar: "O", noChar: "P" },
+    { word: "livre", start: "L", end: "E", yesChar: "V", noChar: "B" },
+    { word: "école", start: "E", end: "E", yesChar: "O", noChar: "X" },
+    { word: "maison", start: "M", end: "N", yesChar: "S", noChar: "P" },
+    { word: "oiseau", start: "O", end: "U", yesChar: "S", noChar: "T" },
+    { word: "poisson", start: "P", end: "N", yesChar: "S", noChar: "F" },
+    { word: "tortue", start: "T", end: "E", yesChar: "R", noChar: "G" },
+    { word: "lion", start: "L", end: "N", yesChar: "O", noChar: "U" },
+    { word: "lapin", start: "L", end: "N", yesChar: "P", noChar: "R" },
+    { word: "vélo", start: "V", end: "O", yesChar: "É", noChar: "M" },
+    { word: "train", start: "T", end: "N", yesChar: "R", noChar: "S" },
+    { word: "avion", start: "A", end: "N", yesChar: "I", noChar: "K" },
+    { word: "bateau", start: "B", end: "U", yesChar: "T", noChar: "F" }
+  ];
+  words.forEach(w => {
+    DATABASE.push({ text: `Le mot '${w.word}' commence par la lettre ${w.start}.`, correct: true });
+    DATABASE.push({ text: `Le mot '${w.word}' commence par la lettre ${w.noChar}.`, correct: false });
+    DATABASE.push({ text: `Le mot '${w.word}' se termine par la lettre ${w.end}.`, correct: true });
+    DATABASE.push({ text: `Le mot '${w.word}' contient la lettre ${w.yesChar}.`, correct: true });
+    DATABASE.push({ text: `Le mot '${w.word}' contient la lettre ${w.noChar}.`, correct: false });
+  });
+
+  // 5. Animals (Animaux)
+  const animData = [
+    { name: "lion", T: ["mange de la viande", "vit dans la savane", "est un prédateur"], F: ["mange de l'herbe", "a des ailes", "vit dans l'océan"] },
+    { name: "vache", T: ["mange de l'herbe", "produit du lait", "a des cornes"], F: ["pond des œufs", "a des plumes", "vole dans le ciel"] },
+    { name: "poisson", T: ["nage dans l'eau", "respire sous l'eau", "a des écailles"], F: ["a des poils", "a des jambes", "vit dans la forêt"] },
+    { name: "oiseau", T: ["vole dans le ciel", "a des plumes", "pond des œufs"], F: ["a quatre pattes", "respire sous l'eau", "a des dents"] },
+    { name: "singe", T: ["aime les bananes", "grimpe aux arbres", "est très agile"], F: ["vit dans la mer", "a une carapace", "rampe comme un serpent"] },
+    { name: "grenouille", T: ["saute", "mange des insectes", "commence sa vie comme têtard"], F: ["a de la laine", "aboie", "vit dans le désert"] },
+    { name: "girafe", T: ["a un cou très long", "est très grande", "mange des feuilles d'arbres"], F: ["est toute petite", "rampe sur le sol", "pond des œufs"] },
+    { name: "lapin", T: ["mange des carottes", "a de longues oreilles", "sait creuser des terriers"], F: ["a des sabots", "vole comme un oiseau", "vit sous l'eau"] },
+    { name: "tortue", T: ["marche lentement", "a une carapace solide", "pond des œufs sur le sable"], F: ["court très vite", "a des ailes", "a des poils doux"] },
+    { name: "éléphant", T: ["a une grande trompe", "est le plus grand mammifère terrestre", "a de grandes oreilles"], F: ["est minuscule", "sait voler", "vit dans un bocal"] }
+  ];
+  animData.forEach(ad => {
+    ad.T.forEach(fact => {
+      DATABASE.push({ text: `Le ${ad.name} ${fact}.`, correct: true });
+    });
+    ad.F.forEach(fact => {
+      DATABASE.push({ text: `Le ${ad.name} ${fact}.`, correct: false });
+    });
+  });
+  DATABASE.push({ text: "Le dauphin est un mammifère qui vit dans l'eau.", correct: true });
+  DATABASE.push({ text: "La chenille se transforme en papillon.", correct: true });
+  DATABASE.push({ text: "L'araignée a huit pattes.", correct: true });
+  DATABASE.push({ text: "Le mouton produit de la laine.", correct: true });
+
+  // 6. Space (Espace)
+  const spaceData = [
+    { name: "Terre", T: ["est une planète", "tourne autour du Soleil", "est bleue vue de l'espace"], F: ["est plate", "a trois lunes", "est l'étoile la plus chaude"] },
+    { name: "Soleil", T: ["est une étoile", "est très chaud", "éclaire la Terre"], F: ["est froid", "tourne autour de la Lune", "est une planète verte"] },
+    { name: "Lune", T: ["tourne autour de la Terre", "brille la nuit", "a des cratères"], F: ["est faite de fromage", "est plus grande que le Soleil", "produit sa propre lumière"] }
+  ];
+  spaceData.forEach(sd => {
+    sd.T.forEach(fact => {
+      DATABASE.push({ text: `La ${sd.name === 'Soleil' ? 'Le' : 'la'} ${sd.name} ${fact}.`, correct: true });
+    });
+    sd.F.forEach(fact => {
+      DATABASE.push({ text: `La ${sd.name === 'Soleil' ? 'Le' : 'la'} ${sd.name} ${fact}.`, correct: false });
+    });
+  });
+  DATABASE.push({ text: "La planète Mars est appelée la planète rouge.", correct: true });
+  DATABASE.push({ text: "Saturne est connue pour ses magnifiques anneaux.", correct: true });
+  DATABASE.push({ text: "Jupiter est la plus grande planète du système solaire.", correct: true });
+  DATABASE.push({ text: "Les étoiles brillent dans le ciel la nuit.", correct: true });
+  DATABASE.push({ text: "Une fusée spatiale va très vite pour quitter la Terre.", correct: true });
+  DATABASE.push({ text: "Les astronautes respirent facilement sans casque dans l'espace.", correct: false });
+  DATABASE.push({ text: "Il y a huit planètes qui tournent autour du Soleil.", correct: true });
+  DATABASE.push({ text: "La nuit, le ciel devient noir.", correct: true });
+  DATABASE.push({ text: "Le Soleil est plus petit que la Lune.", correct: false });
+  DATABASE.push({ text: "La Terre a deux soleils.", correct: false });
+}
+
+let roundQuestions = [];
+let currentQuestionIndex = 0;
+let score = 0;
+let stars = 0;
+let lock = false;
+let voices = [];
+let ready = false;
+let audioCtx = null;
+
+// 🔊 Text-To-Speech Loading
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (voices.length > 0) ready = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text) {
+  if (!ready) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if (frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.95;
+  speechSynthesis.speak(utter);
+}
+
+// 🎹 Web Audio Sound Synthesizer
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+
+function playSound(freqs, type, duration, slide = false) {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = type;
+    const t = ctx.currentTime;
+    if (slide && freqs.length > 1) {
+      osc.frequency.setValueAtTime(freqs[0], t);
+      osc.frequency.exponentialRampToValueAtTime(freqs[1], t + duration);
+    } else {
+      osc.frequency.setValueAtTime(freqs[0], t);
+    }
+    
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(t);
+    osc.stop(t + duration + 0.05);
+  } catch (e) {
+    console.log("Audio API blocked");
+  }
+}
+
+function sfxPop() { playSound([500, 1100], 'sine', 0.08, true); }
+function sfxWrong() { playSound([220, 120], 'sawtooth', 0.5, true); }
+
+function sfxCorrect() {
+  const notes = [523.25, 659.25, 783.99]; // C major arpeggio
+  notes.forEach((f, i) => {
+    setTimeout(() => playSound([f], 'triangle', 0.25), i * 110);
+  });
+}
+
+function sfxWin() {
+  const notes = [523.25, 659.25, 783.99, 1046.50];
+  notes.forEach((f, i) => {
+    setTimeout(() => playSound([f], 'sine', 0.45), i * 120);
+  });
+}
+
+// 🔀 Shuffling helper
+function shuffle(a) {
+  return [...a].sort(() => Math.random() - 0.5);
+}
+
+// 🕹️ Game Core
+function restartGame() {
+  speechSynthesis.resume();
+  score = 0;
+  stars = 0;
+  document.getElementById("stars").textContent = stars;
+  
+  // Pick 10 random questions from database of 150
+  roundQuestions = shuffle(DATABASE).slice(0, 10);
+  currentQuestionIndex = 0;
+
+  loadQuestion();
+}
+
+function loadQuestion() {
+  lock = false;
+  
+  // Clear balloons
+  document.getElementById("balloon-container").innerHTML = "";
+
+  const q = roundQuestions[currentQuestionIndex];
+  document.getElementById("question-count").textContent = currentQuestionIndex + 1;
+  document.getElementById("fact-box").textContent = q.text;
+
+  // Reset board styling
+  const board = document.getElementById("board");
+  board.className = "blackboard";
+  document.getElementById("avatar").textContent = "🦉";
+
+  // Re-render choices in case of restart
+  const grid = document.getElementById("answers-grid");
+  grid.innerHTML = `
+    <button class="btn-choice btn-true" onclick="verifyAnswer(true)">
+      <span>VRAI</span>
+      <div>✅</div>
+    </button>
+    <button class="btn-choice btn-false" onclick="verifyAnswer(false)">
+      <span>FAUX</span>
+      <div>❌</div>
+    </button>
+  `;
+
+  setTimeout(() => speak(q.text), 300);
+}
+
+function speakPrompt() {
+  const q = roundQuestions[currentQuestionIndex];
+  if (q) speak(q.text);
+}
+
+function verifyAnswer(userVal) {
+  if (lock) return;
+  const q = roundQuestions[currentQuestionIndex];
+  const isCorrect = userVal === q.correct;
+  
+  lock = true;
+  const board = document.getElementById("board");
+
+  if (isCorrect) {
+    // CORRECT!
+    sfxCorrect();
+    score++;
+    stars += 2;
+    document.getElementById("stars").textContent = stars;
+
+    board.classList.add("correct");
+    document.getElementById("avatar").textContent = "😎";
+    
+    // Praise Speech
+    const responses = ["Oui ! C'est vrai !", "Exactement !", "Super !", "Très bien !"];
+    const matchSpeech = q.correct ? responses[Math.floor(Math.random()*responses.length)] : "Exactement ! C'est faux !";
+    speak(matchSpeech);
+
+    setTimeout(advance, 1800);
+  } else {
+    // WRONG
+    sfxWrong();
+    board.classList.add("wrong");
+    document.getElementById("avatar").textContent = "🧐";
+
+    // Show correct answer visual
+    const explanation = q.correct ? "Oups ! C'est vrai !" : "Oups ! C'est faux !";
+    document.getElementById("fact-box").textContent = `${q.text}\n(${explanation})`;
+    speak(explanation);
+
+    setTimeout(advance, 2500);
+  }
+}
+
+function advance() {
+  currentQuestionIndex++;
+  if (currentQuestionIndex < 10) {
+    loadQuestion();
+  } else {
+    // END OF ROUND
+    sfxWin();
+    speak(`Félicitations ! Tu as terminé le quiz. Ton score est de ${score} sur dix.`);
+    
+    document.getElementById("fact-box").textContent = `Félicitations !\nScore : ${score} / 10`;
+    document.getElementById("avatar").textContent = "🏆";
+    
+    // Launch balloon pop rewards
+    setTimeout(spawnBalloons, 300);
+
+    // Show Play Again Button in grid
+    document.getElementById("answers-grid").innerHTML = `
+      <button class="btn-choice btn-true" style="grid-column: span 2; padding: 16px;" onclick="restartGame()">
+        <span>RECOMMENCER</span>
+        <div>🔄</div>
+      </button>
+    `;
+  }
+}
+
+// 🎈 Space bubble rewards
+function spawnBalloons() {
+  const container = document.getElementById("balloon-container");
+  const colors = ["#f87171", "#60a5fa", "#34d399", "#fbbf24", "#f472b6", "#a78bfa"];
+  
+  for (let i = 0; i < 7; i++) {
+    const balloon = document.createElement("div");
+    balloon.className = "balloon";
+    const bgCol = colors[Math.floor(Math.random() * colors.length)];
+    balloon.style.backgroundColor = bgCol;
+    balloon.style.left = `${10 + Math.random() * 80}%`;
+    balloon.style.animationDelay = `${Math.random() * 1.0}s`;
+    balloon.style.animationDuration = `${3.0 + Math.random() * 1.5}s`;
+
+    // String
+    const str = document.createElement("div");
+    str.className = "balloon-string";
+    balloon.appendChild(str);
+
+    // Tap handler
+    balloon.onclick = (e) => {
+      e.stopPropagation();
+      popBalloon(balloon);
+    };
+
+    container.appendChild(balloon);
+  }
+}
+
+function popBalloon(balloon) {
+  sfxPop();
+  
+  const rect = balloon.getBoundingClientRect();
+  const pRect = document.getElementById("balloon-container").getBoundingClientRect();
+  
+  const pop = document.createElement("div");
+  pop.className = "pop-effect";
+  pop.textContent = "✨";
+  pop.style.left = `${rect.left - pRect.left}px`;
+  pop.style.top = `${rect.top - pRect.top}px`;
+  document.getElementById("balloon-container").appendChild(pop);
+
+  if (balloon.parentNode) balloon.parentNode.removeChild(balloon);
+  setTimeout(() => {
+    if (pop.parentNode) pop.parentNode.removeChild(pop);
+  }, 400);
+
+  stars += 1;
+  document.getElementById("stars").textContent = stars;
+}
+
+// Hook start buttons
+document.getElementById("start").onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  restartGame();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  speakPrompt();
+};
+
+// Bootstrap
+generateDatabase();
+restartGame();
+</script>
+
+</body>
+</html>
