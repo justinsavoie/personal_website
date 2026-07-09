@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monstres mangeurs de nombres</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:#f0f2f5;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:900;
+  font-size:18px;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 5px 12px rgba(0,0,0,0.12);
+}
+
+.stage{
+  border-radius:16px;
+  background:#fee2e2;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  transition:background 0.4s ease;
+  position:relative;
+  overflow:hidden;
+}
+
+.monster{
+  font-size:72px;
+  line-height:1;
+  animation:idleBounce 1.6s ease-in-out infinite;
+  filter:drop-shadow(0 6px 4px rgba(0,0,0,0.18));
+}
+
+@keyframes idleBounce{
+  0%,100%{ transform:translateY(0) rotate(-2deg); }
+  50%{ transform:translateY(-8px) rotate(2deg); }
+}
+
+.monster.happy{
+  animation:happyJump 0.5s ease;
+}
+
+@keyframes happyJump{
+  0%{ transform:scale(1); }
+  40%{ transform:scale(1.35) rotate(-10deg); }
+  100%{ transform:scale(1); }
+}
+
+.monster.hurt{
+  animation:hurtShake 0.4s ease;
+}
+
+@keyframes hurtShake{
+  0%,100%{ transform:translateX(0); }
+  25%{ transform:translateX(-10px) rotate(-6deg); }
+  75%{ transform:translateX(10px) rotate(6deg); }
+}
+
+.speech{
+  background:white;
+  border-radius:999px;
+  padding:8px 16px;
+  font-weight:900;
+  font-size:20px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.15);
+}
+
+.round-info{
+  display:flex;
+  justify-content:space-between;
+  font-weight:800;
+  font-size:14px;
+  color:#334155;
+}
+
+.bar{
+  height:12px;
+  border-radius:999px;
+  background:#e2e8f0;
+  overflow:hidden;
+}
+
+.fill{
+  height:100%;
+  width:100%;
+  background:#f59e0b;
+  transition:width 0.1s linear, background 0.3s ease;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+button{
+  border:none;
+  border-radius:14px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+}
+
+button:active{
+  transform:scale(0.96);
+}
+
+.choice{
+  min-height:60px;
+  font-size:22px;
+  background:#fff;
+  color:#111;
+  border:3px solid #111;
+  transition:opacity 0.3s ease, transform 0.3s ease;
+}
+
+.choice.eaten{
+  animation:eatenFly 0.4s forwards;
+  pointer-events:none;
+}
+
+@keyframes eatenFly{
+  to{ transform:scale(0.2) translateY(-50px); opacity:0; }
+}
+
+.choice.wrong{
+  animation:shake 0.4s;
+  background:#fecaca !important;
+  border-color:#dc2626 !important;
+  color:#7f1d1d;
+}
+
+@keyframes shake{
+  25%{ transform:translateX(-6px); }
+  75%{ transform:translateX(6px); }
+}
+
+.choice:disabled{
+  opacity:0.55;
+}
+
+.message{
+  min-height:24px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#334155;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr;
+}
+
+.control{
+  min-height:54px;
+  font-size:18px;
+  background:#222;
+  color:white;
+}
+
+.overlay{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  text-align:center;
+}
+
+.overlay.show{
+  display:flex;
+}
+
+.overlay h2{
+  margin:0;
+  font-size:26px;
+}
+
+.toast{
+  position:fixed;
+  top:16px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#111;
+  color:white;
+  padding:10px 18px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:14px;
+  opacity:0;
+  transition:opacity 0.3s ease, top 0.3s ease;
+  pointer-events:none;
+  z-index:10;
+}
+
+.toast.show{
+  opacity:1;
+  top:26px;
+}
+</style>
+</head>
+
+<body>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <div class="top">
+    <div>⭐ <span id="score">0</span></div>
+    <div id="lives">❤️❤️❤️</div>
+  </div>
+
+  <div class="card">
+    <div class="stage" id="stage">
+      <div class="monster" id="monster">👹</div>
+      <div class="speech">Je mange <span id="target">?</span> !</div>
+    </div>
+
+    <div class="round-info">
+      <span id="remaining">Appuie sur Jouer pour commencer</span>
+      <span id="streak">🔥 0</span>
+    </div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="message" id="message">Clique sur toutes les recettes qui donnent le bon nombre !</div>
+
+    <div class="overlay" id="overlay">
+      <h2>Partie terminée !</h2>
+      <div id="finalStats"></div>
+    </div>
+
+    <div class="controls">
+      <button class="control" id="start">Jouer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONSTERS = [
+  { emoji:'👹', bg:'#fee2e2' },
+  { emoji:'👺', bg:'#ffedd5' },
+  { emoji:'👻', bg:'#ede9fe' },
+  { emoji:'🤖', bg:'#e0f2fe' },
+  { emoji:'👽', bg:'#dcfce7' },
+  { emoji:'🐙', bg:'#fce7f3' },
+  { emoji:'🦑', bg:'#e0e7ff' },
+  { emoji:'🦖', bg:'#fef9c3' },
+];
+
+let score = 0;
+let lives = 3;
+let streak = 0;
+let roundsCleared = 0;
+let monsterIndex = 0;
+let playing = false;
+
+let target = 0;
+let needed = 0;
+let foundCount = 0;
+let timeLeft = 0;
+let currentLevel = null;
+let timerHandle = null;
+
+const scoreEl = document.getElementById("score");
+const livesEl = document.getElementById("lives");
+const streakEl = document.getElementById("streak");
+const remainingEl = document.getElementById("remaining");
+const targetEl = document.getElementById("target");
+const monsterEl = document.getElementById("monster");
+const stageEl = document.getElementById("stage");
+const fillEl = document.getElementById("fill");
+const gridEl = document.getElementById("grid");
+const messageEl = document.getElementById("message");
+const overlayEl = document.getElementById("overlay");
+const finalStatsEl = document.getElementById("finalStats");
+const toastEl = document.getElementById("toast");
+const startBtn = document.getElementById("start");
+
+function randInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(items){
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+function beep(freq, dur, type){
+  try{
+    if(!beep.ctx) beep.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = beep.ctx;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.value = 0.15;
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    o.stop(ctx.currentTime + dur);
+  } catch(e){}
+}
+
+function playChime(good){
+  if(good) beep(880, 0.15, 'sine');
+  else beep(160, 0.25, 'sawtooth');
+}
+
+function getLevel(){
+  if(roundsCleared < 3) return { maxOperand:9, allowSub:false, tiles:6, correct:2, time:20 };
+  if(roundsCleared < 6) return { maxOperand:10, allowSub:true, tiles:6, correct:2, time:18 };
+  if(roundsCleared < 10) return { maxOperand:12, allowSub:true, tiles:7, correct:3, time:15 };
+  return { maxOperand:15, allowSub:true, tiles:8, correct:3, time:12 };
+}
+
+function exprForValue(value, allowSub, maxOperand, usedTexts){
+  for(let attempt = 0; attempt < 30; attempt++){
+    const useSub = allowSub && Math.random() < 0.5;
+    let a, b, text;
+    if(!useSub){
+      a = randInt(Math.max(0, value - maxOperand), Math.min(value, maxOperand));
+      b = value - a;
+      if(b < 0 || b > maxOperand) continue;
+      text = `${a} + ${b}`;
+    } else {
+      b = randInt(0, maxOperand);
+      a = value + b;
+      if(a > 20) continue;
+      text = `${a} - ${b}`;
+    }
+    if(usedTexts.has(text)) continue;
+    return { text };
+  }
+  const text = `${value} + 0`;
+  if(usedTexts.has(text)) return null;
+  return { text };
+}
+
+function buildRound(level, targetValue){
+  const usedTexts = new Set();
+  const tiles = [];
+
+  for(let i = 0; i < level.correct; i++){
+    const e = exprForValue(targetValue, level.allowSub, level.maxOperand, usedTexts);
+    if(!e) continue;
+    usedTexts.add(e.text);
+    tiles.push({ text:e.text, correct:true });
+  }
+
+  let guard = 0;
+  while(tiles.length < level.tiles && guard < 200){
+    guard++;
+    const dv = targetValue + randInt(-6, 6);
+    if(dv === targetValue || dv < 0) continue;
+    const e = exprForValue(dv, level.allowSub, level.maxOperand, usedTexts);
+    if(!e) continue;
+    usedTexts.add(e.text);
+    tiles.push({ text:e.text, correct:false });
+  }
+
+  return shuffle(tiles);
+}
+
+function updateLives(){
+  livesEl.textContent = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, 3 - lives));
+}
+
+function applyMonster(){
+  monsterEl.textContent = MONSTERS[monsterIndex].emoji;
+  stageEl.style.background = MONSTERS[monsterIndex].bg;
+}
+
+function showToast(text){
+  toastEl.textContent = text;
+  toastEl.classList.add('show');
+  setTimeout(() => toastEl.classList.remove('show'), 1800);
+}
+
+function pulse(el, className){
+  el.classList.remove(className);
+  void el.offsetWidth;
+  el.classList.add(className);
+  setTimeout(() => el.classList.remove(className), 500);
+}
+
+function startRound(){
+  if(!playing) return;
+  clearInterval(timerHandle);
+  const level = getLevel();
+  currentLevel = level;
+  target = randInt(3, Math.min(20, level.maxOperand + 6));
+  needed = level.correct;
+  foundCount = 0;
+  timeLeft = level.time;
+
+  targetEl.textContent = target;
+  remainingEl.textContent = `Trouve ${needed} recettes`;
+  messageEl.textContent = "Clique sur toutes les recettes qui donnent le bon nombre !";
+  fillEl.style.width = '100%';
+  fillEl.style.background = '#f59e0b';
+
+  const tiles = buildRound(level, target);
+  gridEl.innerHTML = "";
+  tiles.forEach(tile => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = tile.text;
+    btn.onclick = () => tileClick(tile, btn);
+    gridEl.appendChild(btn);
+  });
+
+  timerHandle = setInterval(() => {
+    timeLeft -= 0.1;
+    const pct = Math.max(0, (timeLeft / level.time) * 100);
+    fillEl.style.width = `${pct}%`;
+    if(pct < 30) fillEl.style.background = '#dc2626';
+    if(timeLeft <= 0){
+      clearInterval(timerHandle);
+      handleTimeout();
+    }
+  }, 100);
+}
+
+function tileClick(tile, btn){
+  if(!playing || btn.disabled) return;
+
+  if(tile.correct){
+    btn.disabled = true;
+    btn.classList.add('eaten');
+    foundCount++;
+    score += 10;
+    scoreEl.textContent = score;
+    playChime(true);
+    pulse(monsterEl, 'happy');
+
+    if(foundCount >= needed){
+      clearInterval(timerHandle);
+      roundComplete();
+    } else {
+      remainingEl.textContent = `Trouve encore ${needed - foundCount}`;
+    }
+  } else {
+    btn.disabled = true;
+    btn.classList.add('wrong');
+    playChime(false);
+    pulse(monsterEl, 'hurt');
+    loseLife();
+  }
+}
+
+function roundComplete(){
+  roundsCleared++;
+  streak++;
+  streakEl.textContent = `🔥 ${streak}`;
+  score += 20;
+  scoreEl.textContent = score;
+  messageEl.textContent = "Miam miam ! 😋";
+
+  checkUnlock();
+
+  setTimeout(() => { if(playing) startRound(); }, 1300);
+}
+
+function handleTimeout(){
+  messageEl.textContent = "Temps écoulé !";
+  Array.from(gridEl.children).forEach(b => b.disabled = true);
+  loseLife();
+  if(playing){
+    setTimeout(() => { if(playing) startRound(); }, 1300);
+  }
+}
+
+function loseLife(){
+  lives--;
+  updateLives();
+  streak = 0;
+  streakEl.textContent = "🔥 0";
+  if(lives <= 0){
+    endGame();
+  }
+}
+
+function checkUnlock(){
+  const idx = Math.min(MONSTERS.length - 1, Math.floor(roundsCleared / 3));
+  if(idx !== monsterIndex){
+    monsterIndex = idx;
+    applyMonster();
+    showToast(`Nouveau monstre débloqué : ${MONSTERS[monsterIndex].emoji} !`);
+  }
+}
+
+function endGame(){
+  playing = false;
+  clearInterval(timerHandle);
+  Array.from(gridEl.children).forEach(b => b.disabled = true);
+  finalStatsEl.innerHTML = `Score : <b>${score}</b><br>Manches réussies : <b>${roundsCleared}</b>`;
+  overlayEl.classList.add('show');
+  startBtn.textContent = "Rejouer";
+}
+
+function resetGame(){
+  score = 0;
+  lives = 3;
+  streak = 0;
+  roundsCleared = 0;
+  monsterIndex = 0;
+  playing = true;
+  overlayEl.classList.remove('show');
+  startBtn.textContent = "Jouer";
+  applyMonster();
+  updateLives();
+  scoreEl.textContent = score;
+  streakEl.textContent = "🔥 0";
+  startRound();
+}
+
+startBtn.onclick = () => resetGame();
+
+updateLives();
+applyMonster();
+</script>
+</body>
+</html>
