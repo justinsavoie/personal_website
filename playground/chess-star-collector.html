@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess Star Collector</title>
+  <!-- Google Fonts for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* CSS Variables for design tokens */
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #030712 100%);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --primary-color: #6366f1;
+      --accent-color: #facc15;
+      --accent-glow: 0 0 15px #facc15;
+      --square-light: rgba(99, 102, 241, 0.15);
+      --square-dark: rgba(30, 27, 75, 0.5);
+      --text-main: #f3f4f6;
+      --text-sub: #9ca3af;
+      --success-color: #10b981;
+      --error-color: #f43f5e;
+      --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.57);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      overflow-x: hidden;
+    }
+
+    /* Container holding the whole game panel */
+    .game-container {
+      width: 100%;
+      max-width: 440px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--panel-shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header & Title styling */
+    header {
+      text-align: center;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .sub-title {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    /* Status board at the top */
+    .status-panel {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .status-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-label {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-value {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .status-value.score {
+      color: var(--accent-color);
+      text-shadow: var(--accent-glow);
+    }
+
+    /* Game board styling */
+    .board-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid var(--glass-border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(6, 1fr);
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Board Square styling */
+    .square {
+      border: none;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .square:active {
+      transform: scale(0.95);
+    }
+
+    .square.light {
+      background-color: var(--square-light);
+    }
+
+    .square.dark {
+      background-color: var(--square-dark);
+    }
+
+    /* Content layers inside square */
+    .square-content {
+      font-size: clamp(2rem, 9vw, 3.2rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      z-index: 2;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Stars bounce / float animation */
+    .square.has-star .square-content {
+      animation: floatStar 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatStar {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-4px) scale(1.08); }
+    }
+
+    /* Highlight indicator for collectable moves */
+    .square.collectable::after {
+      content: '';
+      position: absolute;
+      width: 80%;
+      height: 80%;
+      border: 3px dashed var(--accent-color);
+      border-radius: 50%;
+      animation: rotateGlow 6s linear infinite;
+      box-shadow: var(--accent-glow);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    /* Make outline solid and pulsing if Hint is active */
+    .square.collectable.highlighted::after {
+      opacity: 1;
+      border-style: solid;
+      animation: pulseGlow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes rotateGlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseGlow {
+      0% { transform: scale(0.95); box-shadow: 0 0 5px var(--accent-color); }
+      100% { transform: scale(1.05); box-shadow: var(--accent-glow); }
+    }
+
+    /* feedback notification area */
+    .feedback-panel {
+      width: 100%;
+      text-align: center;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 8px 12px;
+    }
+
+    .feedback-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      transition: color 0.3s, transform 0.2s;
+    }
+
+    .feedback-text.success {
+      color: var(--success-color);
+      transform: scale(1.05);
+      animation: popText 0.3s ease-out;
+    }
+
+    .feedback-text.error {
+      color: var(--error-color);
+      transform: scale(0.95);
+      animation: shakeText 0.4s ease-in-out;
+    }
+
+    @keyframes popText {
+      0% { transform: scale(0.8); }
+      100% { transform: scale(1.05); }
+    }
+
+    @keyframes shakeText {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    /* Interactive controls */
+    .controls {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #4f46e5 100%);
+      border: none;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn.primary:hover {
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn.toggle-on {
+      background: rgba(250, 204, 21, 0.15);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    .btn-full {
+      grid-column: span 2;
+    }
+
+    /* Mode selector control */
+    .mode-container {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .mode-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+      color: var(--text-sub);
+    }
+
+    .mode-tab.active {
+      background-color: var(--primary-color);
+      color: var(--text-main);
+    }
+
+    /* Accessibility focus indicators */
+    .square:focus-visible, .btn:focus-visible, .mode-tab:focus-visible {
+      outline: 3px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-container">
+    <header>
+      <h1>Chess Star Collector</h1>
+      <div class="sub-title">Collect Stars • Learn Moves</div>
+    </header>
+
+    <!-- Top Status Bar -->
+    <div class="status-panel">
+      <div class="status-item">
+        <span class="status-label">Piece</span>
+        <span class="status-value" id="piece-name">Rook</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Stars Left</span>
+        <span class="status-value" id="stars-left">3</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Score</span>
+        <span class="status-value score" id="current-score">0</span>
+      </div>
+    </div>
+
+    <!-- The 6x6 Board -->
+    <div class="board-container">
+      <div class="board" id="chessboard" role="grid" aria-label="Chessboard game field"></div>
+    </div>
+
+    <!-- Cheerful Feedback Notification -->
+    <div class="feedback-panel">
+      <span class="feedback-text" id="feedback-message">Collect a star!</span>
+    </div>
+
+    <!-- Mode Selector Tab Control -->
+    <div class="mode-container" role="radiogroup" aria-label="Game Difficulty Mode">
+      <div class="mode-tab active" id="mode-easy" role="radio" aria-checked="true" tabindex="0">Easy Mode</div>
+      <div class="mode-tab" id="mode-puzzle" role="radio" aria-checked="false" tabindex="0">Puzzle Mode</div>
+    </div>
+
+    <!-- Utility Controls -->
+    <div class="controls">
+      <button class="btn" id="btn-hint" aria-label="Toggle reachable star highlights">
+        💡 Show Hint
+      </button>
+      <button class="btn" id="btn-new-puzzle" aria-label="Skip to new puzzle board">
+        🔄 New Board
+      </button>
+      <button class="btn btn-full" id="btn-reset-score" aria-label="Reset score to zero">
+        🗑️ Reset Score
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Constants
+    const BOARD_SIZE = 6;
+    const PIECE_SYMBOLS = {
+      rook: "♜",
+      bishop: "♝",
+      queen: "♛",
+      knight: "♞",
+      king: "♚",
+      pawn: "♟"
+    };
+
+    // Synthesized Web Audio API Sound generator
+    const Sound = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      },
+      playTone(freq, type, duration) {
+        try {
+          this.init();
+          if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+          }
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {
+          console.warn("Audio Context blocked or not supported: ", e);
+        }
+      },
+      collect() {
+        this.playTone(523.25, 'sine', 0.2); // C5
+        setTimeout(() => this.playTone(659.25, 'sine', 0.2), 70); // E5
+        setTimeout(() => this.playTone(783.99, 'sine', 0.3), 140); // G5
+      },
+      success() {
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5 -> E5 -> G5 -> C6 Fanfare
+        notes.forEach((freq, i) => {
+          setTimeout(() => this.playTone(freq, 'triangle', 0.35), i * 90);
+        });
+      },
+      error() {
+        this.playTone(180, 'sawtooth', 0.35); // Low error buzz
+      }
+    };
+
+    // State object
+    const state = {
+      piece: null,         // 'rook', 'bishop', 'queen', 'knight', 'king', 'pawn'
+      piecePos: [0, 0],    // [row, col]
+      stars: [],           // array of [row, col]
+      score: 0,
+      feedback: "Collect a star!",
+      feedbackClass: "",   // 'success' | 'error' | ''
+      collectableStars: [],// array of [row, col]
+      hintOn: true,
+      mode: "easy"        // "easy" (only reachable stars shown) | "puzzle" (all stars shown)
+    };
+
+    // Initialization
+    function init() {
+      // Restore score from local storage
+      const savedScore = localStorage.getItem("chess_collector_score");
+      if (savedScore !== null) {
+        state.score = parseInt(savedScore, 10) || 0;
+      }
+
+      setupEventListeners();
+      newPuzzle();
+    }
+
+    // Set up events on DOM elements
+    function setupEventListeners() {
+      document.getElementById("btn-hint").addEventListener("click", () => {
+        state.hintOn = !state.hintOn;
+        const btn = document.getElementById("btn-hint");
+        btn.classList.toggle("toggle-on", state.hintOn);
+        render();
+      });
+
+      document.getElementById("btn-new-puzzle").addEventListener("click", () => {
+        setFeedback("New board!", "");
+        newPuzzle();
+      });
+
+      document.getElementById("btn-reset-score").addEventListener("click", resetScore);
+
+      // Mode toggles
+      const easyTab = document.getElementById("mode-easy");
+      const puzzleTab = document.getElementById("mode-puzzle");
+
+      easyTab.addEventListener("click", () => setMode("easy"));
+      easyTab.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") setMode("easy"); });
+
+      puzzleTab.addEventListener("click", () => setMode("puzzle"));
+      puzzleTab.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") setMode("puzzle"); });
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      document.getElementById("mode-easy").classList.toggle("active", mode === "easy");
+      document.getElementById("mode-easy").setAttribute("aria-checked", mode === "easy");
+      document.getElementById("mode-puzzle").classList.toggle("active", mode === "puzzle");
+      document.getElementById("mode-puzzle").setAttribute("aria-checked", mode === "puzzle");
+      render();
+    }
+
+    // Set gentle feedback
+    function setFeedback(msg, cssClass) {
+      state.feedback = msg;
+      state.feedbackClass = cssClass;
+      renderStatus();
+    }
+
+    // Start a fresh random puzzle position
+    function newPuzzle() {
+      generatePuzzle();
+      state.collectableStars = getCollectableStars();
+      render();
+    }
+
+    // Generate puzzle using retry logic
+    function generatePuzzle() {
+      const pieces = ["rook", "bishop", "queen", "knight", "king", "pawn"];
+      
+      for (let attempt = 0; attempt < 100; attempt++) {
+        const piece = randomChoice(pieces);
+        let startPos;
+        
+        if (piece === "pawn") {
+          // Pawn moves upward only (row decreases). Give it starting space.
+          // Needs space depending on star target (3 stars -> start row 3, 4 or 5)
+          startPos = [randomBetween(3, 5), randomBetween(0, 5)];
+        } else {
+          startPos = [randomBetween(0, 5), randomBetween(0, 5)];
+        }
+
+        // Bishop can get trapped in small spaces, ensure some breathing room
+        const targetStars = (piece === "pawn") ? 2 : 3;
+        const chain = generateStarChain(piece, startPos, targetStars);
+        
+        if (chain && chain.length === targetStars) {
+          state.piece = piece;
+          state.piecePos = startPos;
+          state.stars = chain;
+          return;
+        }
+      }
+
+      // Fallback: Rook from center
+      state.piece = "rook";
+      state.piecePos = [2, 2];
+      state.stars = [[2, 4], [4, 4], [4, 1]];
+    }
+
+    // Generate a solvable chain of moves
+    function generateStarChain(piece, startPos, starCount) {
+      const stars = [];
+      let currentPos = [...startPos];
+
+      for (let i = 0; i < starCount; i++) {
+        const moves = getLegalMoves(piece, currentPos);
+        
+        // Filter out options that are starting position, current position, or duplicate stars
+        const validDestinations = moves.filter(m => 
+          !containsSquare(stars, m) && 
+          !sameSquare(m, startPos) && 
+          !sameSquare(m, currentPos)
+        );
+
+        if (validDestinations.length === 0) return null;
+        
+        const nextPos = randomChoice(validDestinations);
+        stars.push(nextPos);
+        currentPos = nextPos;
+      }
+      return stars;
+    }
+
+    // Return all legal destinations for a piece from position pos
+    function getLegalMoves(piece, pos) {
+      switch (piece) {
+        case "rook":   return getRookMoves(pos);
+        case "bishop": return getBishopMoves(pos);
+        case "queen":  return getQueenMoves(pos);
+        case "knight": return getKnightMoves(pos);
+        case "king":   return getKingMoves(pos);
+        case "pawn":   return getPawnMoves(pos);
+        default:       return [];
+      }
+    }
+
+    function getRookMoves(pos) {
+      const [r, c] = pos;
+      const moves = [];
+      const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+      for (const [dr, dc] of dirs) {
+        let nr = r + dr;
+        let nc = c + dc;
+        while (isInside(nr, nc)) {
+          moves.push([nr, nc]);
+          nr += dr;
+          nc += dc;
+        }
+      }
+      return moves;
+    }
+
+    function getBishopMoves(pos) {
+      const [r, c] = pos;
+      const moves = [];
+      const dirs = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+      for (const [dr, dc] of dirs) {
+        let nr = r + dr;
+        let nc = c + dc;
+        while (isInside(nr, nc)) {
+          moves.push([nr, nc]);
+          nr += dr;
+          nc += dc;
+        }
+      }
+      return moves;
+    }
+
+    function getQueenMoves(pos) {
+      return [...getRookMoves(pos), ...getBishopMoves(pos)];
+    }
+
+    // Knight L-move implementation
+    function getKnightMoves(pos) {
+      const [r, c] = pos;
+      const offsets = [
+        [2, 1], [2, -1], [-2, 1], [-2, -1],
+        [1, 2], [1, -2], [-1, 2], [-1, -2]
+      ];
+      return offsets
+        .map(([dr, dc]) => [r + dr, c + dc])
+        .filter(([nr, nc]) => isInside(nr, nc));
+    }
+
+    function getKingMoves(pos) {
+      const [r, c] = pos;
+      const offsets = [
+        [-1, -1], [-1, 0], [-1, 1],
+        [0, -1],           [0, 1],
+        [1, -1],  [1, 0],  [1, 1]
+      ];
+      return offsets
+        .map(([dr, dc]) => [r + dr, c + dc])
+        .filter(([nr, nc]) => isInside(nr, nc));
+    }
+
+    function getPawnMoves(pos) {
+      const [r, c] = pos;
+      const moves = [];
+      if (isInside(r - 1, c)) {
+        moves.push([r - 1, c]);
+      }
+      return moves;
+    }
+
+    // Helper functions
+    function isInside(row, col) {
+      return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+    }
+
+    function sameSquare(a, b) {
+      return a[0] === b[0] && a[1] === b[1];
+    }
+
+    function containsSquare(list, square) {
+      return list.some(s => sameSquare(s, square));
+    }
+
+    function removeStarAt(square) {
+      state.stars = state.stars.filter(s => !sameSquare(s, square));
+    }
+
+    function getCollectableStars() {
+      const legalMoves = getLegalMoves(state.piece, state.piecePos);
+      return state.stars.filter(star => containsSquare(legalMoves, star));
+    }
+
+    function isCollectableStar(row, col) {
+      return containsSquare(state.collectableStars, [row, col]);
+    }
+
+    // Handler when user taps a board square
+    function handleSquareTap(row, col) {
+      const tapped = [row, col];
+      
+      // Tap is correct only if it targets a collectable star
+      if (isCollectableStar(row, col)) {
+        Sound.collect();
+        state.piecePos = tapped;
+        removeStarAt(tapped);
+        state.score += 1;
+        localStorage.setItem("chess_collector_score", state.score);
+
+        if (state.stars.length === 0) {
+          // Success/Clear Board condition
+          Sound.success();
+          state.score += 2; // Bonus points for full puzzle collection
+          localStorage.setItem("chess_collector_score", state.score);
+          setFeedback("Great job! (+2 Bonus)", "success");
+          
+          setTimeout(() => {
+            setFeedback("Collect a star!", "");
+            newPuzzle();
+          }, 800);
+        } else {
+          // Continue same puzzle
+          state.collectableStars = getCollectableStars();
+          
+          if (state.collectableStars.length === 0) {
+            // Stuck state: user picked stars in an order with no remaining legal step
+            setFeedback("Oops — no moves left! New board!", "error");
+            setTimeout(() => {
+              setFeedback("Collect a star!", "");
+              newPuzzle();
+            }, 1000);
+          } else {
+            setFeedback("Nice move!", "success");
+            render();
+          }
+        }
+      } else {
+        // Tapped wrong square/star
+        Sound.error();
+        const messages = ["Oops — new puzzle!", "Try a new one!", "New board!"];
+        setFeedback(randomChoice(messages), "error");
+        setTimeout(() => {
+          setFeedback("Collect a star!", "");
+          newPuzzle();
+        }, 900);
+      }
+    }
+
+    // Resetting score
+    function resetScore() {
+      state.score = 0;
+      localStorage.setItem("chess_collector_score", 0);
+      renderStatus();
+    }
+
+    // Utilities
+    function randomChoice(array) {
+      return array[Math.floor(Math.random() * array.length)];
+    }
+
+    function randomBetween(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Rendering functions
+    function render() {
+      renderBoard();
+      renderStatus();
+    }
+
+    function renderStatus() {
+      const capPiece = state.piece ? state.piece.charAt(0).toUpperCase() + state.piece.slice(1) : "";
+      document.getElementById("piece-name").innerText = capPiece;
+      document.getElementById("stars-left").innerText = state.stars.length;
+      document.getElementById("current-score").innerText = state.score;
+
+      const fMsg = document.getElementById("feedback-message");
+      fMsg.innerText = state.feedback;
+      fMsg.className = "feedback-text " + state.feedbackClass;
+    }
+
+    function renderBoard() {
+      const boardElement = document.getElementById("chessboard");
+      boardElement.innerHTML = "";
+
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        for (let c = 0; c < BOARD_SIZE; c++) {
+          const btn = document.createElement("button");
+          const colorClass = (r + c) % 2 === 0 ? "light" : "dark";
+          btn.className = `square ${colorClass}`;
+          
+          const isPiece = sameSquare(state.piecePos, [r, c]);
+          const isStar = containsSquare(state.stars, [r, c]);
+          const isReachable = isCollectableStar(r, c);
+
+          let content = "";
+          let label = `Square ${r + 1}, ${c + 1}`;
+
+          if (isPiece) {
+            btn.classList.add("has-piece");
+            content = PIECE_SYMBOLS[state.piece] || "";
+            label = `${state.piece} at Row ${r + 1}, Column ${c + 1}`;
+          } else if (isStar) {
+            btn.classList.add("has-star");
+            
+            // In Easy mode, non-collectable stars are hidden
+            if (state.mode === "easy" && !isReachable) {
+              btn.classList.add("star-hidden");
+            } else {
+              content = "⭐";
+              label = isReachable ? "Collectable star" : "Unreachable star";
+            }
+          }
+
+          if (isReachable) {
+            btn.classList.add("collectable");
+            // If hints are active, show visual guide glow
+            if (state.hintOn) {
+              btn.classList.add("highlighted");
+            }
+          }
+
+          // HTML Square content layer
+          const contentSpan = document.createElement("span");
+          contentSpan.className = "square-content";
+          contentSpan.innerHTML = content;
+          btn.appendChild(contentSpan);
+
+          btn.setAttribute("aria-label", label);
+          btn.setAttribute("role", "gridcell");
+          btn.addEventListener("click", () => handleSquareTap(r, c));
+
+          boardElement.appendChild(btn);
+        }
+      }
+    }
+
+    // Set button state toggled correctly initially
+    document.getElementById("btn-hint").classList.toggle("toggle-on", state.hintOn);
+
+    // Run Game
+    init();
+  </script>
+</body>
+</html>
