@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pêche aux nombres et aux mots</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:#0891b2;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#fff;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 5px 16px rgba(0,0,0,0.28);
+}
+
+.pond{
+  height:130px;
+  background:linear-gradient(180deg,#38bdf8 0%,#0284c7 100%);
+  border:6px solid #075985;
+  border-radius:22px;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.pond::before{
+  content:"";
+  position:absolute;
+  left:0; right:0; top:18px;
+  height:6px;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,0.6) 0 20px, transparent 20px 40px);
+}
+
+.pond::after{
+  content:"";
+  position:absolute;
+  left:0; right:0; top:60px;
+  height:6px;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,0.4) 0 26px, transparent 26px 50px);
+}
+
+.bigfish{
+  font-size:56px;
+  filter:drop-shadow(0 4px 3px rgba(0,0,0,0.3));
+}
+
+.progress{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+}
+
+.bar{
+  height:20px;
+  border-radius:999px;
+  background:#cbd5e1;
+  overflow:hidden;
+}
+
+.fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#22d3ee,#0e7490);
+  transition:width 0.4s ease;
+}
+
+.prompt{
+  text-align:center;
+  font-size:38px;
+  font-weight:900;
+  letter-spacing:1px;
+  min-height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+button{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+}
+
+button:active{
+  transform:scale(0.96);
+}
+
+.choice{
+  min-height:66px;
+  font-size:24px;
+  background:#fff;
+  color:#111;
+  border:3px solid #0284c7;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.control{
+  min-height:54px;
+  font-size:18px;
+}
+
+.good{
+  background:#16a34a !important;
+  color:white !important;
+  border-color:#16a34a !important;
+}
+
+.bad{
+  background:#dc2626 !important;
+  color:white !important;
+  border-color:#dc2626 !important;
+}
+
+.golden{
+  background:#f59e0b !important;
+  color:white !important;
+  border-color:#f59e0b !important;
+}
+
+.message{
+  min-height:28px;
+  text-align:center;
+  font-size:18px;
+  font-weight:900;
+}
+
+.bucket{
+  min-height:32px;
+  border-radius:12px;
+  background:#f0f9ff;
+  border:2px dashed #7dd3fc;
+  padding:6px;
+  font-size:22px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:2px;
+  align-items:center;
+}
+
+.bucket .placeholder{
+  font-size:13px;
+  color:#0284c7;
+  font-weight:700;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>🎣 Score: <span id="score">0</span></div>
+    <div>🏆 Record: <span id="highscore">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="pond">
+      <div class="bigfish" id="bigfish">🐟</div>
+    </div>
+
+    <div class="progress">
+      <span>Étang</span>
+      <span><span id="scoreLabel">0</span> / <span id="finish">30</span></span>
+      <span>Panier plein</span>
+    </div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+
+    <div class="prompt" id="prompt">?</div>
+    <div class="message" id="message">Attrape le bon poisson !</div>
+    <div class="grid" id="grid"></div>
+    <div class="bucket" id="bucket"><span class="placeholder">Ton panier apparaîtra ici</span></div>
+
+    <div class="controls">
+      <button class="control" id="start">Jouer</button>
+      <button class="control" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FINISH_SCORE = 30;
+const COMBO_LENGTH = 5;
+
+const WORDS = [
+  {emoji:"🐟", word:"poisson"},
+  {emoji:"🦀", word:"crabe"},
+  {emoji:"🐙", word:"pieuvre"},
+  {emoji:"🐋", word:"baleine"},
+  {emoji:"🐬", word:"dauphin"},
+  {emoji:"🐢", word:"tortue"},
+  {emoji:"🦈", word:"requin"},
+  {emoji:"🦐", word:"crevette"},
+  {emoji:"🐚", word:"coquillage"},
+  {emoji:"🌊", word:"vague"}
+];
+
+let score = 0;
+let hits = 0;
+let misses = 0;
+let streak = 0;
+let roundIndex = 0;
+let round = null;
+let lock = false;
+let voices = [];
+
+const scoreEl = document.getElementById("score");
+const scoreLabelEl = document.getElementById("scoreLabel");
+const highscoreEl = document.getElementById("highscore");
+const fillEl = document.getElementById("fill");
+const bigfishEl = document.getElementById("bigfish");
+const promptEl = document.getElementById("prompt");
+const messageEl = document.getElementById("message");
+const grid = document.getElementById("grid");
+const bucket = document.getElementById("bucket");
+
+function shuffle(items){
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function randInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getHighscore(){
+  return parseInt(localStorage.getItem("peche_highscore") || "0", 10);
+}
+
+function setHighscore(value){
+  localStorage.setItem("peche_highscore", String(value));
+  highscoreEl.textContent = value;
+}
+
+function uniqueWrongNumbers(correct, count){
+  const wrong = new Set();
+  while(wrong.size < count){
+    const candidate = correct + randInt(-10, 10);
+    if(candidate !== correct && candidate >= 0) wrong.add(candidate);
+  }
+  return [...wrong];
+}
+
+function updateProgress(){
+  const pct = Math.min(100, (score / FINISH_SCORE) * 100);
+  scoreEl.textContent = score;
+  scoreLabelEl.textContent = score;
+  fillEl.style.width = `${pct}%`;
+}
+
+function addToBucket(emoji){
+  if(bucket.querySelector(".placeholder")) bucket.innerHTML = "";
+  const span = document.createElement("span");
+  span.textContent = emoji;
+  bucket.appendChild(span);
+}
+
+function makeAdditionRound(){
+  const a = randInt(0, 12);
+  const b = randInt(0, 9);
+  const pair = Math.random() < 0.5 ? [a, b] : [b, a];
+  const left = pair[0];
+  const right = pair[1];
+  const answer = left + right;
+  round = {
+    type: "addition",
+    answer,
+    choices: shuffle([answer, ...uniqueWrongNumbers(answer, 3)])
+  };
+  bigfishEl.textContent = "🐟";
+  promptEl.textContent = `${left} + ${right} = ?`;
+  setTimeout(() => speak(`${left} plus ${right}`), 300);
+}
+
+function makeWordRound(){
+  const correct = WORDS[randInt(0, WORDS.length - 1)];
+  const pool = WORDS.filter(w => w.word !== correct.word);
+  const wrongs = shuffle(pool).slice(0, 3).map(w => w.word);
+  round = {
+    type: "word",
+    answer: correct.word,
+    choices: shuffle([correct.word, ...wrongs])
+  };
+  bigfishEl.textContent = correct.emoji;
+  promptEl.textContent = "Quel est ce mot ?";
+  setTimeout(() => speak("Quel est ce mot ?"), 300);
+}
+
+function makeRound(){
+  lock = false;
+  if(roundIndex % 2 === 0){
+    makeAdditionRound();
+  } else {
+    makeWordRound();
+  }
+  roundIndex++;
+  renderChoices();
+}
+
+function renderChoices(){
+  grid.innerHTML = "";
+  round.choices.forEach(value => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = value;
+    btn.onclick = () => choose(value, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function choose(value, btn){
+  if(lock || !round) return;
+  if(value === round.answer){
+    lock = true;
+    hits++;
+    streak++;
+
+    const isCombo = streak > 0 && streak % COMBO_LENGTH === 0;
+    const gain = isCombo ? 5 : 1;
+    score += gain;
+    updateProgress();
+
+    if(isCombo){
+      btn.classList.add("golden");
+      addToBucket("🌟");
+      messageEl.textContent = "Poisson d'or ! +5 points !";
+      speak("Poisson d'or ! Bravo !");
+    } else {
+      btn.classList.add("good");
+      addToBucket(bigfishEl.textContent);
+      messageEl.textContent = "Attrapé ! Bien joué.";
+      speak("Attrapé !");
+    }
+
+    if(score >= FINISH_SCORE){
+      const best = Math.max(getHighscore(), score);
+      setHighscore(best);
+      messageEl.textContent = `Panier plein ! Score: ${score}. Nouvelle pêche !`;
+      speak("Bravo, ton panier est plein !");
+      score = 0;
+      streak = 0;
+      bucket.innerHTML = '<span class="placeholder">Ton panier apparaîtra ici</span>';
+      updateProgress();
+      setTimeout(makeRound, 1800);
+    } else {
+      setTimeout(makeRound, 900);
+    }
+  } else {
+    misses++;
+    streak = 0;
+    btn.classList.add("bad");
+    messageEl.textContent = "Ce poisson s'échappe ! Réessaie.";
+    speak("Oups, il s'échappe.");
+    setTimeout(() => btn.classList.remove("bad"), 450);
+    lock = false;
+  }
+}
+
+function resetGame(){
+  score = 0;
+  hits = 0;
+  misses = 0;
+  streak = 0;
+  roundIndex = 0;
+  bucket.innerHTML = '<span class="placeholder">Ton panier apparaîtra ici</span>';
+  updateProgress();
+  makeRound();
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  resetGame();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(!round) return;
+  if(round.type === "addition"){
+    speak(promptEl.textContent.replace("+", "plus").replace("=", "égal").replace("?", ""));
+  } else {
+    speak("Quel est ce mot ?");
+  }
+};
+
+document.getElementById("finish").textContent = FINISH_SCORE;
+highscoreEl.textContent = getHighscore();
+updateProgress();
+</script>
+</body>
+</html>

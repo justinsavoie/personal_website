@@ -341,10 +341,10 @@ function playChime(good){
 }
 
 function getLevel(){
-  if(roundsCleared < 3) return { maxOperand:9, allowSub:false, tiles:6, correct:2, time:20 };
-  if(roundsCleared < 6) return { maxOperand:10, allowSub:true, tiles:6, correct:2, time:18 };
-  if(roundsCleared < 10) return { maxOperand:12, allowSub:true, tiles:7, correct:3, time:15 };
-  return { maxOperand:15, allowSub:true, tiles:8, correct:3, time:12 };
+  if(roundsCleared < 3) return { maxOperand:15, allowSub:false, tiles:6, correct:2, time:20 };
+  if(roundsCleared < 6) return { maxOperand:15, allowSub:false, tiles:6, correct:2, time:18 };
+  if(roundsCleared < 10) return { maxOperand:15, allowSub:false, tiles:7, correct:3, time:15 };
+  return { maxOperand:15, allowSub:false, tiles:8, correct:3, time:12 };
 }
 
 function exprForValue(value, allowSub, maxOperand, usedTexts){
