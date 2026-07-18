@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carte au trésor</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:radial-gradient(circle at 20% 0%, #fde68a 0%, #34d399 45%, #0891b2 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:900;
+  font-size:18px;
+  color:#fff;
+  text-shadow:0 2px 4px rgba(0,0,0,0.25);
+}
+
+.hearts .heart{ opacity:1; transition:opacity 0.3s ease, transform 0.3s ease; }
+.hearts .heart.lost{ opacity:0.25; transform:scale(0.85); }
+
+.card{
+  background:#fffaf0;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.3);
+}
+
+.path{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:14px 6px 8px;
+  scroll-behavior:smooth;
+}
+
+.tile{
+  position:relative;
+  flex:0 0 auto;
+  width:52px;
+  height:52px;
+  border-radius:12px;
+  background:#e2e8f0;
+  border:3px solid #cbd5e1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  transition:background 0.4s ease, border-color 0.4s ease, transform 0.3s ease;
+}
+
+.tile.cleared{
+  background:#bbf7d0;
+  border-color:#22c55e;
+}
+
+.tile.current{
+  border-color:#f59e0b;
+  box-shadow:0 0 0 3px rgba(245,158,11,0.35);
+  transform:scale(1.08);
+}
+
+.tile.shaking{
+  animation:shake 0.4s ease;
+}
+
+.tile.start{ background:#fde68a; border-color:#f59e0b; }
+.tile.treasure{ background:#fef3c7; border-color:#d97706; }
+.tile.treasure.cleared{ background:#fbbf24; border-color:#b45309; }
+
+.explorer{
+  position:absolute;
+  top:-26px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:26px;
+  animation:bob 1s ease-in-out infinite;
+}
+
+.keybadge{
+  position:absolute;
+  top:-10px;
+  right:-8px;
+  font-size:16px;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,0.35));
+}
+
+.coin{
+  position:absolute;
+  left:50%;
+  top:50%;
+  font-size:20px;
+  pointer-events:none;
+  animation:burst 0.9s ease-out forwards;
+}
+
+.instruction{
+  text-align:center;
+  font-size:15px;
+  font-weight:700;
+  color:#475569;
+  min-height:20px;
+}
+
+.prompt{
+  text-align:center;
+  font-size:34px;
+  font-weight:900;
+  letter-spacing:1px;
+  min-height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.seq-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:40px;
+  height:40px;
+  padding:0 8px;
+  border-radius:10px;
+  background:#f1f5f9;
+  border:2px solid #94a3b8;
+  font-size:22px;
+}
+
+.seq-chip.blank{
+  background:#fef3c7;
+  border-color:#f59e0b;
+  color:#b45309;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.grid.wide{
+  grid-template-columns:1fr;
+}
+
+button{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+}
+
+button:active{ transform:scale(0.96); }
+
+.choice{
+  min-height:60px;
+  font-size:20px;
+  background:#fff;
+  color:#111;
+  border:3px solid #0f172a;
+  padding:8px;
+  line-height:1.25;
+}
+
+.choice.wide{ font-size:16px; min-height:52px; }
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.control{ min-height:54px; font-size:18px; }
+
+.good{ background:#16a34a !important; color:white !important; border-color:#16a34a !important; }
+.bad{ background:#dc2626 !important; color:white !important; border-color:#dc2626 !important; }
+
+.message{
+  min-height:28px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#334155;
+}
+
+@keyframes bob{
+  0%,100%{ transform:translateX(-50%) translateY(0); }
+  50%{ transform:translateX(-50%) translateY(-4px); }
+}
+
+@keyframes shake{
+  0%,100%{ transform:translateX(0); }
+  25%{ transform:translateX(-6px); }
+  75%{ transform:translateX(6px); }
+}
+
+@keyframes burst{
+  0%{ opacity:1; transform:translate(-50%,-50%) scale(0.6); }
+  100%{ opacity:0; transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); }
+}
+
+@keyframes popKey{
+  0%{ opacity:0; transform:translateY(0) scale(0.5); }
+  40%{ opacity:1; transform:translateY(-16px) scale(1.2); }
+  100%{ opacity:1; transform:translateY(-10px) scale(1); }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div class="hearts" id="hearts">❤️❤️❤️</div>
+    <div>🔑 <span id="keyCount">0</span>/<span id="keyTotal">3</span></div>
+  </div>
+
+  <div class="card">
+    <div class="path" id="path"></div>
+
+    <div class="instruction" id="instruction">Appuie sur « Jouer » pour commencer l'aventure !</div>
+    <div class="prompt" id="prompt"></div>
+    <div class="grid" id="grid"></div>
+    <div class="message" id="message"></div>
+
+    <div class="controls">
+      <button class="control" id="start">Jouer</button>
+      <button class="control" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const N_STATIONS = 9;
+const N_KEYS = 3;
+const MAX_HEARTS = 3;
+
+const TYPES = ["river", "castle", "monster"];
+
+const TILE_LOOK = {
+  river:   { before:"🌊", after:"🌉" },
+  castle:  { before:"🏰", after:"🔓" },
+  monster: { before:"👹", after:"😴" }
+};
+
+const INSTRUCTIONS = {
+  river:   "🌊 Traverse la rivière : trouve le nombre manquant !",
+  castle:  "🏰 Ouvre le portail : quel est ce pays ?",
+  monster: "👹 Le monstre bloque le chemin : quelle phrase a du sens ?"
+};
+
+const COUNTRIES = [
+  {name:"France", code:"FR", r:"eu"}, {name:"Canada", code:"CA", r:"am"},
+  {name:"Allemagne", code:"DE", r:"eu"}, {name:"Italie", code:"IT", r:"eu"},
+  {name:"Espagne", code:"ES", r:"eu"}, {name:"Portugal", code:"PT", r:"eu"},
+  {name:"Royaume-Uni", code:"GB", r:"eu"}, {name:"Belgique", code:"BE", r:"eu"},
+  {name:"Suisse", code:"CH", r:"eu"}, {name:"Suède", code:"SE", r:"eu"},
+  {name:"Grèce", code:"GR", r:"eu"}, {name:"Norvège", code:"NO", r:"eu"},
+  {name:"Japon", code:"JP", r:"as"}, {name:"Chine", code:"CN", r:"as"},
+  {name:"Inde", code:"IN", r:"as"}, {name:"Corée du Sud", code:"KR", r:"as"},
+  {name:"Thaïlande", code:"TH", r:"as"}, {name:"Vietnam", code:"VN", r:"as"},
+  {name:"États-Unis", code:"US", r:"am"}, {name:"Mexique", code:"MX", r:"am"},
+  {name:"Brésil", code:"BR", r:"am"}, {name:"Argentine", code:"AR", r:"am"},
+  {name:"Pérou", code:"PE", r:"am"}, {name:"Égypte", code:"EG", r:"af"},
+  {name:"Maroc", code:"MA", r:"af"}, {name:"Kenya", code:"KE", r:"af"},
+  {name:"Sénégal", code:"SN", r:"af"}, {name:"Afrique du Sud", code:"ZA", r:"af"},
+  {name:"Australie", code:"AU", r:"oc"}, {name:"Nouvelle-Zélande", code:"NZ", r:"oc"}
+];
+
+const SENTENCES = [
+  {ok:"Le poisson vit dans l'eau.", bad:["Le poisson vit dans le ciel.", "Le poisson vit dans un livre.", "Le poisson vole dans l'espace."]},
+  {ok:"Le soleil brille le jour.", bad:["Le soleil brille sous l'eau.", "La lune est un légume.", "Le soleil dort dans une tasse."]},
+  {ok:"Le chien aboie fort.", bad:["Le chien vole dans le ciel.", "Le chien nage dans le sable.", "Le chien lit un livre."]},
+  {ok:"Je mange une pomme.", bad:["Je mange une chaise.", "Je mange le vent.", "Je mange un nuage."]},
+  {ok:"Il neige en hiver.", bad:["Il neige en été.", "Le feu est froid.", "La glace est chaude."]},
+  {ok:"Le chat dort sur le lit.", bad:["Le chat vole comme un oiseau.", "Le chat nage dans le désert.", "Le chat parle au téléphone."]},
+  {ok:"Je porte des chaussures aux pieds.", bad:["Je porte des chaussures sur la tête.", "Je porte un chapeau aux pieds.", "Je porte des gants aux yeux."]},
+  {ok:"L'oiseau vole dans le ciel.", bad:["L'oiseau nage dans le feu.", "Le poisson vole dans les nuages.", "L'arbre court dans la forêt."]},
+  {ok:"Le bébé boit du lait.", bad:["Le bébé boit des cailloux.", "Le bébé mange une voiture.", "Le bébé boit du feu."]},
+  {ok:"La lune brille la nuit.", bad:["La lune brille sous la terre.", "Le soleil brille la nuit.", "La lune est un animal."]},
+  {ok:"Je me brosse les dents le matin.", bad:["Je me brosse les cheveux avec mes pieds.", "Je mange mes chaussures le matin.", "Je dors avec ma brosse à dents dans le ciel."]},
+  {ok:"La pluie tombe du ciel.", bad:["La pluie tombe du plancher.", "Le soleil tombe dans l'eau.", "Les étoiles tombent de mon assiette."]},
+  {ok:"Le chevalier porte une épée.", bad:["Le chevalier porte un poisson.", "Le dragon porte une couronne de fleurs.", "Le château vole dans l'espace."]},
+  {ok:"Le dragon crache du feu.", bad:["Le dragon crache de la glace fondue en fleurs.", "Le château nage dans la rivière.", "La princesse crache du feu vert."]},
+  {ok:"On dort dans un lit.", bad:["On dort dans le four.", "On mange dans la baignoire.", "On lit un livre avec les pieds."]}
+];
+
+let hearts = MAX_HEARTS;
+let keysCollected = 0;
+let stations = [];
+let current = 0;
+let round = null;
+let lock = false;
+let voices = [];
+
+const heartsEl = document.getElementById("hearts");
+const keyCountEl = document.getElementById("keyCount");
+const pathEl = document.getElementById("path");
+const instructionEl = document.getElementById("instruction");
+const promptEl = document.getElementById("prompt");
+const gridEl = document.getElementById("grid");
+const messageEl = document.getElementById("message");
+
+document.getElementById("keyTotal").textContent = N_KEYS;
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function shuffle(items){ return [...items].sort(() => Math.random() - 0.5); }
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function flagEmoji(code){
+  return [...code.toUpperCase()]
+    .map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
+    .join("");
+}
+
+function uniqueWrongNumbers(correct, count){
+  const wrong = new Set();
+  while(wrong.size < count){
+    const candidate = correct + randInt(-10, 10);
+    if(candidate !== correct && candidate >= 0) wrong.add(candidate);
+  }
+  return [...wrong];
+}
+
+function generateIsland(){
+  const base = [];
+  for(let i = 0; i < N_STATIONS; i++){
+    base.push({ type: TYPES[i % TYPES.length], hasKey:false, cleared:false });
+  }
+  const arranged = shuffle(base);
+  shuffle([...Array(N_STATIONS).keys()]).slice(0, N_KEYS).forEach(i => {
+    arranged[i].hasKey = true;
+  });
+  return arranged;
+}
+
+function renderHearts(){
+  heartsEl.innerHTML = "";
+  for(let i = 0; i < MAX_HEARTS; i++){
+    const span = document.createElement("span");
+    span.className = "heart" + (i < hearts ? "" : " lost");
+    span.textContent = "❤️";
+    heartsEl.appendChild(span);
+  }
+}
+
+function renderKeys(){
+  keyCountEl.textContent = keysCollected;
+}
+
+function renderPath(){
+  pathEl.innerHTML = "";
+
+  const startTile = document.createElement("div");
+  startTile.className = "tile start" + (current > 0 ? " cleared" : " current");
+  startTile.textContent = "🏕️";
+  if(current === 0){
+    const explorer = document.createElement("span");
+    explorer.className = "explorer";
+    explorer.textContent = "🧒";
+    startTile.appendChild(explorer);
+  }
+  pathEl.appendChild(startTile);
+
+  stations.forEach((st, i) => {
+    const tile = document.createElement("div");
+    tile.className = "tile" + (st.cleared ? " cleared" : "") + (current === i ? " current" : "");
+    tile.dataset.index = i;
+    tile.textContent = st.cleared ? TILE_LOOK[st.type].after : TILE_LOOK[st.type].before;
+
+    if(current === i){
+      const explorer = document.createElement("span");
+      explorer.className = "explorer";
+      explorer.textContent = "🧒";
+      tile.appendChild(explorer);
+    }
+
+    if(st.hasKey && st.cleared){
+      const badge = document.createElement("span");
+      badge.className = "keybadge";
+      badge.textContent = "🔑";
+      tile.appendChild(badge);
+    }
+
+    pathEl.appendChild(tile);
+  });
+
+  const treasureTile = document.createElement("div");
+  const atTreasure = current === stations.length;
+  treasureTile.className = "tile treasure" + (wonOnce ? " cleared" : "") + (atTreasure ? " current" : "");
+  treasureTile.id = "treasureTile";
+  treasureTile.textContent = wonOnce ? "💰" : "🎁";
+  if(atTreasure){
+    const explorer = document.createElement("span");
+    explorer.className = "explorer";
+    explorer.textContent = "🧒";
+    treasureTile.appendChild(explorer);
+  }
+  pathEl.appendChild(treasureTile);
+
+  const activeTile = pathEl.querySelector(".current");
+  if(activeTile) activeTile.scrollIntoView({ inline:"center", behavior:"smooth", block:"nearest" });
+}
+
+let wonOnce = false;
+
+function buildRiverChallenge(){
+  const start = randInt(0, 10);
+  const step = [1, 2, 3, 5][randInt(0, 3)];
+  const seq = [start, start + step, start + 2 * step, start + 3 * step];
+  const blankPos = randInt(1, 3);
+  const answer = seq[blankPos];
+
+  promptEl.innerHTML = "";
+  seq.forEach((v, i) => {
+    const chip = document.createElement("span");
+    chip.className = "seq-chip" + (i === blankPos ? " blank" : "");
+    chip.textContent = i === blankPos ? "❓" : v;
+    promptEl.appendChild(chip);
+  });
+
+  gridEl.className = "grid";
+  round = {
+    type: "river",
+    answer,
+    choices: shuffle([answer, ...uniqueWrongNumbers(answer, 3)]).map(v => ({ label:String(v), correct: v === answer }))
+  };
+  setTimeout(() => speak("Quel nombre manque dans la suite ?"), 300);
+}
+
+function buildCastleChallenge(){
+  const target = COUNTRIES[randInt(0, COUNTRIES.length - 1)];
+  const sameRegion = COUNTRIES.filter(c => c !== target && c.r === target.r);
+  const pool = sameRegion.length >= 3 ? sameRegion : COUNTRIES.filter(c => c !== target);
+  const wrongs = shuffle(pool).slice(0, 3);
+
+  promptEl.innerHTML = "";
+  const flagSpan = document.createElement("span");
+  flagSpan.style.fontSize = "70px";
+  flagSpan.textContent = flagEmoji(target.code);
+  promptEl.appendChild(flagSpan);
+
+  gridEl.className = "grid";
+  round = {
+    type: "castle",
+    answer: target.name,
+    choices: shuffle([target, ...wrongs]).map(c => ({ label:c.name, correct: c.name === target.name }))
+  };
+  setTimeout(() => speak(target.name), 400);
+}
+
+function buildMonsterChallenge(){
+  const entry = SENTENCES[randInt(0, SENTENCES.length - 1)];
+  promptEl.innerHTML = "";
+
+  gridEl.className = "grid wide";
+  round = {
+    type: "monster",
+    answer: entry.ok,
+    choices: shuffle([entry.ok, ...entry.bad]).map(s => ({ label:s, correct: s === entry.ok }))
+  };
+  setTimeout(() => speak("Quelle phrase a du sens ?"), 300);
+}
+
+function buildChallenge(type){
+  if(type === "river") buildRiverChallenge();
+  else if(type === "castle") buildCastleChallenge();
+  else buildMonsterChallenge();
+  renderChoices();
+}
+
+function renderChoices(){
+  gridEl.innerHTML = "";
+  round.choices.forEach(c => {
+    const btn = document.createElement("button");
+    btn.className = "choice" + (round.type === "monster" ? " wide" : "");
+    btn.textContent = c.label;
+    btn.onclick = () => choose(c, btn);
+    gridEl.appendChild(btn);
+  });
+}
+
+function activeTileEl(){
+  if(current < stations.length) return pathEl.querySelector(`.tile[data-index="${current}"]`);
+  return document.getElementById("treasureTile");
+}
+
+function spawnCoins(tileEl){
+  for(let i = 0; i < 8; i++){
+    const coin = document.createElement("span");
+    coin.className = "coin";
+    coin.textContent = "🪙";
+    const angle = (Math.PI * 2 * i) / 8;
+    coin.style.setProperty("--dx", `${Math.cos(angle) * 50}px`);
+    coin.style.setProperty("--dy", `${Math.sin(angle) * 50}px`);
+    tileEl.appendChild(coin);
+    setTimeout(() => coin.remove(), 950);
+  }
+}
+
+function loadStation(){
+  lock = false;
+  messageEl.textContent = "";
+
+  if(current >= stations.length){
+    winGame();
+    return;
+  }
+
+  const st = stations[current];
+  instructionEl.textContent = INSTRUCTIONS[st.type];
+  buildChallenge(st.type);
+  renderPath();
+}
+
+function choose(choice, btn){
+  if(lock || !round) return;
+
+  if(choice.correct){
+    lock = true;
+    btn.classList.add("good");
+    const st = stations[current];
+    st.cleared = true;
+
+    if(st.hasKey){
+      keysCollected++;
+      renderKeys();
+    }
+
+    messageEl.textContent = st.hasKey ? "Bravo ! Tu as trouvé une clé !" : "Bravo ! Le passage est ouvert.";
+    speak(st.hasKey ? "Bravo, tu as trouvé une clé !" : "Bravo !");
+
+    renderPath();
+    current++;
+    setTimeout(loadStation, 1000);
+  } else {
+    btn.classList.add("bad");
+    hearts--;
+    renderHearts();
+
+    const tile = activeTileEl();
+    if(tile){
+      tile.classList.add("shaking");
+      setTimeout(() => tile.classList.remove("shaking"), 400);
+    }
+
+    if(hearts <= 0){
+      messageEl.textContent = "Plus de cœurs ! Une nouvelle île t'attend...";
+      speak("Oh non, plus de cœurs ! On recommence sur une nouvelle île.");
+      lock = true;
+      setTimeout(startNewIsland, 2200);
+    } else {
+      messageEl.textContent = "Aïe ! Tu perds un cœur. Réessaie !";
+      speak("Aïe, essaie encore.");
+      setTimeout(() => {
+        lock = false;
+        buildChallenge(stations[current].type);
+      }, 700);
+    }
+  }
+}
+
+function winGame(){
+  wonOnce = true;
+  instructionEl.textContent = "🏆 Trésor trouvé !";
+  promptEl.innerHTML = "";
+  gridEl.innerHTML = "";
+  messageEl.textContent = `Bravo, explorateur ! Tu as récolté ${keysCollected} clé(s) avec ${hearts} cœur(s) restant(s).`;
+  speak("Bravo explorateur, tu as trouvé le trésor !");
+  renderPath();
+  const tile = document.getElementById("treasureTile");
+  if(tile) spawnCoins(tile);
+  setTimeout(startNewIsland, 2800);
+}
+
+function startNewIsland(){
+  hearts = MAX_HEARTS;
+  keysCollected = 0;
+  current = 0;
+  wonOnce = false;
+  stations = generateIsland();
+  renderHearts();
+  renderKeys();
+  loadStation();
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  startNewIsland();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(!round) return;
+  if(round.type === "river") speak("Quel nombre manque dans la suite ?");
+  else if(round.type === "castle") speak("Quel est ce pays ?");
+  else speak("Quelle phrase a du sens ?");
+};
+
+stations = generateIsland();
+renderHearts();
+renderKeys();
+renderPath();
+</script>
+</body>
+</html>
