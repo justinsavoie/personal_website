@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blocs des dizaines</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #ede9fe 0%, #c7d2fe 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#3730a3;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+.equation{
+  text-align:center;
+  font-size:32px;
+  font-weight:900;
+  letter-spacing:1px;
+  min-height:44px;
+}
+
+.blocksPanel{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:16px;
+  min-height:120px;
+  padding:12px;
+  background:#f5f3ff;
+  border:2px dashed #a5b4fc;
+  border-radius:16px;
+  flex-wrap:wrap;
+  transition:opacity 0.25s ease, transform 0.25s ease;
+}
+
+.blocksPanel.poof{
+  opacity:0;
+  transform:scale(0.85);
+}
+
+.tensGroup{
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+  min-height:70px;
+}
+
+.tenFrame{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  grid-auto-rows:12px;
+  gap:3px;
+  padding:4px;
+  background:#fed7aa;
+  border:2px solid #c2410c;
+  border-radius:6px;
+}
+
+.onesGroup{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  width:74px;
+  align-content:flex-end;
+  min-height:70px;
+}
+
+.dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, #fb923c, #c2410c);
+}
+
+.blockLabel{
+  width:100%;
+  text-align:center;
+  font-size:28px;
+  font-weight:900;
+  color:#4c1d95;
+  margin-top:4px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+button{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+}
+
+button:active{ transform:scale(0.96); }
+
+.choice{
+  min-height:60px;
+  font-size:24px;
+  background:#fff;
+  color:#111;
+  border:3px solid #4c1d95;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.control{ min-height:54px; font-size:18px; }
+
+.good{ background:#16a34a !important; color:white !important; border-color:#16a34a !important; }
+.bad{ background:#dc2626 !important; color:white !important; border-color:#dc2626 !important; }
+
+.message{
+  min-height:40px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#3730a3;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>✅ <span id="hits">0</span></div>
+    <div>⭐ Série: <span id="streak">0</span></div>
+    <div>❌ <span id="misses">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="equation" id="equation">?</div>
+
+    <div class="blocksPanel" id="blocksPanel">
+      <div class="tensGroup" id="tensGroup"></div>
+      <div class="onesGroup" id="onesGroup"></div>
+      <div class="blockLabel" id="blockLabel">0</div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+    <div class="message" id="message">Réponds pour voir les blocs changer !</div>
+
+    <div class="controls">
+      <button class="control" id="start">Jouer</button>
+      <button class="control" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let hits = 0;
+let misses = 0;
+let streak = 0;
+let round = null;
+let lock = false;
+let voices = [];
+
+const hitsEl = document.getElementById("hits");
+const missesEl = document.getElementById("misses");
+const streakEl = document.getElementById("streak");
+const equationEl = document.getElementById("equation");
+const blocksPanel = document.getElementById("blocksPanel");
+const tensGroup = document.getElementById("tensGroup");
+const onesGroup = document.getElementById("onesGroup");
+const blockLabel = document.getElementById("blockLabel");
+const gridEl = document.getElementById("grid");
+const messageEl = document.getElementById("message");
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function shuffle(items){ return [...items].sort(() => Math.random() - 0.5); }
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function renderBlocks(n){
+  tensGroup.innerHTML = "";
+  onesGroup.innerHTML = "";
+  const tens = Math.floor(n / 10);
+  const ones = n % 10;
+  for(let i = 0; i < tens; i++){
+    const frame = document.createElement("div");
+    frame.className = "tenFrame";
+    for(let j = 0; j < 10; j++){
+      const unit = document.createElement("div");
+      unit.className = "dot";
+      frame.appendChild(unit);
+    }
+    tensGroup.appendChild(frame);
+  }
+  for(let i = 0; i < ones; i++){
+    const dot = document.createElement("div");
+    dot.className = "dot";
+    onesGroup.appendChild(dot);
+  }
+  blockLabel.textContent = n;
+}
+
+function opLabel(op){
+  return op > 0 ? `+ ${op}` : `- ${Math.abs(op)}`;
+}
+
+function generateRound(){
+  lock = false;
+  const opChoices = [10, -10, 5, -5];
+  const op = opChoices[randInt(0, 3)];
+
+  let n;
+  if(op === 10) n = randInt(0, 89);
+  else if(op === -10) n = randInt(10, 99);
+  else if(op === 5) n = randInt(0, 94);
+  else n = randInt(5, 99);
+
+  const answer = n + op;
+  const oldTens = Math.floor(n / 10);
+  const newTens = Math.floor(answer / 10);
+  const regroup = Math.abs(op) === 5 && oldTens !== newTens;
+
+  const wrongSet = new Set();
+  const commonMistake = op === 10 ? n + 1 : op === -10 ? n - 1 : op === 5 ? n + 1 : n - 1;
+  if(commonMistake !== answer && commonMistake >= 0 && commonMistake <= 99) wrongSet.add(commonMistake);
+  while(wrongSet.size < 3){
+    const candidate = answer + randInt(-12, 12);
+    if(candidate !== answer && candidate !== n && candidate >= 0 && candidate <= 99) wrongSet.add(candidate);
+  }
+
+  round = {
+    n,
+    op,
+    answer,
+    regroup,
+    choices: shuffle([answer, ...[...wrongSet].slice(0, 3)])
+  };
+
+  equationEl.textContent = `${n} ${opLabel(op)} = ?`;
+  renderBlocks(n);
+  renderChoices();
+  setTimeout(() => speak(`${n} ${op > 0 ? "plus" : "moins"} ${Math.abs(op)}`), 300);
+}
+
+function renderChoices(){
+  gridEl.innerHTML = "";
+  round.choices.forEach(value => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = value;
+    btn.onclick = () => choose(value, btn);
+    gridEl.appendChild(btn);
+  });
+}
+
+function feedbackMessage(){
+  if(Math.abs(round.op) === 10){
+    return "Bravo ! Les dizaines changent, les unités restent pareilles.";
+  }
+  if(round.regroup){
+    return round.op > 0
+      ? "Bravo ! Regroupement : 10 unités deviennent une nouvelle dizaine !"
+      : "Bravo ! On casse une dizaine en 10 unités !";
+  }
+  return "Bravo ! Seules les unités changent.";
+}
+
+function choose(value, btn){
+  if(lock || !round) return;
+
+  if(value === round.answer){
+    lock = true;
+    hits++;
+    streak++;
+    hitsEl.textContent = hits;
+    streakEl.textContent = streak;
+    btn.classList.add("good");
+
+    messageEl.textContent = feedbackMessage();
+    speak(feedbackMessage());
+
+    blocksPanel.classList.add("poof");
+    setTimeout(() => {
+      renderBlocks(round.answer);
+      blocksPanel.classList.remove("poof");
+    }, 250);
+
+    setTimeout(generateRound, 1500);
+  } else {
+    misses++;
+    streak = 0;
+    missesEl.textContent = misses;
+    streakEl.textContent = streak;
+    btn.classList.add("bad");
+    messageEl.textContent = "Oups ! Regarde bien les blocs et réessaie.";
+    speak("Oups, essaie encore.");
+    setTimeout(() => btn.classList.remove("bad"), 450);
+  }
+}
+
+document.getElementById("start").onclick = () => {
+  speechSynthesis.resume();
+  hits = 0;
+  misses = 0;
+  streak = 0;
+  hitsEl.textContent = 0;
+  missesEl.textContent = 0;
+  streakEl.textContent = 0;
+  generateRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(!round) return;
+  speak(`${round.n} ${round.op > 0 ? "plus" : "moins"} ${Math.abs(round.op)}`);
+};
+
+renderBlocks(0);
+</script>
+</body>
+</html>
