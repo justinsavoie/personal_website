@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tir au But — Additions</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to bottom, #87ceeb 0%, #87ceeb 55%, #4ade80 55%, #22c55e 100%);
+  color: #0f172a;
+  touch-action: manipulation;
+}
+
+.app {
+  width: 100%;
+  max-width: 430px;
+  height: 100%;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 900;
+  font-size: 17px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 10px 14px;
+  border-radius: 14px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+  z-index: 20;
+}
+
+.stats {
+  display: flex;
+  gap: 14px;
+}
+
+/* Goal net */
+.goal-wrap {
+  position: relative;
+  background: rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 10px;
+  z-index: 10;
+}
+
+.goal {
+  position: relative;
+  height: 190px;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.55) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.55) 1px, transparent 1px);
+  background-size: 25% 25%;
+  background-color: rgba(255,255,255,0.12);
+  border: 6px solid white;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+}
+
+.keeper {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 46px;
+  transition: transform 0.35s cubic-bezier(.2,.8,.3,1.4);
+  z-index: 5;
+  filter: drop-shadow(0 4px 4px rgba(0,0,0,0.25));
+}
+
+.keeper.dive-0 { transform: translateX(-90px) rotate(-25deg); }
+.keeper.dive-1 { transform: translateX(-30px) rotate(-10deg); }
+.keeper.dive-2 { transform: translateX(30px) rotate(10deg); }
+.keeper.dive-3 { transform: translateX(90px) rotate(25deg); }
+
+.zones {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 8px;
+}
+
+.zone {
+  border: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.85);
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.18);
+  transition: background 0.2s, transform 0.15s, opacity 0.3s;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.zone:active {
+  transform: scale(0.95);
+}
+
+.zone.correct-flash {
+  background: #10b981;
+  color: white;
+}
+
+.zone.wrong-flash {
+  background: #ef4444;
+  color: white;
+}
+
+.zone:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.ball {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  font-size: 30px;
+  line-height: 1;
+  z-index: 8;
+  transition: transform 0.45s cubic-bezier(.3,.6,.2,1), bottom 0.45s cubic-bezier(.3,.6,.2,1);
+}
+
+/* Equation card */
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
+  border: 4px solid #22c55e;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 20;
+}
+
+.eq-label {
+  font-size: 13px;
+  font-weight: 900;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.eq-val {
+  font-size: 38px;
+  font-weight: 900;
+  color: #15803d;
+  line-height: 1.1;
+}
+
+.message {
+  min-height: 22px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.overlay {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
+}
+
+.overlay.show { display: flex; }
+.overlay h2 { margin: 0; font-size: 24px; }
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+button.ctrl {
+  flex: 1;
+  padding: 12px;
+  font-size: 17px;
+  border: none;
+  border-radius: 12px;
+  background: #0f172a;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #020617;
+}
+
+button.ctrl:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #020617;
+}
+
+button.ctrl.wide { max-width: none; }
+
+@media (max-height: 640px) {
+  .goal { height: 150px; }
+  .eq-val { font-size: 30px; }
+  .card { padding: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top-bar">
+    <div class="stats">
+      <div>⚽ <span id="score">0</span></div>
+      <div id="lives">❤️❤️❤️</div>
+    </div>
+    <div>🔥 <span id="streak">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="eq-label">Combien font...</div>
+    <div class="eq-val" id="eq-text">? + ? = ?</div>
+  </div>
+
+  <div class="goal-wrap">
+    <div class="goal" id="goal">
+      <div class="ball" id="ball">⚽</div>
+      <div class="keeper" id="keeper">🧤</div>
+      <div class="zones" id="zones"></div>
+    </div>
+  </div>
+
+  <div class="message" id="message">Appuie sur Jouer pour commencer !</div>
+
+  <div class="overlay" id="overlay">
+    <h2>Match terminé !</h2>
+    <div id="finalStats"></div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl" id="start">Jouer</button>
+    <button class="ctrl" id="repeat" style="max-width: 70px;">🔊</button>
+  </div>
+</div>
+
+<script>
+let score = 0;
+let lives = 3;
+let streak = 0;
+let playing = false;
+let lock = false;
+
+let numA = 0, numB = 0, correctSum = 0;
+let voices = [];
+let ready = false;
+let audioCtx = null;
+
+const scoreEl = document.getElementById("score");
+const livesEl = document.getElementById("lives");
+const streakEl = document.getElementById("streak");
+const eqTextEl = document.getElementById("eq-text");
+const zonesEl = document.getElementById("zones");
+const keeperEl = document.getElementById("keeper");
+const ballEl = document.getElementById("ball");
+const messageEl = document.getElementById("message");
+const overlayEl = document.getElementById("overlay");
+const finalStatsEl = document.getElementById("finalStats");
+const startBtn = document.getElementById("start");
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(items) {
+  return [...items].sort(() => Math.random() - 0.5);
+}
+
+// Text-to-speech
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (voices.length > 0) ready = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text) {
+  if (!ready) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if (frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.95;
+  speechSynthesis.speak(utter);
+}
+
+function getAudioContext() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(freqs, type, duration, slide = false) {
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    const t = ctx.currentTime;
+    if (slide && freqs.length > 1) {
+      osc.frequency.setValueAtTime(freqs[0], t);
+      osc.frequency.exponentialRampToValueAtTime(freqs[1], t + duration);
+    } else {
+      osc.frequency.setValueAtTime(freqs[0], t);
+    }
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + duration + 0.05);
+  } catch (e) {}
+}
+
+function sfxGoal() {
+  const notes = [523.25, 659.25, 783.99, 1046.50];
+  notes.forEach((f, i) => setTimeout(() => playSound([f], 'sine', 0.3), i * 100));
+}
+function sfxSave() { playSound([220, 90], 'sawtooth', 0.4, true); }
+
+function updateLives() {
+  livesEl.textContent = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, 3 - lives));
+}
+
+// Build a round: A from 1-30, B from 0-15, random display order
+function buildRound() {
+  numA = randInt(1, 30);
+  numB = randInt(0, 15);
+  correctSum = numA + numB;
+
+  const first = Math.random() < 0.5 ? numA : numB;
+  const second = first === numA ? numB : numA;
+  eqTextEl.textContent = `${first} + ${second} = ?`;
+
+  return { first, second };
+}
+
+// Build 4 answer choices: 1 correct + 3 distractors
+function buildChoices() {
+  const choices = new Set([correctSum]);
+  const distractorPool = [
+    correctSum + 1, correctSum - 1,
+    correctSum + 2, correctSum - 2,
+    correctSum + 10, correctSum - 10,
+    correctSum + 5, correctSum - 5
+  ].filter(v => v >= 0 && v !== correctSum);
+
+  const shuffledPool = shuffle(distractorPool);
+  for (const v of shuffledPool) {
+    if (choices.size >= 4) break;
+    choices.add(v);
+  }
+  // Fallback in case pool ran short (very low sums)
+  while (choices.size < 4) {
+    const v = randInt(0, correctSum + 20);
+    choices.add(v);
+  }
+
+  return shuffle([...choices]);
+}
+
+function startRound() {
+  if (!playing) return;
+  lock = false;
+  keeperEl.className = "keeper";
+  ballEl.style.transform = "translate(0, 0)";
+  ballEl.style.bottom = "-30px";
+  messageEl.textContent = "Choisis la bonne case pour marquer !";
+
+  buildRound();
+  const choices = buildChoices();
+
+  zonesEl.innerHTML = "";
+  choices.forEach((val, i) => {
+    const btn = document.createElement("button");
+    btn.className = "zone";
+    btn.textContent = val;
+    btn.dataset.zone = i;
+    btn.onclick = () => shoot(val, i, btn);
+    zonesEl.appendChild(btn);
+  });
+
+  setTimeout(() => {
+    const [first, second] = eqTextEl.textContent.split(" + ").map(s => s.trim());
+    speak(`Combien font ${first} plus ${second.replace(" = ?", "")} ?`);
+  }, 400);
+}
+
+function shoot(val, zoneIndex, btn) {
+  if (!playing || lock) return;
+  lock = true;
+
+  const zoneCount = zonesEl.children.length;
+  const targetX = ((zoneIndex + 0.5) / zoneCount - 0.5) * (zonesEl.offsetWidth || 320);
+  ballEl.style.transform = `translate(${targetX}px, -140px)`;
+  ballEl.style.bottom = "10px";
+
+  if (val === correctSum) {
+    keeperEl.className = `keeper dive-${(zoneIndex + 1) % zoneCount || 0}`;
+    setTimeout(() => {
+      btn.classList.add("correct-flash");
+      sfxGoal();
+      score += 10;
+      streak++;
+      scoreEl.textContent = score;
+      streakEl.textContent = streak;
+      messageEl.textContent = "BUUUT ! ⚽🎉";
+      speak("But !");
+      Array.from(zonesEl.children).forEach(z => z.disabled = true);
+    }, 300);
+
+    setTimeout(() => { if (playing) startRound(); }, 1600);
+  } else {
+    keeperEl.className = `keeper dive-${zoneIndex}`;
+    setTimeout(() => {
+      btn.classList.add("wrong-flash");
+      sfxSave();
+      messageEl.textContent = `Arrêté ! La bonne réponse était ${correctSum}.`;
+      speak("Arrêté par le gardien !");
+      Array.from(zonesEl.children).forEach(z => z.disabled = true);
+      streak = 0;
+      streakEl.textContent = streak;
+      loseLife();
+    }, 300);
+
+    setTimeout(() => { if (playing) startRound(); }, 1800);
+  }
+}
+
+function loseLife() {
+  lives--;
+  updateLives();
+  if (lives <= 0) {
+    setTimeout(endGame, 200);
+  }
+}
+
+function endGame() {
+  playing = false;
+  finalStatsEl.innerHTML = `Score : <b>${score}</b><br>Meilleure série : <b>${streak}</b>`;
+  overlayEl.classList.add('show');
+  startBtn.textContent = "Rejouer";
+  speak(`Match terminé ! Ton score est ${score}.`);
+}
+
+function resetGame() {
+  score = 0;
+  lives = 3;
+  streak = 0;
+  playing = true;
+  overlayEl.classList.remove('show');
+  startBtn.textContent = "Jouer";
+  scoreEl.textContent = score;
+  streakEl.textContent = streak;
+  updateLives();
+  startRound();
+}
+
+startBtn.onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  resetGame();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  const [first, second] = eqTextEl.textContent.split(" + ").map(s => s.trim());
+  if (second) speak(`Combien font ${first} plus ${second.replace(" = ?", "")} ?`);
+};
+
+updateLives();
+</script>
+
+</body>
+</html>
