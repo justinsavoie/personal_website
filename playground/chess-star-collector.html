@@ -18,8 +18,11 @@
       --primary-color: #6366f1;
       --accent-color: #facc15;
       --accent-glow: 0 0 15px #facc15;
-      --square-light: rgba(99, 102, 241, 0.15);
-      --square-dark: rgba(30, 27, 75, 0.5);
+      --square-light: rgba(129, 140, 248, 0.22);
+      --square-dark: rgba(30, 27, 75, 0.55);
+      --piece-color: #ffffff;
+      /* Keeps the piece readable even if the glyph falls back to a dark font. */
+      --piece-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
       --text-main: #f3f4f6;
       --text-sub: #9ca3af;
       --success-color: #10b981;
@@ -187,6 +190,13 @@
       position: relative;
       z-index: 2;
       transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* The piece itself: light, so it reads against the indigo squares. */
+    .square.has-piece .square-content {
+      font-family: 'Apple Symbols', 'Segoe UI Symbol', 'DejaVu Sans', serif;
+      color: var(--piece-color);
+      text-shadow: var(--piece-shadow);
     }
 
     /* Stars bounce / float animation */
@@ -416,13 +426,15 @@
   <script>
     // Constants
     const BOARD_SIZE = 6;
+    // ︎ forces text presentation: without it these resolve to colour-emoji
+    // glyphs on Apple platforms, which render solid black and ignore CSS color.
     const PIECE_SYMBOLS = {
-      rook: "♜",
-      bishop: "♝",
-      queen: "♛",
-      knight: "♞",
-      king: "♚",
-      pawn: "♟"
+      rook: "♜︎",
+      bishop: "♝︎",
+      queen: "♛︎",
+      knight: "♞︎",
+      king: "♚︎",
+      pawn: "♟︎"
     };
 
     // Synthesized Web Audio API Sound generator
