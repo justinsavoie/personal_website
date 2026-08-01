@@ -205,6 +205,19 @@ button.ctrl:active{ transform:scale(0.96); }
 const COINS = [5, 10, 25, 100, 200];
 const COIN_LABEL = { 5:"5 ¢", 10:"10 ¢", 25:"25 ¢", 100:"1 $", 200:"2 $" };
 
+// Pure addition for the first 100 sales, with the amounts widening every 20.
+// min/max are counted in 5 ¢ steps, which is what keeps every price payable.
+const BANDS = [
+  { min: 2,  max: 19,  coins: [5, 10, 25] },  // 10 ¢ – 95 ¢
+  { min: 4,  max: 30,  coins: COINS },        // 20 ¢ – 1,50 $
+  { min: 5,  max: 50,  coins: COINS },        // 25 ¢ – 2,50 $
+  { min: 10, max: 80,  coins: COINS },        // 50 ¢ – 4,00 $
+  { min: 15, max: 100, coins: COINS },        // 75 ¢ – 5,00 $
+];
+const BAND_EVERY = 20;
+// Making change is a subtraction, so it waits until addition is well established.
+const CHANGE_AFTER = 100;
+
 const ITEMS = [
   ["🍎","une pomme"], ["🍌","une banane"], ["🍞","un pain"],
   ["🥕","une carotte"], ["🧀","du fromage"], ["🍫","un chocolat"],
@@ -217,6 +230,7 @@ let hits = 0;
 let streak = 0;
 let level = 1;
 let round = null;
+let stage = null;
 let tray = [];
 let lock = false;
 let voices = [];
@@ -298,32 +312,38 @@ function speakMoney(cents){
   return c === 0 ? dollars : `${dollars} et ${c} cents`;
 }
 
+function currentStage(){
+  if(hits >= CHANGE_AFTER){
+    return { mode: "rendre", level: BANDS.length + 1, coins: COINS };
+  }
+  const i = Math.min(Math.floor(hits / BAND_EVERY), BANDS.length - 1);
+  const band = BANDS[i];
+  return { mode: "payer", level: i + 1, coins: band.coins, min: band.min, max: band.max };
+}
+
 function availableCoins(){
-  return level <= 1 ? [5, 10, 25] : COINS;
+  return (stage || BANDS[0]).coins;
 }
 
 function newRound(){
   lock = false;
   tray = [];
-  level = Math.floor(hits / 4) + 1;
+  stage = currentStage();
+  level = stage.level;
   levelEl.textContent = level;
 
   const [emoji, name] = pick(ITEMS);
-  let mode, price, paid, target;
+  const mode = stage.mode;
+  let price, paid, target;
 
-  if(level <= 1){
-    mode = "payer";
-    price = randInt(2, 19) * 5;          // 10 ¢ – 95 ¢
-  } else if(level <= 2){
-    mode = "payer";
-    price = randInt(4, 40) * 5;          // 20 ¢ – 2,00 $
+  if(mode === "payer"){
+    price = randInt(stage.min, stage.max) * 5;
+    target = price;
   } else {
-    mode = "rendre";
     price = randInt(3, 35) * 5;          // 15 ¢ – 1,75 $
     paid = price < 100 ? 100 : 200;
     target = paid - price;
   }
-  if(mode === "payer") target = price;
 
   round = { emoji, name, mode, price, paid, target };
 
@@ -369,11 +389,11 @@ function renderTray(){
     hint.textContent = "Dépose tes pièces ici";
     trayEl.appendChild(hint);
   } else {
-    tray.forEach((value, i) => {
+    tray.forEach(value => {
       const btn = document.createElement("button");
       btn.className = `coin c${value}`;
       btn.textContent = COIN_LABEL[value];
-      btn.onclick = () => removeCoin(i);
+      btn.onclick = () => removeCoin(value);
       trayEl.appendChild(btn);
     });
   }
@@ -393,11 +413,21 @@ function addCoin(value){
   check();
 }
 
-function removeCoin(index){
+// Removes by value, not by position: identical coins are interchangeable, and
+// a captured index goes stale as soon as the tray is re-rendered.
+function removeCoin(value){
   if(lock || !round) return;
-  tray.splice(index, 1);
+  const i = tray.indexOf(value);
+  if(i === -1) return;
+  tray.splice(i, 1);
   renderTray();
-  messageEl.textContent = "";
+  // The win has to be re-checked here too — taking a coin back can land
+  // exactly on the target without any coin ever being added at that total.
+  if(tray.length === 0){
+    messageEl.textContent = "";
+  } else {
+    check();
+  }
 }
 
 function check(){
