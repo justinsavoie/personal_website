@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le dépanneur</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #fef3c7 0%, #fdba74 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#7c2d12;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+.item{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:10px;
+  background:#fffbeb;
+  border:2px dashed #fbbf24;
+  border-radius:16px;
+}
+
+.item-emoji{ font-size:46px; line-height:1; }
+.item-name{ font-size:16px; font-weight:800; color:#78350f; }
+.item-price{ font-size:28px; font-weight:900; color:#b45309; }
+
+.task{
+  text-align:center;
+  font-size:17px;
+  font-weight:900;
+  color:#7c2d12;
+  min-height:24px;
+}
+
+.tray{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+  justify-content:center;
+  min-height:74px;
+  padding:8px;
+  background:#f5f5f4;
+  border:2px solid #d6d3d1;
+  border-radius:16px;
+  transition:opacity 0.25s ease, transform 0.25s ease;
+}
+
+.tray.poof{ opacity:0; transform:scale(0.85); }
+.tray.over{ border-color:#dc2626; background:#fef2f2; }
+
+.tray-hint{ font-size:14px; font-weight:700; color:#a8a29e; }
+
+.total{
+  text-align:center;
+  font-size:26px;
+  font-weight:900;
+  color:#15803d;
+  min-height:34px;
+}
+
+.total.over{ color:#dc2626; }
+
+.coins{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+}
+
+.coin{
+  border:none;
+  border-radius:50%;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  color:#1c1917;
+  box-shadow:0 3px 0 rgba(0,0,0,0.25);
+  font-size:14px;
+}
+
+.coin:active{ transform:scale(0.94); }
+
+.coin.c5{  width:50px; height:50px; background:radial-gradient(circle at 32% 28%, #f8fafc, #94a3b8); }
+.coin.c10{ width:44px; height:44px; background:radial-gradient(circle at 32% 28%, #f8fafc, #94a3b8); font-size:13px; }
+.coin.c25{ width:56px; height:56px; background:radial-gradient(circle at 32% 28%, #f8fafc, #94a3b8); }
+.coin.c100{ width:56px; height:56px; background:radial-gradient(circle at 32% 28%, #fef08a, #ca8a04); }
+.coin.c200{ width:60px; height:60px; background:radial-gradient(circle at 32% 28%, #fde68a, #b45309); border:5px solid #cbd5e1; }
+
+.tray .coin{ box-shadow:0 2px 0 rgba(0,0,0,0.2); }
+
+button.ctrl{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+  min-height:54px;
+  font-size:18px;
+}
+
+button.ctrl:active{ transform:scale(0.96); }
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+}
+
+.message{
+  min-height:40px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#7c2d12;
+}
+
+@media (max-height:640px){
+  .item-emoji{ font-size:34px; }
+  .coin.c5,.coin.c25,.coin.c100{ width:48px; height:48px; }
+  .coin.c200{ width:52px; height:52px; }
+  .coin.c10{ width:40px; height:40px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>🛒 <span id="hits">0</span></div>
+    <div>⭐ Série: <span id="streak">0</span></div>
+    <div>🏪 Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="item">
+      <div class="item-emoji" id="itemEmoji">🍎</div>
+      <div>
+        <div class="item-name" id="itemName">—</div>
+        <div class="item-price" id="itemPrice">—</div>
+      </div>
+    </div>
+
+    <div class="task" id="task">Appuie sur Jouer pour ouvrir le dépanneur !</div>
+
+    <div class="tray" id="tray"><span class="tray-hint">Dépose tes pièces ici</span></div>
+    <div class="total" id="total"></div>
+
+    <div class="coins" id="coins"></div>
+
+    <div class="message" id="message"></div>
+
+    <div class="controls">
+      <button class="ctrl" id="start">Jouer</button>
+      <button class="ctrl" id="clear">↩️</button>
+      <button class="ctrl" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Canada has no penny, so every price is a multiple of 5 —
+// which makes this a skip-counting drill by 5, 10 and 25.
+const COINS = [5, 10, 25, 100, 200];
+const COIN_LABEL = { 5:"5 ¢", 10:"10 ¢", 25:"25 ¢", 100:"1 $", 200:"2 $" };
+
+const ITEMS = [
+  ["🍎","une pomme"], ["🍌","une banane"], ["🍞","un pain"],
+  ["🥕","une carotte"], ["🧀","du fromage"], ["🍫","un chocolat"],
+  ["🍪","un biscuit"], ["🥛","du lait"], ["🍇","des raisins"],
+  ["🍊","une orange"], ["✏️","un crayon"], ["📒","un cahier"],
+  ["🎈","un ballon"], ["🍬","un bonbon"], ["🧃","un jus"]
+];
+
+let hits = 0;
+let streak = 0;
+let level = 1;
+let round = null;
+let tray = [];
+let lock = false;
+let voices = [];
+let audioCtx = null;
+
+const hitsEl = document.getElementById("hits");
+const streakEl = document.getElementById("streak");
+const levelEl = document.getElementById("level");
+const itemEmojiEl = document.getElementById("itemEmoji");
+const itemNameEl = document.getElementById("itemName");
+const itemPriceEl = document.getElementById("itemPrice");
+const taskEl = document.getElementById("task");
+const trayEl = document.getElementById("tray");
+const totalEl = document.getElementById("total");
+const coinsEl = document.getElementById("coins");
+const messageEl = document.getElementById("message");
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(items){ return items[randInt(0, items.length - 1)]; }
+
+function getAudioContext(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(freqs, type, duration){
+  try{
+    const ctx = getAudioContext();
+    if(ctx.state === "suspended") ctx.resume();
+    freqs.forEach((f, i) => {
+      setTimeout(() => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + duration + 0.05);
+      }, i * 80);
+    });
+  }catch(e){}
+}
+
+function sfxCoin(){ playSound([880], "triangle", 0.12); }
+function sfxTill(){ playSound([784, 1046.5, 1318.5], "sine", 0.25); }
+function sfxOver(){ playSound([180], "sawtooth", 0.3); }
+
+// "75 ¢" below a dollar, "1,35 $" at or above — Québec convention.
+function formatMoney(cents){
+  if(cents < 100) return `${cents} ¢`;
+  const d = Math.floor(cents / 100);
+  const c = cents % 100;
+  return `${d},${String(c).padStart(2, "0")} $`;
+}
+
+function speakMoney(cents){
+  if(cents < 100) return `${cents} cents`;
+  const d = Math.floor(cents / 100);
+  const c = cents % 100;
+  const dollars = `${d} dollar${d > 1 ? "s" : ""}`;
+  return c === 0 ? dollars : `${dollars} et ${c} cents`;
+}
+
+function availableCoins(){
+  return level <= 1 ? [5, 10, 25] : COINS;
+}
+
+function newRound(){
+  lock = false;
+  tray = [];
+  level = Math.floor(hits / 4) + 1;
+  levelEl.textContent = level;
+
+  const [emoji, name] = pick(ITEMS);
+  let mode, price, paid, target;
+
+  if(level <= 1){
+    mode = "payer";
+    price = randInt(2, 19) * 5;          // 10 ¢ – 95 ¢
+  } else if(level <= 2){
+    mode = "payer";
+    price = randInt(4, 40) * 5;          // 20 ¢ – 2,00 $
+  } else {
+    mode = "rendre";
+    price = randInt(3, 35) * 5;          // 15 ¢ – 1,75 $
+    paid = price < 100 ? 100 : 200;
+    target = paid - price;
+  }
+  if(mode === "payer") target = price;
+
+  round = { emoji, name, mode, price, paid, target };
+
+  itemEmojiEl.textContent = emoji;
+  itemNameEl.textContent = name;
+  itemPriceEl.textContent = formatMoney(price);
+
+  taskEl.textContent = mode === "payer"
+    ? "Dépose exactement le bon montant."
+    : `Tu paies ${formatMoney(paid)}. Rends la monnaie !`;
+
+  messageEl.textContent = "";
+  renderCoins();
+  renderTray();
+  setTimeout(() => speak(taskText()), 300);
+}
+
+function taskText(){
+  if(round.mode === "payer"){
+    return `${round.name} coûte ${speakMoney(round.price)}. Dépose le bon montant.`;
+  }
+  return `${round.name} coûte ${speakMoney(round.price)}. Tu paies ${speakMoney(round.paid)}. Combien rends-tu ?`;
+}
+
+function renderCoins(){
+  coinsEl.innerHTML = "";
+  availableCoins().forEach(value => {
+    const btn = document.createElement("button");
+    btn.className = `coin c${value}`;
+    btn.textContent = COIN_LABEL[value];
+    btn.onclick = () => addCoin(value);
+    coinsEl.appendChild(btn);
+  });
+}
+
+function trayTotal(){ return tray.reduce((sum, v) => sum + v, 0); }
+
+function renderTray(){
+  trayEl.innerHTML = "";
+  if(tray.length === 0){
+    const hint = document.createElement("span");
+    hint.className = "tray-hint";
+    hint.textContent = "Dépose tes pièces ici";
+    trayEl.appendChild(hint);
+  } else {
+    tray.forEach((value, i) => {
+      const btn = document.createElement("button");
+      btn.className = `coin c${value}`;
+      btn.textContent = COIN_LABEL[value];
+      btn.onclick = () => removeCoin(i);
+      trayEl.appendChild(btn);
+    });
+  }
+
+  const total = trayTotal();
+  const over = round && total > round.target;
+  totalEl.textContent = tray.length ? formatMoney(total) : "";
+  totalEl.classList.toggle("over", !!over);
+  trayEl.classList.toggle("over", !!over);
+}
+
+function addCoin(value){
+  if(lock || !round) return;
+  tray.push(value);
+  sfxCoin();
+  renderTray();
+  check();
+}
+
+function removeCoin(index){
+  if(lock || !round) return;
+  tray.splice(index, 1);
+  renderTray();
+  messageEl.textContent = "";
+}
+
+function check(){
+  const total = trayTotal();
+  if(total === round.target){
+    lock = true;
+    hits++;
+    streak++;
+    hitsEl.textContent = hits;
+    streakEl.textContent = streak;
+    sfxTill();
+
+    const line = round.mode === "payer"
+      ? `Parfait ! ${formatMoney(total)} pile.`
+      : `Parfait ! On te rend ${formatMoney(total)}.`;
+    messageEl.textContent = `${line} 🎉`;
+    speak(round.mode === "payer" ? "Merci ! Bonne journée !" : `On te rend ${speakMoney(total)}.`);
+
+    trayEl.classList.add("poof");
+    setTimeout(() => trayEl.classList.remove("poof"), 400);
+    setTimeout(newRound, 2000);
+  } else if(total > round.target){
+    streak = 0;
+    streakEl.textContent = streak;
+    sfxOver();
+    messageEl.textContent = `C'est trop ! Enlève une pièce en la touchant.`;
+    speak("C'est trop !");
+  } else {
+    messageEl.textContent = `Encore ${formatMoney(round.target - total)}.`;
+  }
+}
+
+document.getElementById("start").onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  hits = 0;
+  streak = 0;
+  hitsEl.textContent = 0;
+  streakEl.textContent = 0;
+  newRound();
+};
+
+document.getElementById("clear").onclick = () => {
+  if(lock || !round) return;
+  tray = [];
+  renderTray();
+  messageEl.textContent = "";
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(taskText());
+};
+
+renderTray();
+</script>
+</body>
+</html>

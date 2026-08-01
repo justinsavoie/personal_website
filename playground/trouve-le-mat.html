@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trouve le mat !</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #e0e7ff 0%, #a5b4fc 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#312e81;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+.turn{
+  text-align:center;
+  font-size:19px;
+  font-weight:900;
+  color:#312e81;
+  min-height:26px;
+}
+
+.board{
+  display:grid;
+  grid-template-columns:repeat(8, 1fr);
+  border-radius:12px;
+  overflow:hidden;
+  border:3px solid #7c6244;
+  transition:opacity 0.3s ease, transform 0.3s ease;
+}
+
+.board.solved{ transform:scale(1.03); }
+.board.nudge{ animation:nudge 0.35s; }
+
+@keyframes nudge{
+  0%,100%{ transform:translateX(0); }
+  25%{ transform:translateX(-6px); }
+  75%{ transform:translateX(6px); }
+}
+
+.sq{
+  aspect-ratio:1;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+.sq.light{ background:#f0d9b5; }
+.sq.dark{ background:#b58863; }
+.sq.last{ box-shadow:inset 0 0 0 100px rgba(250, 204, 21, 0.35); }
+.sq.sel{ box-shadow:inset 0 0 0 100px rgba(34, 197, 94, 0.45); }
+.sq.mate{ box-shadow:inset 0 0 0 100px rgba(239, 68, 68, 0.5); }
+
+/* ︎ forces text presentation: without it these become colour emoji
+   on Apple platforms, which render solid black and ignore CSS color. */
+.piece{
+  font-family:'Apple Symbols','Segoe UI Symbol','DejaVu Sans',serif;
+  font-size:34px;
+  line-height:1;
+  position:relative;
+  z-index:2;
+  pointer-events:none;
+}
+
+.piece.w{ color:#ffffff; text-shadow:0 0 2px #000, 0 0 1px #000, 0 1px 2px rgba(0,0,0,0.45); }
+.piece.b{ color:#1f2937; text-shadow:0 0 1px rgba(255,255,255,0.55); }
+
+.dot{
+  position:absolute;
+  width:30%;
+  height:30%;
+  border-radius:50%;
+  background:rgba(34, 197, 94, 0.65);
+  z-index:1;
+  pointer-events:none;
+}
+
+.dot.cap{
+  width:86%;
+  height:86%;
+  background:transparent;
+  border:5px solid rgba(34, 197, 94, 0.65);
+}
+
+button.ctrl{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+  min-height:54px;
+  font-size:17px;
+}
+
+button.ctrl:active{ transform:scale(0.96); }
+button.ctrl:disabled{ opacity:0.45; }
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.message{
+  min-height:40px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#312e81;
+}
+
+@media (max-height:640px){
+  .piece{ font-size:26px; }
+  .turn{ font-size:16px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>♛ <span id="solved">0</span></div>
+    <div>⭐ Série: <span id="streak">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="turn" id="turn">Chargement…</div>
+    <div class="board" id="board"></div>
+    <div class="message" id="message"></div>
+
+    <div class="controls">
+      <button class="ctrl" id="hint">Montre-moi</button>
+      <button class="ctrl" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/chess.min.js"></script>
+<script src="assets/puzzles.js"></script>
+<script>
+// Lichess convention: the FEN is the position *before* the opponent blunders.
+// Moves[0] is that opponent move (played for the child); the odd-indexed moves
+// are the solution. Every puzzle in this set ends in checkmate.
+const FILES = "abcdefgh";
+const GLYPH = { p:"♟︎", n:"♞︎", b:"♝︎", r:"♜︎", q:"♛︎", k:"♚︎" };
+
+let game = null;
+let puzzle = null;
+let solverColor = "w";
+let flipped = false;
+let ply = 0;
+let selected = null;
+let lastMove = null;
+let lock = true;
+let solved = 0;
+let streak = 0;
+let voices = [];
+let audioCtx = null;
+
+const solvedEl = document.getElementById("solved");
+const streakEl = document.getElementById("streak");
+const turnEl = document.getElementById("turn");
+const boardEl = document.getElementById("board");
+const messageEl = document.getElementById("message");
+const hintBtn = document.getElementById("hint");
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function getAudioContext(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(freqs, type, duration){
+  try{
+    const ctx = getAudioContext();
+    if(ctx.state === "suspended") ctx.resume();
+    freqs.forEach((f, i) => {
+      setTimeout(() => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + duration + 0.05);
+      }, i * 90);
+    });
+  }catch(e){}
+}
+
+function sfxMove(){ playSound([440], "triangle", 0.1); }
+function sfxMate(){ playSound([523.25, 659.25, 783.99, 1046.5], "sine", 0.3); }
+function sfxNudge(){ playSound([210], "sine", 0.14); }
+
+function uci(move){
+  return move.from + move.to + (move.promotion || "");
+}
+
+function toMoveArg(u){
+  return { from: u.slice(0, 2), to: u.slice(2, 4), promotion: u.length === 5 ? u[4] : undefined };
+}
+
+// Ramp difficulty by how many puzzles have been solved, keeping some variety
+// so it never becomes a wall of mate-in-twos.
+function pickPuzzle(){
+  const P = window.PUZZLES;
+  let pool;
+  if(solved < 8){
+    pool = P.m1;
+  } else if(solved < 20){
+    pool = Math.random() < 0.5 ? P.m1 : P.m2;
+  } else {
+    const r = Math.random();
+    pool = r < 0.30 ? P.m1 : (r < 0.85 ? P.m2 : P.m3);
+  }
+  if(!pool || !pool.length) pool = P.m1;
+  const [fen, moves] = pool[randInt(0, pool.length - 1)];
+  return { fen, moves: moves.split(" ") };
+}
+
+function squareName(r, c){
+  return FILES[c] + (8 - r);
+}
+
+function render(){
+  boardEl.innerHTML = "";
+  const board = game.board();
+  // board[0] is rank 8 and board[r][0] is file a, so white at the bottom is the
+  // natural order; flipping means walking both axes backwards.
+  const rowOrder = flipped ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7];
+  const colOrder = flipped ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7];
+
+  const legal = selected && !lock
+    ? game.moves({ square: selected, verbose: true })
+    : [];
+  const legalTo = new Map(legal.map(m => [m.to, m]));
+
+  for(const r of rowOrder){
+    for(const c of colOrder){
+      const name = squareName(r, c);
+      const sq = document.createElement("div");
+      sq.className = "sq " + ((r + c) % 2 === 0 ? "light" : "dark");
+
+      if(lastMove && (name === lastMove.from || name === lastMove.to)) sq.classList.add("last");
+      if(selected === name) sq.classList.add("sel");
+
+      const piece = board[r][c];
+      if(piece){
+        // Checkmated king gets a red square so the finish is obvious.
+        if(piece.type === "k" && game.in_checkmate() && piece.color === game.turn()){
+          sq.classList.add("mate");
+        }
+        const span = document.createElement("span");
+        span.className = "piece " + piece.color;
+        span.textContent = GLYPH[piece.type];
+        sq.appendChild(span);
+      }
+
+      if(legalTo.has(name)){
+        const dot = document.createElement("div");
+        dot.className = "dot" + (board[r][c] ? " cap" : "");
+        sq.appendChild(dot);
+      }
+
+      sq.onclick = () => tapSquare(name);
+      boardEl.appendChild(sq);
+    }
+  }
+}
+
+function tapSquare(name){
+  if(lock || !game) return;
+  if(game.turn() !== solverColor) return;
+
+  if(selected){
+    if(name === selected){ selected = null; render(); return; }
+    const legal = game.moves({ square: selected, verbose: true });
+    const target = legal.find(m => m.to === name);
+    if(target){
+      const from = selected;
+      selected = null;
+      attempt(from, name);
+      return;
+    }
+  }
+
+  const piece = game.get(name);
+  if(piece && piece.color === solverColor){
+    selected = name;
+  } else {
+    selected = null;
+  }
+  render();
+}
+
+function attempt(from, to){
+  const expected = puzzle.moves[ply];
+  // Match the stored promotion when the child plays the solution move.
+  let promotion = "q";
+  if(expected && expected.length === 5 && expected.slice(0, 2) === from && expected.slice(2, 4) === to){
+    promotion = expected[4];
+  }
+
+  const move = game.move({ from, to, promotion });
+  if(!move) return;
+
+  // Any move that delivers mate counts — several of these positions have more
+  // than one mate, and refusing an equally good one would just confuse a child.
+  if(game.in_checkmate()){
+    lastMove = { from, to };
+    ply++;
+    render();
+    succeed();
+    return;
+  }
+
+  if(uci(move) === expected){
+    lastMove = { from, to };
+    ply++;
+    sfxMove();
+    render();
+    replyThenContinue();
+  } else {
+    // Take it back and leave the opponent's move highlighted as it was.
+    game.undo();
+    sfxNudge();
+    render();
+    boardEl.classList.add("nudge");
+    setTimeout(() => boardEl.classList.remove("nudge"), 350);
+    messageEl.textContent = "Essaie un autre coup.";
+  }
+}
+
+function replyThenContinue(){
+  lock = true;
+  messageEl.textContent = "";
+  setTimeout(() => {
+    const reply = puzzle.moves[ply];
+    if(!reply){ succeed(); return; }
+    game.move(toMoveArg(reply));
+    lastMove = { from: reply.slice(0, 2), to: reply.slice(2, 4) };
+    ply++;
+    sfxMove();
+    render();
+    lock = false;
+    messageEl.textContent = "Continue !";
+  }, 550);
+}
+
+function succeed(){
+  lock = true;
+  solved++;
+  streak++;
+  solvedEl.textContent = solved;
+  streakEl.textContent = streak;
+  sfxMate();
+  messageEl.textContent = "Échec et mat ! Bravo ! 🎉";
+  speak("Échec et mat ! Bravo !");
+  boardEl.classList.add("solved");
+  setTimeout(() => {
+    boardEl.classList.remove("solved");
+    loadPuzzle();
+  }, 2000);
+}
+
+// Escape hatch so a stuck child is never stranded on one position.
+function showSolution(){
+  if(!game || !puzzle) return;
+  lock = true;
+  selected = null;
+  streak = 0;
+  streakEl.textContent = streak;
+  messageEl.textContent = "Voici la solution.";
+
+  const step = () => {
+    if(ply >= puzzle.moves.length){
+      setTimeout(loadPuzzle, 1400);
+      return;
+    }
+    const u = puzzle.moves[ply];
+    game.move(toMoveArg(u));
+    lastMove = { from: u.slice(0, 2), to: u.slice(2, 4) };
+    ply++;
+    sfxMove();
+    render();
+    setTimeout(step, 750);
+  };
+  setTimeout(step, 300);
+}
+
+function sideLabel(){
+  return solverColor === "w" ? "Les blancs" : "Les noirs";
+}
+
+function taskText(){
+  const n = Math.ceil((puzzle.moves.length - 1) / 2);
+  const inN = n === 1 ? "en un coup" : `en ${n} coups`;
+  return `${sideLabel()} jouent et font mat ${inN} !`;
+}
+
+function loadPuzzle(){
+  puzzle = pickPuzzle();
+  game = new Chess(puzzle.fen);
+  solverColor = game.turn() === "w" ? "b" : "w";
+  flipped = solverColor === "b";
+  ply = 0;
+  selected = null;
+  lastMove = null;
+  lock = true;
+  // Stays disabled until the opponent's move lands, otherwise an early tap
+  // would play that move a second time.
+  hintBtn.disabled = true;
+
+  turnEl.textContent = "Regarde bien…";
+  messageEl.textContent = "";
+  render();
+
+  // Play the opponent's move first, so the child sees what just happened.
+  setTimeout(() => {
+    const first = puzzle.moves[0];
+    game.move(toMoveArg(first));
+    lastMove = { from: first.slice(0, 2), to: first.slice(2, 4) };
+    ply = 1;
+    sfxMove();
+    lock = false;
+    hintBtn.disabled = false;
+    render();
+    turnEl.textContent = taskText();
+    messageEl.textContent = "À toi de jouer !";
+    speak(taskText());
+  }, 800);
+}
+
+hintBtn.onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  hintBtn.disabled = true;
+  showSolution();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(puzzle) speak(taskText());
+};
+
+loadPuzzle();
+</script>
+</body>
+</html>

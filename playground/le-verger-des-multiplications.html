@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le verger des multiplications</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #dcfce7 0%, #86efac 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#14532d;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+.equation{
+  text-align:center;
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:1px;
+  min-height:42px;
+  color:#14532d;
+}
+
+.orchard{
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:4px;
+  padding:10px;
+  background:#f0fdf4;
+  border:2px dashed #4ade80;
+  border-radius:16px;
+  transition:opacity 0.25s ease, transform 0.25s ease;
+}
+
+.orchard.hidden{ display:none; }
+.orchard.poof{ opacity:0; transform:scale(0.85); }
+
+.cell{
+  aspect-ratio:1;
+  border:none;
+  border-radius:8px;
+  background:#e5e7eb;
+  font-size:20px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  cursor:pointer;
+  box-shadow:none;
+  transition:background 0.15s ease, transform 0.15s ease;
+}
+
+.cell.on{
+  background:radial-gradient(circle at 30% 30%, #bbf7d0, #4ade80);
+}
+
+.cell.shake{ animation:shake 0.4s; }
+
+@keyframes shake{
+  0%,100%{ transform:translateX(0); }
+  25%{ transform:translateX(-5px); }
+  75%{ transform:translateX(5px); }
+}
+
+.tally{
+  text-align:center;
+  font-size:26px;
+  font-weight:900;
+  color:#15803d;
+  min-height:32px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.grid.hidden{ display:none; }
+
+button{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+}
+
+button:active{ transform:scale(0.96); }
+
+.choice{
+  min-height:60px;
+  font-size:24px;
+  background:#fff;
+  color:#111;
+  border:3px solid #15803d;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.control{ min-height:54px; font-size:18px; }
+
+.good{ background:#16a34a !important; color:white !important; border-color:#16a34a !important; }
+.bad{ background:#dc2626 !important; color:white !important; border-color:#dc2626 !important; }
+
+.message{
+  min-height:40px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#14532d;
+}
+
+@media (max-height:640px){
+  .cell{ font-size:16px; }
+  .equation{ font-size:24px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>🍎 <span id="hits">0</span></div>
+    <div>⭐ Série: <span id="streak">0</span></div>
+    <div>🌱 Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="equation" id="equation">?</div>
+
+    <div class="orchard" id="orchard"></div>
+    <div class="tally" id="tally"></div>
+
+    <div class="grid" id="grid"></div>
+    <div class="message" id="message">Appuie sur Jouer pour commencer !</div>
+
+    <div class="controls">
+      <button class="control" id="start">Jouer</button>
+      <button class="control" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ROWS = 6;
+const COLS = 6;
+
+let hits = 0;
+let streak = 0;
+let level = 1;
+let round = null;
+let lock = false;
+let voices = [];
+let audioCtx = null;
+
+const hitsEl = document.getElementById("hits");
+const streakEl = document.getElementById("streak");
+const levelEl = document.getElementById("level");
+const equationEl = document.getElementById("equation");
+const orchardEl = document.getElementById("orchard");
+const tallyEl = document.getElementById("tally");
+const gridEl = document.getElementById("grid");
+const messageEl = document.getElementById("message");
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function shuffle(items){ return [...items].sort(() => Math.random() - 0.5); }
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function getAudioContext(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(freqs, type, duration){
+  try{
+    const ctx = getAudioContext();
+    if(ctx.state === "suspended") ctx.resume();
+    freqs.forEach((f, i) => {
+      setTimeout(() => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + duration + 0.05);
+      }, i * 90);
+    });
+  }catch(e){}
+}
+
+function sfxGood(){ playSound([523.25, 659.25, 783.99], "sine", 0.25); }
+function sfxBad(){ playSound([200], "sawtooth", 0.3); }
+
+// Build the 6x6 orchard once; cells are reused every round.
+function buildOrchard(){
+  orchardEl.innerHTML = "";
+  for(let r = 0; r < ROWS; r++){
+    for(let c = 0; c < COLS; c++){
+      const cell = document.createElement("button");
+      cell.className = "cell";
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.onclick = () => plant(r, c);
+      orchardEl.appendChild(cell);
+    }
+  }
+}
+
+function cellAt(r, c){ return orchardEl.children[r * COLS + c]; }
+
+// Fill the rectangle anchored at the top-left corner, rows x cols apples.
+function paint(rows, cols){
+  for(let r = 0; r < ROWS; r++){
+    for(let c = 0; c < COLS; c++){
+      const on = r < rows && c < cols;
+      const cell = cellAt(r, c);
+      cell.classList.toggle("on", on);
+      cell.textContent = on ? "🍎" : "";
+    }
+  }
+}
+
+function modeForLevel(lvl){
+  if(lvl <= 2) return "build";
+  if(lvl <= 4) return "read";
+  return "recall";
+}
+
+function promptText(){
+  if(round.mode === "build"){
+    return `Plante ${round.a} rangées de ${round.b} pommes.`;
+  }
+  if(round.mode === "read"){
+    return "Combien de pommes en tout ?";
+  }
+  return `Combien font ${round.a} fois ${round.b} ?`;
+}
+
+function buildChoices(answer, a, b){
+  const wrong = new Set();
+  // a+b is the classic mix-up between times and plus, so always offer it.
+  if(a + b !== answer) wrong.add(a + b);
+  const near = shuffle([answer + a, answer - a, answer + b, answer - b, answer + 1, answer - 1]);
+  for(const v of near){
+    if(wrong.size >= 3) break;
+    if(v !== answer && v > 0) wrong.add(v);
+  }
+  while(wrong.size < 3){
+    const v = randInt(2, answer + 8);
+    if(v !== answer) wrong.add(v);
+  }
+  return shuffle([answer, ...[...wrong].slice(0, 3)]);
+}
+
+function newRound(){
+  lock = false;
+  level = Math.floor(hits / 4) + 1;
+  levelEl.textContent = level;
+
+  const mode = modeForLevel(level);
+  const a = randInt(2, 6);
+  const b = randInt(2, 6);
+  const answer = a * b;
+
+  round = { a, b, answer, mode, choices: mode === "build" ? [] : buildChoices(answer, a, b) };
+
+  equationEl.textContent = mode === "recall"
+    ? `${a} × ${b} = ?`
+    : `${a} × ${b}`;
+
+  if(mode === "build"){
+    orchardEl.classList.remove("hidden");
+    gridEl.classList.add("hidden");
+    paint(0, 0);
+    tallyEl.textContent = "";
+    messageEl.textContent = "Touche le verger pour planter le rectangle.";
+  } else if(mode === "read"){
+    orchardEl.classList.remove("hidden");
+    gridEl.classList.remove("hidden");
+    paint(a, b);
+    tallyEl.textContent = "";
+    messageEl.textContent = "Compte les pommes, puis choisis le total.";
+    renderChoices();
+  } else {
+    orchardEl.classList.add("hidden");
+    gridEl.classList.remove("hidden");
+    tallyEl.textContent = "";
+    messageEl.textContent = "De mémoire cette fois !";
+    renderChoices();
+  }
+
+  setTimeout(() => speak(promptText()), 300);
+}
+
+function renderChoices(){
+  gridEl.innerHTML = "";
+  round.choices.forEach(value => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = value;
+    btn.onclick = () => choose(value, btn);
+    gridEl.appendChild(btn);
+  });
+}
+
+function succeed(extraMessage){
+  lock = true;
+  hits++;
+  streak++;
+  hitsEl.textContent = hits;
+  streakEl.textContent = streak;
+  sfxGood();
+
+  const line = `${round.a} fois ${round.b} égale ${round.answer}.`;
+  messageEl.textContent = `${extraMessage} ${line}`;
+  speak(line);
+  tallyEl.textContent = `${round.a} × ${round.b} = ${round.answer}`;
+
+  setTimeout(newRound, 1900);
+}
+
+function fail(message, spoken){
+  streak = 0;
+  streakEl.textContent = streak;
+  sfxBad();
+  messageEl.textContent = message;
+  speak(spoken);
+}
+
+// Build mode: tapping a cell sets the rectangle's bottom-right corner.
+function plant(r, c){
+  if(lock || !round || round.mode !== "build") return;
+
+  const rows = r + 1;
+  const cols = c + 1;
+  paint(rows, cols);
+  tallyEl.textContent = `${rows} × ${cols} = ${rows * cols}`;
+
+  if(rows === round.a && cols === round.b){
+    succeed("Bravo !");
+  } else {
+    cellAt(r, c).classList.add("shake");
+    setTimeout(() => cellAt(r, c).classList.remove("shake"), 400);
+    fail(
+      `Tu as fait ${rows} rangées de ${cols}. Il faut ${round.a} rangées de ${round.b}.`,
+      "Essaie encore."
+    );
+  }
+}
+
+function choose(value, btn){
+  if(lock || !round) return;
+
+  if(value === round.answer){
+    btn.classList.add("good");
+    Array.from(gridEl.children).forEach(b => b.disabled = true);
+    succeed("Bravo !");
+  } else {
+    btn.classList.add("bad");
+    fail("Oups ! Recompte les rangées.", "Oups, essaie encore.");
+    setTimeout(() => btn.classList.remove("bad"), 450);
+  }
+}
+
+document.getElementById("start").onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  hits = 0;
+  streak = 0;
+  hitsEl.textContent = 0;
+  streakEl.textContent = 0;
+  newRound();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(promptText());
+};
+
+buildOrchard();
+paint(0, 0);
+</script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le miroir magique</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #cffafe 0%, #67e8f9 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#0e7490;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+.title{
+  text-align:center;
+  font-size:20px;
+  font-weight:900;
+  color:#0e7490;
+  min-height:26px;
+}
+
+.board-wrap{
+  position:relative;
+  padding:8px;
+  background:#ecfeff;
+  border:2px dashed #22d3ee;
+  border-radius:16px;
+  transition:opacity 0.4s ease, transform 0.4s ease;
+}
+
+.board-wrap.done{ opacity:0; transform:scale(1.15) translateY(-20px); }
+
+.board{
+  display:grid;
+  grid-template-columns:repeat(8, 1fr);
+  gap:3px;
+}
+
+.cell{
+  aspect-ratio:1;
+  border:none;
+  border-radius:5px;
+  background:#e2e8f0;
+  padding:0;
+  cursor:pointer;
+  box-shadow:none;
+  transition:background 0.15s ease, transform 0.15s ease;
+}
+
+.cell.filled{ transform:scale(1); }
+.cell.src{ opacity:0.95; }
+
+.cell.pop{ animation:pop 0.3s; }
+.cell.shake{ animation:shake 0.35s; }
+
+@keyframes pop{
+  0%{ transform:scale(0.4); }
+  60%{ transform:scale(1.18); }
+  100%{ transform:scale(1); }
+}
+
+@keyframes shake{
+  0%,100%{ transform:translateX(0); }
+  25%{ transform:translateX(-4px); }
+  75%{ transform:translateX(4px); }
+}
+
+.mirror-line{
+  position:absolute;
+  background:#f43f5e;
+  border-radius:2px;
+  pointer-events:none;
+  opacity:0.75;
+}
+
+.mirror-line.vertical{ top:8px; bottom:8px; left:50%; width:3px; transform:translateX(-50%); }
+.mirror-line.horizontal{ left:8px; right:8px; top:50%; height:3px; transform:translateY(-50%); }
+.mirror-line.diagonal{ top:50%; left:-6%; width:112%; height:3px; transform:rotate(45deg); }
+
+button.ctrl{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+  min-height:54px;
+  font-size:18px;
+}
+
+button.ctrl:active{ transform:scale(0.96); }
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.message{
+  min-height:40px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#0e7490;
+}
+
+@media (max-height:640px){
+  .board{ gap:2px; }
+  .title{ font-size:17px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>🦋 <span id="solved">0</span></div>
+    <div>⭐ Série: <span id="streak">0</span></div>
+    <div>🪞 Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="title" id="title">Le miroir magique</div>
+
+    <div class="board-wrap" id="boardWrap">
+      <div class="board" id="board"></div>
+      <div class="mirror-line vertical" id="mirrorLine"></div>
+    </div>
+
+    <div class="message" id="message">Appuie sur Jouer pour commencer !</div>
+
+    <div class="controls">
+      <button class="ctrl" id="start">Jouer</button>
+      <button class="ctrl" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SIZE = 8;
+const COLORS = ["#f43f5e", "#8b5cf6", "#0ea5e9", "#f59e0b", "#10b981", "#ec4899"];
+
+let solved = 0;
+let streak = 0;
+let level = 1;
+let puzzle = null;
+let lock = false;
+let voices = [];
+let audioCtx = null;
+
+const solvedEl = document.getElementById("solved");
+const streakEl = document.getElementById("streak");
+const levelEl = document.getElementById("level");
+const titleEl = document.getElementById("title");
+const boardEl = document.getElementById("board");
+const boardWrap = document.getElementById("boardWrap");
+const mirrorLineEl = document.getElementById("mirrorLine");
+const messageEl = document.getElementById("message");
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+function shuffle(items){ return [...items].sort(() => Math.random() - 0.5); }
+
+function getAudioContext(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(freqs, type, duration){
+  try{
+    const ctx = getAudioContext();
+    if(ctx.state === "suspended") ctx.resume();
+    freqs.forEach((f, i) => {
+      setTimeout(() => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + duration + 0.05);
+      }, i * 90);
+    });
+  }catch(e){}
+}
+
+function sfxPlace(){ playSound([880], "triangle", 0.12); }
+function sfxWrong(){ playSound([190], "sawtooth", 0.28); }
+function sfxWin(){ playSound([523.25, 659.25, 783.99, 1046.5], "sine", 0.3); }
+
+function key(r, c){ return `${r},${c}`; }
+
+function mirrorOf(r, c, axis){
+  if(axis === "vertical")   return [r, SIZE - 1 - c];
+  if(axis === "horizontal") return [SIZE - 1 - r, c];
+  return [c, r]; // diagonal
+}
+
+// Cells the pattern may occupy, chosen so every one has a distinct mirror.
+function sourceCells(axis){
+  const cells = [];
+  for(let r = 0; r < SIZE; r++){
+    for(let c = 0; c < SIZE; c++){
+      if(axis === "vertical" && c < SIZE / 2) cells.push([r, c]);
+      else if(axis === "horizontal" && r < SIZE / 2) cells.push([r, c]);
+      else if(axis === "diagonal" && c > r) cells.push([r, c]);
+    }
+  }
+  return cells;
+}
+
+function axisForLevel(lvl){
+  if(lvl <= 2) return "vertical";
+  if(lvl <= 4) return "horizontal";
+  return "diagonal";
+}
+
+function axisLabel(axis){
+  if(axis === "vertical") return "Miroir vertical";
+  if(axis === "horizontal") return "Miroir horizontal";
+  return "Miroir en diagonale";
+}
+
+function buildBoard(){
+  boardEl.innerHTML = "";
+  for(let r = 0; r < SIZE; r++){
+    for(let c = 0; c < SIZE; c++){
+      const cell = document.createElement("button");
+      cell.className = "cell";
+      cell.onclick = () => tap(r, c);
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function cellAt(r, c){ return boardEl.children[r * SIZE + c]; }
+
+function clearBoard(){
+  for(let r = 0; r < SIZE; r++){
+    for(let c = 0; c < SIZE; c++){
+      const cell = cellAt(r, c);
+      cell.className = "cell";
+      cell.style.background = "";
+    }
+  }
+}
+
+function newPuzzle(){
+  lock = false;
+  level = Math.floor(solved / 3) + 1;
+  levelEl.textContent = level;
+
+  const axis = axisForLevel(level);
+  const color = COLORS[randInt(0, COLORS.length - 1)];
+  const count = Math.min(4 + level, 9);
+
+  const pool = shuffle(sourceCells(axis));
+  const pattern = pool.slice(0, count);
+
+  const remaining = new Set();
+  clearBoard();
+  pattern.forEach(([r, c]) => {
+    const cell = cellAt(r, c);
+    cell.classList.add("filled", "src");
+    cell.style.background = color;
+    const [mr, mc] = mirrorOf(r, c, axis);
+    remaining.add(key(mr, mc));
+  });
+
+  puzzle = { axis, color, remaining, total: remaining.size };
+
+  mirrorLineEl.className = `mirror-line ${axis}`;
+  titleEl.textContent = axisLabel(axis);
+  messageEl.textContent = `Complète l'autre moitié : ${remaining.size} cases.`;
+  setTimeout(() => speak("Complète le miroir !"), 300);
+}
+
+function tap(r, c){
+  if(lock || !puzzle) return;
+
+  const cell = cellAt(r, c);
+  if(cell.classList.contains("filled")) return; // already placed, or part of the model
+
+  const k = key(r, c);
+  if(puzzle.remaining.has(k)){
+    puzzle.remaining.delete(k);
+    cell.classList.add("filled", "pop");
+    cell.style.background = puzzle.color;
+    setTimeout(() => cell.classList.remove("pop"), 300);
+    sfxPlace();
+
+    if(puzzle.remaining.size === 0){
+      win();
+    } else {
+      messageEl.textContent = `Encore ${puzzle.remaining.size} case${puzzle.remaining.size > 1 ? "s" : ""}.`;
+    }
+  } else {
+    streak = 0;
+    streakEl.textContent = streak;
+    sfxWrong();
+    cell.classList.add("shake");
+    setTimeout(() => cell.classList.remove("shake"), 350);
+    messageEl.textContent = "Pas là ! Regarde bien la ligne rouge.";
+  }
+}
+
+function win(){
+  lock = true;
+  solved++;
+  streak++;
+  solvedEl.textContent = solved;
+  streakEl.textContent = streak;
+  sfxWin();
+  messageEl.textContent = "Parfait ! C'est symétrique ! 🦋";
+  speak("Bravo ! C'est symétrique !");
+
+  boardWrap.classList.add("done");
+  setTimeout(() => {
+    boardWrap.classList.remove("done");
+    newPuzzle();
+  }, 1500);
+}
+
+document.getElementById("start").onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  solved = 0;
+  streak = 0;
+  solvedEl.textContent = 0;
+  streakEl.textContent = 0;
+  newPuzzle();
+};
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(puzzle) speak(`${axisLabel(puzzle.axis)}. Complète le miroir !`);
+};
+
+buildBoard();
+</script>
+</body>
+</html>
