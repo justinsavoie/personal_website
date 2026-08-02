@@ -248,7 +248,8 @@
             }
         };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="manifest" href="../manifest.webmanifest">
+    <meta name="theme-color" content="#4c1d95">
 </head>
 <body>
 
@@ -457,6 +458,19 @@
         </div>
     </div>
     
+    <div class="content" id="offline-box">
+      <p id="offline-note" style="color:#666;font-size:14px;"></p>
+    </div>
+    <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) { return; }
+      var note = document.getElementById('offline-note');
+      navigator.serviceWorker.register('../sw.js', { scope: '../' })
+        .then(function () { note.textContent = 'Jeux disponibles hors ligne ✓'; })
+        .catch(function () { note.textContent = ''; });
+    })();
+    </script>
+
     
     <footer>
         <p>© 2025 Justin Savoie</p>

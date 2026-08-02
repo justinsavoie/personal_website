@@ -1,0 +1,17 @@
+{
+  "name": "Jeux \u2014 Justin Savoie",
+  "short_name": "Jeux",
+  "start_url": "./playground/jeux-enfants.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4c1d95",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

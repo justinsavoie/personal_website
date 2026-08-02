@@ -111,18 +111,43 @@ function speak(text){
 
 function shuffle(a){ return [...a].sort(()=>Math.random()-0.5); }
 
-async function fetchImage(animal){
-  try {
-    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(animal.wiki)}`);
-    const data = await res.json();
-    let url = data.thumbnail?.source || null;
-    if(url) url = url.replace(/\/\d+px-/, '/500px-');
-    animal.img = url;
-  } catch(e){ animal.img = null; }
+// Images vendored from Wikipedia so this works offline.
+// Sources and page links: assets/animaux/CREDITS.json
+const IMAGES = {
+  "Bear": "assets/animaux/bear.jpg",
+  "Cat": "assets/animaux/cat.jpg",
+  "Cattle": "assets/animaux/cattle.jpg",
+  "Deer": "assets/animaux/deer.jpg",
+  "Dog": "assets/animaux/dog.jpg",
+  "Dolphin": "assets/animaux/dolphin.jpg",
+  "Duck": "assets/animaux/duck.jpg",
+  "Eagle": "assets/animaux/eagle.jpg",
+  "Elephant": "assets/animaux/elephant.jpg",
+  "Frog": "assets/animaux/frog.jpg",
+  "Giraffe": "assets/animaux/giraffe.jpg",
+  "Gorilla": "assets/animaux/gorilla.jpg",
+  "Horse": "assets/animaux/horse.jpg",
+  "Lion": "assets/animaux/lion.jpg",
+  "Owl": "assets/animaux/owl.jpg",
+  "Pig": "assets/animaux/pig.jpg",
+  "Rabbit": "assets/animaux/rabbit.jpg",
+  "Red_fox": "assets/animaux/red_fox.jpg",
+  "Shark": "assets/animaux/shark.jpg",
+  "Sheep": "assets/animaux/sheep.jpg",
+  "Snake": "assets/animaux/snake.jpg",
+  "Tiger": "assets/animaux/tiger.jpg",
+  "Turtle": "assets/animaux/turtle.jpg",
+  "Whale": "assets/animaux/whale.jpg",
+  "Wolf": "assets/animaux/wolf.jpg",
+  "Zebra": "assets/animaux/zebra.jpg"
+};
+
+function attachImage(animal){
+  animal.img = IMAGES[animal.wiki] || null;
 }
 
-async function init(){
-  await Promise.all(ANIMALS.map(fetchImage));
+function init(){
+  ANIMALS.forEach(attachImage);
   available = ANIMALS.filter(a => a.img);
   if(available.length < 4){ document.getElementById("question").textContent = "Erreur de chargement."; return; }
   document.getElementById("animal-name").textContent = "?";

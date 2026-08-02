@@ -12,18 +12,21 @@ body{
   font-family:system-ui;
   min-height:100vh;
   background:linear-gradient(180deg, #dcfce7 0%, #86efac 100%);
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  background-attachment:fixed;
   touch-action:manipulation;
 }
 
+/* Centres vertically when it fits, and simply scrolls when it does not —
+   flex-centring the body instead would clip the overflow out of reach. */
 .app{
   width:100%;
   max-width:430px;
+  min-height:100vh;
+  margin:0 auto;
   padding:14px;
   display:flex;
   flex-direction:column;
+  justify-content:center;
   gap:12px;
 }
 
@@ -54,9 +57,10 @@ body{
   color:#14532d;
 }
 
+/* 7 columns: one guide gutter plus the 6 orchard columns. */
 .orchard{
   display:grid;
-  grid-template-columns:repeat(6, 1fr);
+  grid-template-columns:repeat(7, 1fr);
   gap:4px;
   padding:10px;
   background:#f0fdf4;
@@ -67,6 +71,24 @@ body{
 
 .orchard.hidden{ display:none; }
 .orchard.poof{ opacity:0; transform:scale(0.85); }
+.orchard.shake{ animation:shake 0.4s; }
+
+/* Row/column numbers, so "3 rangées de 4" maps visibly onto a cell. */
+.guide{
+  aspect-ratio:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  font-weight:900;
+  color:#86a893;
+  border-radius:8px;
+}
+
+.guide.active{
+  background:#bbf7d0;
+  color:#14532d;
+}
 
 .cell{
   aspect-ratio:1;
@@ -100,9 +122,13 @@ body{
   text-align:center;
   font-size:26px;
   font-weight:900;
-  color:#15803d;
+  color:#94a3b8;
   min-height:32px;
+  transition:color 0.2s ease;
 }
+
+/* Turns green the moment the rectangle matches the goal. */
+.tally.match{ color:#15803d; }
 
 .grid{
   display:grid;
@@ -140,6 +166,15 @@ button:active{ transform:scale(0.96); }
 
 .control{ min-height:54px; font-size:18px; }
 
+.ready{
+  width:100%;
+  min-height:56px;
+  font-size:19px;
+  background:#15803d;
+}
+
+.ready.hidden{ display:none; }
+
 .good{ background:#16a34a !important; color:white !important; border-color:#16a34a !important; }
 .bad{ background:#dc2626 !important; color:white !important; border-color:#dc2626 !important; }
 
@@ -175,6 +210,8 @@ button:active{ transform:scale(0.96); }
     <div class="grid" id="grid"></div>
     <div class="message" id="message">Appuie sur Jouer pour commencer !</div>
 
+    <button class="control ready hidden" id="ready">C'est prêt !</button>
+
     <div class="controls">
       <button class="control" id="start">Jouer</button>
       <button class="control" id="repeat">🔊</button>
@@ -191,6 +228,10 @@ let streak = 0;
 let level = 1;
 let round = null;
 let lock = false;
+let cells = [];
+let rowGuides = [];
+let colGuides = [];
+let planted = { rows: 0, cols: 0 };
 let voices = [];
 let audioCtx = null;
 
@@ -202,6 +243,7 @@ const orchardEl = document.getElementById("orchard");
 const tallyEl = document.getElementById("tally");
 const gridEl = document.getElementById("grid");
 const messageEl = document.getElementById("message");
+const readyBtn = document.getElementById("ready");
 
 function loadVoices(){ voices = speechSynthesis.getVoices(); }
 speechSynthesis.onvoiceschanged = loadVoices;
@@ -250,24 +292,50 @@ function playSound(freqs, type, duration){
 function sfxGood(){ playSound([523.25, 659.25, 783.99], "sine", 0.25); }
 function sfxBad(){ playSound([200], "sawtooth", 0.3); }
 
-// Build the 6x6 orchard once; cells are reused every round.
+// Build the orchard once, with a numbered gutter along the top and left edge.
+// Cells and guides are kept in arrays so lookups never depend on DOM index math.
 function buildOrchard(){
   orchardEl.innerHTML = "";
+  cells = [];
+  colGuides = [];
+  rowGuides = [];
+
+  const corner = document.createElement("div");
+  corner.className = "guide";
+  orchardEl.appendChild(corner);
+
+  for(let c = 0; c < COLS; c++){
+    const g = document.createElement("div");
+    g.className = "guide";
+    g.textContent = c + 1;
+    colGuides.push(g);
+    orchardEl.appendChild(g);
+  }
+
   for(let r = 0; r < ROWS; r++){
+    const g = document.createElement("div");
+    g.className = "guide";
+    g.textContent = r + 1;
+    rowGuides.push(g);
+    orchardEl.appendChild(g);
+
+    cells[r] = [];
     for(let c = 0; c < COLS; c++){
       const cell = document.createElement("button");
       cell.className = "cell";
       cell.dataset.r = r;
       cell.dataset.c = c;
       cell.onclick = () => plant(r, c);
+      cells[r][c] = cell;
       orchardEl.appendChild(cell);
     }
   }
 }
 
-function cellAt(r, c){ return orchardEl.children[r * COLS + c]; }
+function cellAt(r, c){ return cells[r][c]; }
 
-// Fill the rectangle anchored at the top-left corner, rows x cols apples.
+// Fill the rectangle anchored at the top-left corner, rows x cols apples,
+// and light up the matching guide numbers so the mapping is visible.
 function paint(rows, cols){
   for(let r = 0; r < ROWS; r++){
     for(let c = 0; c < COLS; c++){
@@ -277,6 +345,9 @@ function paint(rows, cols){
       cell.textContent = on ? "🍎" : "";
     }
   }
+  rowGuides.forEach((g, i) => g.classList.toggle("active", i < rows));
+  colGuides.forEach((g, i) => g.classList.toggle("active", i < cols));
+  planted = { rows, cols };
 }
 
 function modeForLevel(lvl){
@@ -323,27 +394,33 @@ function newRound(){
 
   round = { a, b, answer, mode, choices: mode === "build" ? [] : buildChoices(answer, a, b) };
 
+  // In build mode the goal stays on screen, so the child compares rather than
+  // remembers while they adjust the rectangle.
   equationEl.textContent = mode === "recall"
     ? `${a} × ${b} = ?`
-    : `${a} × ${b}`;
+    : mode === "build"
+      ? `Objectif : ${a} × ${b}`
+      : `${a} × ${b}`;
+
+  readyBtn.classList.toggle("hidden", mode !== "build");
+
+  tallyEl.textContent = "";
+  tallyEl.classList.remove("match");
 
   if(mode === "build"){
     orchardEl.classList.remove("hidden");
     gridEl.classList.add("hidden");
     paint(0, 0);
-    tallyEl.textContent = "";
-    messageEl.textContent = "Touche le verger pour planter le rectangle.";
+    messageEl.textContent = "Touche une case, puis appuie sur C'est prêt !";
   } else if(mode === "read"){
     orchardEl.classList.remove("hidden");
     gridEl.classList.remove("hidden");
     paint(a, b);
-    tallyEl.textContent = "";
     messageEl.textContent = "Compte les pommes, puis choisis le total.";
     renderChoices();
   } else {
     orchardEl.classList.add("hidden");
     gridEl.classList.remove("hidden");
-    tallyEl.textContent = "";
     messageEl.textContent = "De mémoire cette fois !";
     renderChoices();
   }
@@ -374,6 +451,7 @@ function succeed(extraMessage){
   messageEl.textContent = `${extraMessage} ${line}`;
   speak(line);
   tallyEl.textContent = `${round.a} × ${round.b} = ${round.answer}`;
+  tallyEl.classList.add("match");
 
   setTimeout(newRound, 1900);
 }
@@ -386,22 +464,51 @@ function fail(message, spoken){
   speak(spoken);
 }
 
-// Build mode: tapping a cell sets the rectangle's bottom-right corner.
+// Build mode: tapping a cell sets the rectangle's bottom-right corner. This is
+// exploration only — nothing is judged until the child presses "C'est prêt !",
+// so trying things out can never be wrong.
 function plant(r, c){
   if(lock || !round || round.mode !== "build") return;
 
   const rows = r + 1;
   const cols = c + 1;
   paint(rows, cols);
+  showTally();
+  messageEl.textContent = "";
+}
+
+function rangees(n){
+  return `${n} rangée${n > 1 ? "s" : ""}`;
+}
+
+function showTally(){
+  const { rows, cols } = planted;
+  if(rows === 0 || cols === 0){
+    tallyEl.textContent = "";
+    tallyEl.classList.remove("match");
+    return;
+  }
   tallyEl.textContent = `${rows} × ${cols} = ${rows * cols}`;
+  tallyEl.classList.toggle("match", rows === round.a && cols === round.b);
+}
+
+// The single judged moment in build mode.
+function submitPlanting(){
+  if(lock || !round || round.mode !== "build") return;
+
+  const { rows, cols } = planted;
+  if(rows === 0 || cols === 0){
+    messageEl.textContent = "Touche le verger pour planter des pommes.";
+    return;
+  }
 
   if(rows === round.a && cols === round.b){
     succeed("Bravo !");
   } else {
-    cellAt(r, c).classList.add("shake");
-    setTimeout(() => cellAt(r, c).classList.remove("shake"), 400);
+    orchardEl.classList.add("shake");
+    setTimeout(() => orchardEl.classList.remove("shake"), 400);
     fail(
-      `Tu as fait ${rows} rangées de ${cols}. Il faut ${round.a} rangées de ${round.b}.`,
+      `Tu as fait ${rangees(rows)} de ${cols}. Il faut ${rangees(round.a)} de ${round.b}.`,
       "Essaie encore."
     );
   }
@@ -429,6 +536,12 @@ document.getElementById("start").onclick = () => {
   hitsEl.textContent = 0;
   streakEl.textContent = 0;
   newRound();
+};
+
+readyBtn.onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  submitPlanting();
 };
 
 document.getElementById("repeat").onclick = () => {

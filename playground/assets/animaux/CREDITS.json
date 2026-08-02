@@ -1,0 +1,132 @@
+{
+ "Cat": {
+  "file": "assets/animaux/cat.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/1/15/Cat_August_2010-4.jpg",
+  "page": "https://en.wikipedia.org/wiki/Cat"
+ },
+ "Dog": {
+  "file": "assets/animaux/dog.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Huskiesatrest.jpg/3840px-Huskiesatrest.jpg",
+  "page": "https://en.wikipedia.org/wiki/Dog"
+ },
+ "Horse": {
+  "file": "assets/animaux/horse.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/d/de/Nokota_Horses_cropped.jpg",
+  "page": "https://en.wikipedia.org/wiki/Horse"
+ },
+ "Cattle": {
+  "file": "assets/animaux/cattle.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/3840px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg",
+  "page": "https://en.wikipedia.org/wiki/Cattle"
+ },
+ "Pig": {
+  "file": "assets/animaux/pig.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Pig_farm_Vampula_1.jpg/3840px-Pig_farm_Vampula_1.jpg",
+  "page": "https://en.wikipedia.org/wiki/Pig"
+ },
+ "Sheep": {
+  "file": "assets/animaux/sheep.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Flock_of_sheep.jpg",
+  "page": "https://en.wikipedia.org/wiki/Sheep"
+ },
+ "Rabbit": {
+  "file": "assets/animaux/rabbit.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Oryctolagus_cuniculus_Rcdo.jpg",
+  "page": "https://en.wikipedia.org/wiki/Rabbit"
+ },
+ "Duck": {
+  "file": "assets/animaux/duck.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/b/bf/Bucephala-albeola-010.jpg",
+  "page": "https://en.wikipedia.org/wiki/Duck"
+ },
+ "Lion": {
+  "file": "assets/animaux/lion.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/020_The_lion_king_Snyggve_in_the_Serengeti_National_Park_Photo_by_Giles_Laurent.jpg/3840px-020_The_lion_king_Snyggve_in_the_Serengeti_National_Park_Photo_by_Giles_Laurent.jpg",
+  "page": "https://en.wikipedia.org/wiki/Lion"
+ },
+ "Tiger": {
+  "file": "assets/animaux/tiger.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Bengal_tiger_%28Panthera_tigris_tigris%29_female_3_crop.jpg/3840px-Bengal_tiger_%28Panthera_tigris_tigris%29_female_3_crop.jpg",
+  "page": "https://en.wikipedia.org/wiki/Tiger"
+ },
+ "Elephant": {
+  "file": "assets/animaux/elephant.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/3/37/African_Bush_Elephant.jpg",
+  "page": "https://en.wikipedia.org/wiki/Elephant"
+ },
+ "Giraffe": {
+  "file": "assets/animaux/giraffe.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Giraffe_Mikumi_National_Park.jpg",
+  "page": "https://en.wikipedia.org/wiki/Giraffe"
+ },
+ "Zebra": {
+  "file": "assets/animaux/zebra.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/9/96/Plains_Zebra_Equus_quagga_cropped.jpg",
+  "page": "https://en.wikipedia.org/wiki/Zebra"
+ },
+ "Gorilla": {
+  "file": "assets/animaux/gorilla.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Gorille_des_plaines_de_l%27ouest_%C3%A0_l%27Espace_Zoologique.jpg",
+  "page": "https://en.wikipedia.org/wiki/Gorilla"
+ },
+ "Bear": {
+  "file": "assets/animaux/bear.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Ours_brun_parcanimalierpyrenees_1.jpg",
+  "page": "https://en.wikipedia.org/wiki/Bear"
+ },
+ "Wolf": {
+  "file": "assets/animaux/wolf.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/6/68/Eurasian_wolf_2.jpg",
+  "page": "https://en.wikipedia.org/wiki/Wolf"
+ },
+ "Red_fox": {
+  "file": "assets/animaux/red_fox.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Portrait_of_a_red_fox_in_Rautas_fj%C3%A4llurskog_%28cropped%29.jpg",
+  "page": "https://en.wikipedia.org/wiki/Red_fox"
+ },
+ "Deer": {
+  "file": "assets/animaux/deer.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Family_Cervidae_five_species.jpg",
+  "page": "https://en.wikipedia.org/wiki/Deer"
+ },
+ "Dolphin": {
+  "file": "assets/animaux/dolphin.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/1/10/Tursiops_truncatus_01.jpg",
+  "page": "https://en.wikipedia.org/wiki/Dolphin"
+ },
+ "Whale": {
+  "file": "assets/animaux/whale.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Southern_right_whale.jpg",
+  "page": "https://en.wikipedia.org/wiki/Whale"
+ },
+ "Shark": {
+  "file": "assets/animaux/shark.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Corl0207_%2828225976491%29.jpg/3840px-Corl0207_%2828225976491%29.jpg",
+  "page": "https://en.wikipedia.org/wiki/Shark"
+ },
+ "Eagle": {
+  "file": "assets/animaux/eagle.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/6/60/Eagles_together.jpg",
+  "page": "https://en.wikipedia.org/wiki/Eagle"
+ },
+ "Owl": {
+  "file": "assets/animaux/owl.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/5/56/Bubo_bubo_sibiricus_-_01.JPG",
+  "page": "https://en.wikipedia.org/wiki/Owl"
+ },
+ "Snake": {
+  "file": "assets/animaux/snake.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Trimeresurus_sabahi_fucatus%2C_Banded_pit_viper_-_Takua_Pa_District%2C_Phang-nga_Province_%2846710893582%29.jpg/3840px-Trimeresurus_sabahi_fucatus%2C_Banded_pit_viper_-_Takua_Pa_District%2C_Phang-nga_Province_%2846710893582%29.jpg",
+  "page": "https://en.wikipedia.org/wiki/Snake"
+ },
+ "Frog": {
+  "file": "assets/animaux/frog.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Red-eyed_Leaf_Frog_%2849661076226%29.jpg",
+  "page": "https://en.wikipedia.org/wiki/Frog"
+ },
+ "Turtle": {
+  "file": "assets/animaux/turtle.jpg",
+  "credit": "https://upload.wikimedia.org/wikipedia/commons/2/21/Turtle_diversity.jpg",
+  "page": "https://en.wikipedia.org/wiki/Turtle"
+ }
+}

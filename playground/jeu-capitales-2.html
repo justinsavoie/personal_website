@@ -122,8 +122,8 @@ button.ctrl:disabled{ background:#aaa; cursor:default; }
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script src="assets/d3.min.js"></script>
+<script src="assets/topojson-client.min.js"></script>
 <script>
 
 const CAPITALS = [
@@ -344,7 +344,7 @@ function nextRound(){
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init(){
   const world = await d3.json(
-    "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
+    "assets/countries-110m.json"
   );
   const geo = topojson.feature(world, world.objects.countries);
 
