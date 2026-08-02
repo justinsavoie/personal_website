@@ -458,10 +458,31 @@
         </div>
     </div>
     
+    <p id="offline-note" style="color:#666;font-size:14px;margin-top:30px;"></p>
     <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('../sw.js', { scope: '../' });
-    }
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      var note = document.getElementById('offline-note');
+
+      // Shows real counts while downloading, then disappears. It says nothing
+      // until it knows something true.
+      navigator.serviceWorker.addEventListener('message', function (e) {
+        var d = e.data || {};
+        if (d.type !== 'precache') return;
+        if (d.done >= d.total) {
+          note.textContent = '';
+        } else {
+          note.textContent = 'Téléchargement des jeux pour le mode hors ligne… '
+                           + d.done + '/' + d.total;
+        }
+      });
+
+      navigator.serviceWorker.register('../sw.js', { scope: '../' })
+        .then(function () { return navigator.serviceWorker.ready; })
+        .then(function (reg) {
+          if (reg.active) reg.active.postMessage({ type: 'status' });
+        });
+    })();
     </script>
 
     
