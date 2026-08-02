@@ -458,17 +458,10 @@
         </div>
     </div>
     
-    <div class="content" id="offline-box">
-      <p id="offline-note" style="color:#666;font-size:14px;"></p>
-    </div>
     <script>
-    (function () {
-      if (!('serviceWorker' in navigator)) { return; }
-      var note = document.getElementById('offline-note');
-      navigator.serviceWorker.register('../sw.js', { scope: '../' })
-        .then(function () { note.textContent = 'Jeux disponibles hors ligne ✓'; })
-        .catch(function () { note.textContent = ''; });
-    })();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('../sw.js', { scope: '../' });
+    }
     </script>
 
     
