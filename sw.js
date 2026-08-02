@@ -181,6 +181,31 @@ self.addEventListener("message", event => {
   })());
 });
 
+// The host rewrites links to drop the .html extension ("pretty URLs"), so a tap
+// requests /playground/jeu-mots while the cache holds /playground/jeu-mots.html.
+// Those are different cache keys, so look up every spelling of the same page.
+async function matchPage(req) {
+  const cache = await caches.open(CACHE);
+  const direct = await cache.match(req, { ignoreSearch: true });
+  if (direct) return direct;
+
+  const url = new URL(req.url);
+  const alts = [];
+  if (url.pathname.endsWith("/")) {
+    alts.push(url.pathname + "index.html");
+  } else if (url.pathname.endsWith(".html")) {
+    alts.push(url.pathname.slice(0, -5));
+  } else {
+    alts.push(url.pathname + ".html", url.pathname + "/index.html");
+  }
+
+  for (const p of alts) {
+    const hit = await cache.match(url.origin + p, { ignoreSearch: true });
+    if (hit) return hit;
+  }
+  return null;
+}
+
 self.addEventListener("fetch", event => {
   const req = event.request;
   if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
@@ -195,8 +220,8 @@ self.addEventListener("fetch", event => {
           caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
           return res;
         })
-        .catch(() => caches.match(req, { ignoreSearch: true })
-          .then(hit => hit || caches.match("./playground/jeux-enfants.html")))
+        .catch(async () => (await matchPage(req))
+          || (await caches.match("./playground/jeux-enfants.html")))
     );
     return;
   }
