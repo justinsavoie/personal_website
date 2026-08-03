@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¡Español! — apprendre l'espagnol</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #fff7ed 0%, #fdba74 100%);
+  background-attachment:fixed;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.app{
+  width:100%;
+  max-width:460px;
+  min-height:100vh;
+  margin:0 auto;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.bar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:46px;
+}
+
+.back{
+  border:none;
+  background:rgba(255,255,255,0.75);
+  border-radius:14px;
+  width:46px;
+  height:46px;
+  font-size:22px;
+  cursor:pointer;
+  flex:none;
+}
+
+.progress{
+  flex:1;
+  height:14px;
+  background:rgba(255,255,255,0.6);
+  border-radius:99px;
+  overflow:hidden;
+}
+
+.progress > div{
+  height:100%;
+  width:0%;
+  background:#ea580c;
+  border-radius:99px;
+  transition:width 0.3s ease;
+}
+
+.card{
+  background:white;
+  border-radius:24px;
+  padding:18px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.14);
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+h1{
+  margin:0;
+  font-size:26px;
+  color:#7c2d12;
+  text-align:center;
+}
+
+.sub{
+  text-align:center;
+  color:#9a3412;
+  font-weight:700;
+  font-size:15px;
+  margin:0;
+}
+
+/* ---------- home ---------- */
+.units{ display:flex; flex-direction:column; gap:12px; }
+
+.unit{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px;
+  border:none;
+  border-radius:20px;
+  background:white;
+  box-shadow:0 4px 14px rgba(0,0,0,0.12);
+  cursor:pointer;
+  text-align:left;
+  width:100%;
+}
+
+.unit:active{ transform:scale(0.98); }
+.unit.locked{ opacity:0.45; }
+
+.unit-icon{ font-size:38px; line-height:1; flex:none; }
+.unit-name{ font-size:19px; font-weight:900; color:#7c2d12; }
+.unit-fr{ font-size:14px; color:#a16207; font-weight:700; }
+.unit-stars{ margin-left:auto; font-size:18px; letter-spacing:2px; flex:none; }
+
+/* ---------- exercise ---------- */
+.prompt{
+  text-align:center;
+  font-size:19px;
+  font-weight:900;
+  color:#7c2d12;
+  min-height:26px;
+}
+
+.big{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:96px;
+  line-height:1;
+  min-height:140px;
+  user-select:none;
+}
+
+.big img{ width:150px; height:150px; object-fit:contain; }
+
+.word{
+  text-align:center;
+  font-size:34px;
+  font-weight:900;
+  color:#c2410c;
+  letter-spacing:0.5px;
+}
+
+.word-fr{
+  text-align:center;
+  font-size:16px;
+  color:#a16207;
+  font-weight:700;
+  margin-top:-8px;
+}
+
+.choices{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.choice{
+  border:4px solid #fed7aa;
+  background:#fffbeb;
+  border-radius:20px;
+  min-height:120px;
+  font-size:62px;
+  line-height:1;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px;
+}
+
+.choice img{ width:88px; height:88px; object-fit:contain; }
+.choice:active{ transform:scale(0.96); }
+.choice.good{ background:#dcfce7; border-color:#16a34a; }
+.choice.bad{ background:#fee2e2; border-color:#dc2626; }
+.choice .swatch{ width:76px; height:76px; border-radius:16px; border:3px solid rgba(0,0,0,0.15); }
+
+/* Groups of objects to count — one of these is the number he just heard. */
+.countgroup{
+  display:block;
+  width:100%;
+  border:4px solid #fed7aa;
+  background:#fffbeb;
+  border-radius:20px;
+  min-height:78px;
+  margin-bottom:10px;
+  padding:10px 12px;
+  font-size:30px;
+  line-height:1.25;
+  letter-spacing:3px;
+  cursor:pointer;
+  word-break:break-all;
+}
+.countgroup:active{ transform:scale(0.98); }
+.countgroup.good{ background:#dcfce7; border-color:#16a34a; }
+.countgroup.bad{ background:#fee2e2; border-color:#dc2626; }
+
+/* memory */
+.pairs{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.pcard{
+  aspect-ratio:1;
+  border:none;
+  border-radius:16px;
+  background:#fb923c;
+  font-size:34px;
+  line-height:1;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:2px;
+}
+.pcard img{ width:80%; height:80%; object-fit:contain; }
+.pcard.up{ background:#fffbeb; border:3px solid #fdba74; }
+.pcard.done{ background:#dcfce7; border:3px solid #16a34a; }
+.pcard .hidden{ visibility:hidden; }
+
+/* buttons */
+button.btn{
+  border:none;
+  border-radius:18px;
+  background:#ea580c;
+  color:white;
+  font-weight:900;
+  font-size:19px;
+  min-height:60px;
+  cursor:pointer;
+  box-shadow:0 5px 0 rgba(0,0,0,0.16);
+  width:100%;
+}
+button.btn:active{ transform:scale(0.97); }
+button.btn.ghost{ background:#fff; color:#9a3412; border:3px solid #fed7aa; box-shadow:none; }
+button.btn.mic{ background:#16a34a; }
+button.btn.mic.listening{ background:#dc2626; animation:pulse 1s infinite alternate; }
+button.btn:disabled{ opacity:0.5; }
+
+@keyframes pulse{ from{ transform:scale(1);} to{ transform:scale(1.04);} }
+
+.row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+.speak-btn{
+  border:none;
+  background:#fed7aa;
+  border-radius:99px;
+  width:66px;
+  height:66px;
+  font-size:30px;
+  cursor:pointer;
+  margin:0 auto;
+}
+.speak-btn:active{ transform:scale(0.94); }
+
+.msg{
+  text-align:center;
+  font-size:17px;
+  font-weight:800;
+  color:#7c2d12;
+  min-height:26px;
+}
+
+.done-big{ text-align:center; font-size:80px; line-height:1.2; }
+
+.hide{ display:none !important; }
+
+@media (max-height:700px){
+  .big{ font-size:74px; min-height:104px; }
+  .choice{ min-height:96px; font-size:48px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="bar">
+    <button class="back hide" id="back">←</button>
+    <div class="progress hide" id="progress"><div id="progress-fill"></div></div>
+  </div>
+
+  <!-- HOME -->
+  <div id="home">
+    <h1>¡Español!</h1>
+    <p class="sub">Choisis une leçon</p>
+    <div class="units" id="units"></div>
+  </div>
+
+  <!-- LESSON -->
+  <div id="lesson" class="hide">
+    <div class="card" id="stage"></div>
+  </div>
+</div>
+
+<script src="curriculum.js"></script>
+<script src="assets/media.js"></script>
+<script>
+// Media is generated ahead of time into assets/. Until it exists the app runs on
+// emoji art and browser speech, so the whole thing works before any of that is
+// made. Slugs are the contract between the two.
+const HAS_AUDIO  = new Set(window.ESPANOL_AUDIO  || []);
+const HAS_IMAGE  = new Set(window.ESPANOL_IMAGES || []);
+const AUDIO_DIR  = "assets/audio/";
+const IMAGE_DIR  = "assets/img/";
+
+const ES_LANG = "es-MX";
+const FR_LANG = "fr-FR";
+
+const homeEl = document.getElementById("home");
+const lessonEl = document.getElementById("lesson");
+const stageEl = document.getElementById("stage");
+const unitsEl = document.getElementById("units");
+const backBtn = document.getElementById("back");
+const progressEl = document.getElementById("progress");
+const progressFill = document.getElementById("progress-fill");
+
+let voices = [];
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+const audioEls = {};
+
+// Spanish: prefer the generated recording, fall back to the browser voice.
+function sayEs(item){
+  const slug = typeof item === "string" ? item : item.slug;
+  const text = typeof item === "string" ? item : item.es;
+  if(HAS_AUDIO.has(slug)){
+    let a = audioEls[slug];
+    if(!a){ a = new Audio(AUDIO_DIR + slug + ".m4a"); audioEls[slug] = a; }
+    a.currentTime = 0;
+    const p = a.play();
+    if(p && p.catch) p.catch(() => tts(text, ES_LANG));
+    return;
+  }
+  tts(text, ES_LANG);
+}
+
+// Every instruction is spoken in French: he cannot read yet, so text on screen
+// is decoration and the audio carries the meaning.
+function sayFr(text){ tts(text, FR_LANG); }
+
+function tts(text, lang){
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = voices.find(v => v.lang.replace("_", "-").toLowerCase().startsWith(lang.slice(0, 2)))
+           && voices.find(v => v.lang.replace("_", "-").toLowerCase() === lang.toLowerCase())
+           || voices.find(v => v.lang.replace("_", "-").toLowerCase().startsWith(lang.slice(0, 2)));
+    if(v) u.voice = v;
+    u.lang = lang;
+    u.rate = 0.85;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+let audioCtx = null;
+function tone(freqs, type, dur){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    freqs.forEach((f, i) => setTimeout(() => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type; const t = audioCtx.currentTime;
+      o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.1, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t + dur + 0.05);
+    }, i * 90));
+  }catch(e){}
+}
+const dingGood = () => tone([660, 880, 1180], "sine", 0.22);
+const dingSoft = () => tone([300], "sine", 0.16);
+const dingWin  = () => tone([523, 659, 784, 1046], "sine", 0.28);
+
+function shuffle(a){ return [...a].sort(() => Math.random() - 0.5); }
+function pick(a){ return a[Math.floor(Math.random() * a.length)]; }
+
+// ---------- progress ----------
+const SAVE_KEY = "espanol-progress-v1";
+function loadProgress(){
+  try{ return JSON.parse(localStorage.getItem(SAVE_KEY)) || {}; }catch(e){ return {}; }
+}
+function saveStars(unitId, stars){
+  const p = loadProgress();
+  p[unitId] = Math.max(p[unitId] || 0, stars);
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(p)); }catch(e){}
+}
+
+// A unit opens once the one before it has been finished at all. Stars are for
+// pride, not for gating.
+function unlockedCount(){
+  const p = loadProgress();
+  let n = 1;
+  for(const u of CURRICULUM){ if(p[u.id]) n++; else break; }
+  return n;
+}
+
+// ---------- art ----------
+function artHTML(item, cls){
+  if(HAS_IMAGE.has(item.slug)){
+    return `<img src="${IMAGE_DIR}${item.slug}.webp" alt="" class="${cls || ""}">`;
+  }
+  if(item.color){
+    return `<div class="swatch" style="background:${item.color}"></div>`;
+  }
+  return item.emoji;
+}
+
+// ---------- home ----------
+function renderHome(){
+  homeEl.classList.remove("hide");
+  lessonEl.classList.add("hide");
+  backBtn.classList.add("hide");
+  progressEl.classList.add("hide");
+
+  const p = loadProgress();
+  const open = unlockedCount();
+  unitsEl.innerHTML = "";
+
+  CURRICULUM.forEach((unit, i) => {
+    const locked = i >= open;
+    const stars = p[unit.id] || 0;
+    const btn = document.createElement("button");
+    btn.className = "unit" + (locked ? " locked" : "");
+    btn.innerHTML = `
+      <div class="unit-icon">${locked ? "🔒" : unit.icon}</div>
+      <div>
+        <div class="unit-name">${unit.title}</div>
+        <div class="unit-fr">${unit.titleFr}</div>
+      </div>
+      <div class="unit-stars">${"⭐".repeat(stars)}${"·".repeat(Math.max(0, 3 - stars))}</div>`;
+    btn.onclick = () => {
+      if(locked){ sayFr("Termine la leçon d'avant d'abord."); dingSoft(); return; }
+      startLesson(unit);
+    };
+    unitsEl.appendChild(btn);
+  });
+}
+
+backBtn.onclick = () => { speechSynthesis.cancel(); renderHome(); };
+
+// ---------- lesson ----------
+let lesson = null;
+
+function startLesson(unit){
+  const items = unit.items;
+  const steps = [];
+
+  // 1. Meet each word: picture, sound, French. No question asked yet.
+  items.forEach(it => steps.push({ type: "learn", item: it }));
+
+  // 2. Hear it, tap the picture. Needs no reading at all.
+  shuffle(items).forEach(it => steps.push({ type: "listen", item: it }));
+
+  // 3. Unit-specific practice.
+  if(unit.id === "numeros"){
+    shuffle(items).slice(0, 4).forEach(it => steps.push({ type: "count", item: it }));
+  } else {
+    steps.push({ type: "pairs", items: shuffle(items).slice(0, 4) });
+  }
+
+  // 4. Saying it out loud, always last and always optional.
+  shuffle(items).slice(0, 3).forEach(it => steps.push({ type: "speak", item: it }));
+
+  lesson = { unit, steps, index: 0, firstTry: 0, asked: 0 };
+  homeEl.classList.add("hide");
+  lessonEl.classList.remove("hide");
+  backBtn.classList.remove("hide");
+  progressEl.classList.remove("hide");
+  renderStep();
+}
+
+function advance(){
+  lesson.index++;
+  if(lesson.index >= lesson.steps.length) finishLesson();
+  else renderStep();
+}
+
+function renderStep(){
+  const pct = (lesson.index / lesson.steps.length) * 100;
+  progressFill.style.width = pct + "%";
+  const step = lesson.steps[lesson.index];
+  ({ learn: stepLearn, listen: stepListen, count: stepCount,
+     pairs: stepPairs, speak: stepSpeak })[step.type](step);
+}
+
+// --- meet the word ---
+function stepLearn(step){
+  const it = step.item;
+  stageEl.innerHTML = `
+    <div class="prompt">Écoute 👂</div>
+    <div class="big">${artHTML(it)}</div>
+    <div class="word">${it.es}</div>
+    <div class="word-fr">${it.fr}</div>
+    <button class="speak-btn" id="again">🔊</button>
+    <button class="btn" id="next">Continuer</button>`;
+  setTimeout(() => sayEs(it), 350);
+  document.getElementById("again").onclick = () => sayEs(it);
+  document.getElementById("next").onclick = advance;
+}
+
+// --- hear it, tap the picture ---
+function stepListen(step){
+  const it = step.item;
+  const others = shuffle(lesson.unit.items.filter(x => x.slug !== it.slug)).slice(0, 3);
+  const options = shuffle([it, ...others]);
+  let answered = false;
+
+  stageEl.innerHTML = `
+    <div class="prompt">Touche la bonne image</div>
+    <button class="speak-btn" id="again">🔊</button>
+    <div class="choices" id="choices"></div>
+    <div class="msg" id="msg"></div>`;
+
+  const box = document.getElementById("choices");
+  options.forEach(opt => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.innerHTML = artHTML(opt);
+    b.onclick = () => {
+      if(answered) return;
+      if(opt.slug === it.slug){
+        answered = true;
+        lesson.asked++;
+        if(!b.dataset.retried) lesson.firstTry++;
+        b.classList.add("good");
+        dingGood();
+        sayEs(it);
+        document.getElementById("msg").textContent = "¡Sí! " + it.es;
+        setTimeout(advance, 1300);
+      } else {
+        // Wrong taps cost nothing but a nudge — he can keep trying.
+        b.classList.add("bad");
+        b.dataset.retried = "1";
+        Array.from(box.children).forEach(c => c.dataset.retried = "1");
+        dingSoft();
+        setTimeout(() => b.classList.remove("bad"), 500);
+      }
+    };
+    box.appendChild(b);
+  });
+
+  document.getElementById("again").onclick = () => sayEs(it);
+  setTimeout(() => { sayFr("Touche"); setTimeout(() => sayEs(it), 700); }, 250);
+}
+
+// --- hear a number, tap the group with that many things ---
+// Driven by audio, not by reading: he hears "seis" and counts the fish. Asking
+// him to choose between the written words would need reading he does not have.
+function stepCount(step){
+  const it = step.item;
+  const others = shuffle(lesson.unit.items.filter(x => x.slug !== it.slug)).slice(0, 2);
+  const options = shuffle([it, ...others]);
+  const thing = pick(["🍎", "⭐", "🐟", "🎈", "🍪", "🐱"]);
+  let answered = false;
+
+  stageEl.innerHTML = `
+    <div class="prompt">Écoute, puis touche le bon groupe</div>
+    <button class="speak-btn" id="again">🔊</button>
+    <div id="choices"></div>
+    <div class="msg" id="msg"></div>`;
+
+  const box = document.getElementById("choices");
+  options.forEach(opt => {
+    const b = document.createElement("button");
+    b.className = "countgroup";
+    b.innerHTML = thing.repeat(opt.count);
+    b.onclick = () => {
+      if(answered) return;
+      if(opt.slug === it.slug){
+        answered = true;
+        lesson.asked++;
+        if(!box.dataset.retried) lesson.firstTry++;
+        b.classList.add("good");
+        dingGood();
+        sayEs(it);
+        document.getElementById("msg").textContent = "¡Sí! " + it.es;
+        setTimeout(advance, 1300);
+      } else {
+        b.classList.add("bad");
+        box.dataset.retried = "1";
+        dingSoft();
+        setTimeout(() => b.classList.remove("bad"), 500);
+      }
+    };
+    box.appendChild(b);
+  });
+
+  document.getElementById("again").onclick = () => sayEs(it);
+  setTimeout(() => { sayFr("Combien ?"); setTimeout(() => sayEs(it), 800); }, 250);
+}
+
+// --- memory pairs ---
+function stepPairs(step){
+  const deck = shuffle([...step.items, ...step.items]);
+  let open = [], matched = 0, busy = false;
+
+  stageEl.innerHTML = `
+    <div class="prompt">Trouve les paires</div>
+    <div class="pairs" id="grid"></div>
+    <div class="msg" id="msg"></div>`;
+
+  const grid = document.getElementById("grid");
+  deck.forEach((it, i) => {
+    const c = document.createElement("button");
+    c.className = "pcard";
+    c.innerHTML = `<span class="hidden">${artHTML(it)}</span>`;
+    c.dataset.slug = it.slug;
+    c.onclick = () => {
+      if(busy || c.classList.contains("up") || c.classList.contains("done")) return;
+      c.classList.add("up");
+      c.querySelector("span").classList.remove("hidden");
+      sayEs(it);
+      open.push({ c, it });
+
+      if(open.length === 2){
+        busy = true;
+        const [a, b] = open;
+        if(a.it.slug === b.it.slug){
+          setTimeout(() => {
+            a.c.classList.add("done"); b.c.classList.add("done");
+            a.c.classList.remove("up"); b.c.classList.remove("up");
+            dingGood();
+            matched++;
+            open = []; busy = false;
+            if(matched === step.items.length){
+              lesson.asked++; lesson.firstTry++;
+              setTimeout(advance, 800);
+            }
+          }, 500);
+        } else {
+          setTimeout(() => {
+            [a, b].forEach(x => {
+              x.c.classList.remove("up");
+              x.c.querySelector("span").classList.add("hidden");
+            });
+            open = []; busy = false;
+          }, 900);
+        }
+      }
+    };
+    grid.appendChild(c);
+  });
+
+  setTimeout(() => sayFr("Trouve les paires."), 300);
+}
+
+// --- say it out loud: a bonus round that can never block progress ---
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function normalize(s){
+  return (s || "").toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/^(el|la|los|las)\s+/, "")
+    .replace(/[^a-z0-9 ]/g, "").trim();
+}
+
+function closeEnough(said, target){
+  const a = normalize(said), b = normalize(target);
+  if(!a) return false;
+  if(a.includes(b) || b.includes(a)) return true;
+  // one typo/mishearing of slack, scaled to word length
+  const d = levenshtein(a, b);
+  return d <= Math.max(1, Math.floor(b.length / 4));
+}
+
+function levenshtein(a, b){
+  const m = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for(let j = 0; j <= b.length; j++) m[0][j] = j;
+  for(let i = 1; i <= a.length; i++)
+    for(let j = 1; j <= b.length; j++)
+      m[i][j] = Math.min(m[i-1][j] + 1, m[i][j-1] + 1,
+                         m[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return m[a.length][b.length];
+}
+
+function stepSpeak(step){
+  const it = step.item;
+  stageEl.innerHTML = `
+    <div class="prompt">À toi de le dire ! 🎤</div>
+    <div class="big">${artHTML(it)}</div>
+    <div class="word">${it.es}</div>
+    <button class="speak-btn" id="again">🔊</button>
+    <button class="btn mic" id="mic">🎤 Parle</button>
+    <button class="btn ghost" id="skip">Je l'ai dit ✓</button>
+    <div class="msg" id="msg"></div>`;
+
+  const msg = document.getElementById("msg");
+  document.getElementById("again").onclick = () => sayEs(it);
+  // Always available, so a failed or unsupported microphone is never a dead end.
+  document.getElementById("skip").onclick = () => { dingGood(); advance(); };
+  setTimeout(() => sayEs(it), 350);
+
+  const micBtn = document.getElementById("mic");
+  if(!SR){
+    micBtn.classList.add("hide");
+    msg.textContent = "Répète après la voix 🙂";
+    return;
+  }
+
+  micBtn.onclick = () => {
+    let rec;
+    try{ rec = new SR(); }catch(e){ micBtn.classList.add("hide"); return; }
+    rec.lang = ES_LANG;
+    rec.interimResults = false;
+    rec.maxAlternatives = 5;
+
+    micBtn.classList.add("listening");
+    micBtn.textContent = "🎤 J'écoute…";
+    msg.textContent = "";
+
+    rec.onresult = (e) => {
+      const heard = Array.from(e.results[0]).map(r => r.transcript);
+      const ok = heard.some(h => closeEnough(h, it.es));
+      micBtn.classList.remove("listening");
+      micBtn.textContent = "🎤 Parle";
+      if(ok){
+        dingGood();
+        msg.textContent = "¡Perfecto! 🎉";
+        setTimeout(advance, 1100);
+      } else {
+        // Never "wrong" — just an invitation to try again.
+        dingSoft();
+        msg.textContent = "Encore une fois 🙂";
+      }
+    };
+    rec.onerror = () => {
+      micBtn.classList.remove("listening");
+      micBtn.textContent = "🎤 Parle";
+      msg.textContent = "Le micro n'a pas marché — appuie sur « Je l'ai dit »";
+    };
+    rec.onend = () => {
+      micBtn.classList.remove("listening");
+      micBtn.textContent = "🎤 Parle";
+    };
+    try{ rec.start(); }catch(e){}
+  };
+}
+
+// ---------- end of lesson ----------
+function finishLesson(){
+  progressFill.style.width = "100%";
+  const rate = lesson.asked ? lesson.firstTry / lesson.asked : 1;
+  const stars = rate >= 0.9 ? 3 : rate >= 0.6 ? 2 : 1;
+  saveStars(lesson.unit.id, stars);
+  dingWin();
+
+  stageEl.innerHTML = `
+    <div class="done-big">🎉</div>
+    <h1>¡Muy bien!</h1>
+    <p class="sub">${"⭐".repeat(stars)}</p>
+    <button class="btn" id="again">Recommencer</button>
+    <button class="btn ghost" id="home-btn">Autres leçons</button>`;
+  sayFr("Bravo !");
+  document.getElementById("again").onclick = () => startLesson(lesson.unit);
+  document.getElementById("home-btn").onclick = renderHome;
+}
+
+renderHome();
+</script>
+</body>
+</html>
