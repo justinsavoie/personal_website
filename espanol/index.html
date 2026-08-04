@@ -173,7 +173,20 @@ h1{
 .choice:active{ transform:scale(0.96); }
 .choice.good{ background:#dcfce7; border-color:#16a34a; }
 .choice.bad{ background:#fee2e2; border-color:#dc2626; }
-.choice .swatch{ width:76px; height:76px; border-radius:16px; border:3px solid rgba(0,0,0,0.15); }
+/* Colour swatches stand in for the picture in the colours unit. They need a
+   size of their own in every place art can appear — a div has none by default,
+   so scoping this to one context makes it silently invisible in the others. */
+.swatch{
+  display:block;
+  width:120px;
+  height:120px;
+  border-radius:20px;
+  border:3px solid rgba(0,0,0,0.18);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.08);
+}
+.big .swatch{ width:150px; height:150px; }
+.choice .swatch{ width:76px; height:76px; border-radius:16px; }
+.pcard .swatch{ width:78%; height:78%; border-radius:12px; border-width:2px; }
 
 /* Groups of objects to count — one of these is the number he just heard. */
 .countgroup{
@@ -209,6 +222,16 @@ h1{
   align-items:center;
   justify-content:center;
   padding:2px;
+}
+/* The art sits in a span so it can be hidden while face-down. That span has to
+   be a real box, or percentage-sized children (swatches, images) collapse to
+   nothing against an inline parent with no height. */
+.pcard > span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:100%;
 }
 .pcard img{ width:80%; height:80%; object-fit:contain; }
 .pcard.up{ background:#fffbeb; border:3px solid #fdba74; }
