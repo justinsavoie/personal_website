@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Range les blocs</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #ede9fe 0%, #a5b4fc 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#3730a3;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+/* The board is square, so its width has to be capped by the height left over
+   after the bar, message, tray and buttons -- otherwise it pushes the tray off
+   a short phone screen, where the pieces are picked up. */
+.board{
+  width:100%;
+  max-width:min(100%, calc(100vh - 340px));
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(8, 1fr);
+  gap:4px;
+  padding:6px;
+  background:#eef2ff;
+  border-radius:16px;
+  touch-action:none;
+}
+
+.cell{
+  aspect-ratio:1;
+  border-radius:7px;
+  background:#e0e7ff;
+  transition:background 0.12s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.cell.ghost{ background:#bbf7d0; }
+.cell.hint{ animation:hintpulse 0.6s ease-in-out infinite alternate; }
+.cell.clearing{ transform:scale(0.4); opacity:0; }
+
+@keyframes hintpulse{
+  from{ background:#e0e7ff; }
+  to{ background:#fde68a; }
+}
+
+.message{
+  min-height:40px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#3730a3;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.tray{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  min-height:86px;
+}
+
+.slot{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f5f3ff;
+  border:2px dashed #c7d2fe;
+  border-radius:16px;
+  padding:6px;
+  touch-action:none;
+  cursor:grab;
+}
+
+.slot.empty{ opacity:0.35; }
+.slot.taken{ opacity:0.25; }
+
+.piece{ position:relative; }
+.piece > div{ position:absolute; border-radius:5px; }
+
+.controls{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:8px;
+}
+
+button.ctrl{
+  border:none;
+  border-radius:14px;
+  background:#4338ca;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+  min-height:54px;
+  font-size:18px;
+}
+
+button.ctrl:active{ transform:scale(0.96); }
+button.ctrl.ghost{ background:#fff; color:#4338ca; border:3px solid #c7d2fe; box-shadow:none; }
+
+/* The piece being dragged. It lives outside .app so nothing can clip it, and
+   never takes pointer events -- the finger has to keep reaching the board. */
+.drag-layer{
+  position:fixed;
+  left:0; top:0;
+  pointer-events:none;
+  z-index:50;
+}
+
+.drag-layer > div{
+  position:fixed;
+  border-radius:7px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.28);
+}
+
+@media (max-height:700px){
+  .tray{ min-height:70px; }
+  button.ctrl{ min-height:46px; font-size:16px; }
+  .message{ min-height:30px; font-size:15px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>⭐ <span id="score">0</span></div>
+    <div>🧹 Lignes <span id="lines">0</span></div>
+    <div>🎯 Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="board" id="board"></div>
+    <div class="message" id="message">Glisse un bloc sur la grille !</div>
+    <div class="tray" id="tray"></div>
+    <div class="controls">
+      <button class="ctrl" id="restart">Nouvelle partie</button>
+      <button class="ctrl ghost" id="hint">💡</button>
+    </div>
+  </div>
+</div>
+
+<div class="drag-layer" id="dragLayer"></div>
+
+<script>
+const N = 8;
+
+// Shapes are lists of [row, col] offsets from the piece's top-left corner.
+const SHAPES = {
+  o1: [[0,0]],
+  h2: [[0,0],[0,1]],
+  v2: [[0,0],[1,0]],
+  sq: [[0,0],[0,1],[1,0],[1,1]],
+  h3: [[0,0],[0,1],[0,2]],
+  v3: [[0,0],[1,0],[2,0]],
+  la: [[0,0],[1,0],[1,1]],
+  lb: [[0,0],[0,1],[1,0]],
+  lc: [[0,0],[0,1],[1,1]],
+  ld: [[0,1],[1,0],[1,1]],
+  h4: [[0,0],[0,1],[0,2],[0,3]],
+  v4: [[0,0],[1,0],[2,0],[3,0]],
+  tt: [[0,0],[0,1],[0,2],[1,1]],
+  ss: [[0,1],[0,2],[1,0],[1,1]],
+  zz: [[0,0],[0,1],[1,1],[1,2]],
+};
+
+// Difficulty is the shape of the pieces, never a clock. Awkward shapes arrive
+// as the child gets better at placing the easy ones.
+const POOLS = [
+  ["o1","h2","v2","sq"],
+  ["o1","h2","v2","sq","h3","v3","la","lb","lc","ld"],
+  ["o1","h2","v2","sq","h3","v3","la","lb","lc","ld","h4","v4","tt","ss","zz"],
+];
+const LINES_PER_LEVEL = 10;
+
+const COLORS = ["#f97316","#22c55e","#3b82f6","#eab308","#ec4899","#8b5cf6","#14b8a6","#ef4444"];
+
+const NUMBERS = ["", "Une", "Deux", "Trois", "Quatre", "Cinq", "Six", "Sept", "Huit"];
+const CHEERS = ["Bravo !", "Super !", "Bien joué !", "Continue !"];
+
+let board = new Array(N * N).fill(null);
+let tray = [];
+let score = 0;
+let lines = 0;
+let level = 1;
+let lock = false;
+let drag = null;
+let voices = [];
+let audioCtx = null;
+
+const boardEl = document.getElementById("board");
+const trayEl = document.getElementById("tray");
+const messageEl = document.getElementById("message");
+const scoreEl = document.getElementById("score");
+const linesEl = document.getElementById("lines");
+const levelEl = document.getElementById("level");
+const dragLayer = document.getElementById("dragLayer");
+
+const cells = [];
+for(let i = 0; i < N * N; i++){
+  const d = document.createElement("div");
+  d.className = "cell";
+  boardEl.appendChild(d);
+  cells.push(d);
+}
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.resume();
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function getAudioContext(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tone(freqs, type, dur){
+  try{
+    const ctx = getAudioContext();
+    if(ctx.state === "suspended") ctx.resume();
+    freqs.forEach((f, i) => setTimeout(() => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      const t = ctx.currentTime;
+      o.type = type;
+      o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.09, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + dur + 0.05);
+    }, i * 70));
+  }catch(e){}
+}
+
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(items){ return items[randInt(0, items.length - 1)]; }
+
+// ---------- pieces ----------
+function shapeSize(shape){
+  return {
+    rows: Math.max(...shape.map(s => s[0])) + 1,
+    cols: Math.max(...shape.map(s => s[1])) + 1,
+  };
+}
+
+function newPiece(){
+  const key = pick(POOLS[level - 1]);
+  return { shape: SHAPES[key], color: pick(COLORS) };
+}
+
+function fillTray(){
+  tray = [newPiece(), newPiece(), newPiece()];
+}
+
+// ---------- board queries ----------
+function fits(shape, row, col){
+  return shape.every(([dr, dc]) => {
+    const r = row + dr, c = col + dc;
+    return r >= 0 && r < N && c >= 0 && c < N && board[r * N + c] === null;
+  });
+}
+
+function findSpot(shape){
+  for(let r = 0; r < N; r++)
+    for(let c = 0; c < N; c++)
+      if(fits(shape, r, c)) return { row: r, col: c };
+  return null;
+}
+
+function anyTrayFits(){
+  return tray.some(p => p && findSpot(p.shape));
+}
+
+// ---------- rendering ----------
+function renderBoard(clearing){
+  for(let i = 0; i < N * N; i++){
+    const d = cells[i];
+    d.className = "cell" + (clearing && clearing.has(i) ? " clearing" : "");
+    d.style.background = board[i] || "";
+  }
+}
+
+function renderTray(){
+  trayEl.innerHTML = "";
+  tray.forEach((p, i) => {
+    const slot = document.createElement("div");
+    slot.className = "slot" + (p ? "" : " empty");
+    if(p){
+      const { rows, cols } = shapeSize(p.shape);
+      // Tray art scales down so a 4-long piece still fits a third of the width.
+      const tc = cols > 3 || rows > 3 ? 15 : 19;
+      const box = document.createElement("div");
+      box.className = "piece";
+      box.style.width = cols * tc + "px";
+      box.style.height = rows * tc + "px";
+      p.shape.forEach(([r, c]) => {
+        const b = document.createElement("div");
+        b.style.left = c * tc + "px";
+        b.style.top = r * tc + "px";
+        b.style.width = (tc - 3) + "px";
+        b.style.height = (tc - 3) + "px";
+        b.style.background = p.color;
+        box.appendChild(b);
+      });
+      slot.appendChild(box);
+      slot.addEventListener("pointerdown", e => startDrag(e, i));
+    }
+    trayEl.appendChild(slot);
+  });
+}
+
+function updateHud(){
+  scoreEl.textContent = score;
+  linesEl.textContent = lines;
+  levelEl.textContent = level;
+}
+
+// ---------- dragging ----------
+// Measured at pick-up rather than kept in a constant: the board is sized by the
+// viewport, so the cell pitch is only knowable once it has been laid out.
+function boardMetrics(){
+  const a = cells[0].getBoundingClientRect();
+  const b = cells[1].getBoundingClientRect();
+  return { left: a.left, top: a.top, size: a.width, step: b.left - a.left };
+}
+
+function startDrag(e, slotIndex){
+  if(lock || !tray[slotIndex]) return;
+  e.preventDefault();
+  getAudioContext().resume();
+  speechSynthesis.resume();
+
+  const p = tray[slotIndex];
+  const m = boardMetrics();
+  const { rows, cols } = shapeSize(p.shape);
+
+  const els = p.shape.map(([r, c]) => {
+    const d = document.createElement("div");
+    d.style.width = m.size + "px";
+    d.style.height = m.size + "px";
+    d.style.background = p.color;
+    d.dataset.dr = r;
+    d.dataset.dc = c;
+    dragLayer.appendChild(d);
+    return d;
+  });
+
+  drag = {
+    slotIndex, piece: p, metrics: m, els,
+    width: (cols - 1) * m.step + m.size,
+    height: (rows - 1) * m.step + m.size,
+    row: null, col: null,
+  };
+
+  trayEl.children[slotIndex].classList.add("taken");
+  tone([420], "sine", 0.06);
+  moveDrag(e);
+
+  document.addEventListener("pointermove", moveDrag);
+  document.addEventListener("pointerup", endDrag);
+  document.addEventListener("pointercancel", endDrag);
+}
+
+// The piece rides above the finger. Without the lift a small hand covers the
+// very cells the child is aiming at, which is the thing that makes dragging on
+// a phone feel like guessing.
+const LIFT = 58;
+
+function moveDrag(e){
+  if(!drag) return;
+  const m = drag.metrics;
+  const x = e.clientX - drag.width / 2;
+  const y = e.clientY - drag.height / 2 - LIFT;
+
+  drag.els.forEach(d => {
+    d.style.left = (x + d.dataset.dc * m.step) + "px";
+    d.style.top = (y + d.dataset.dr * m.step) + "px";
+  });
+
+  const col = Math.round((x - m.left) / m.step);
+  const row = Math.round((y - m.top) / m.step);
+  drag.row = row;
+  drag.col = col;
+
+  const ok = fits(drag.piece.shape, row, col);
+  cells.forEach(c => c.classList.remove("ghost"));
+  if(ok) drag.piece.shape.forEach(([dr, dc]) => cells[(row + dr) * N + col + dc].classList.add("ghost"));
+}
+
+function endDrag(){
+  if(!drag) return;
+  const d = drag;
+  drag = null;
+
+  document.removeEventListener("pointermove", moveDrag);
+  document.removeEventListener("pointerup", endDrag);
+  document.removeEventListener("pointercancel", endDrag);
+
+  d.els.forEach(el => el.remove());
+  cells.forEach(c => c.classList.remove("ghost"));
+
+  if(fits(d.piece.shape, d.row, d.col)){
+    placePiece(d.slotIndex, d.row, d.col);
+  } else {
+    // Nothing happens. No buzzer, no message -- hunting for the right spot is
+    // the game, so a miss must not read as a mistake.
+    renderTray();
+  }
+}
+
+// ---------- placing ----------
+function fullLines(){
+  const hit = new Set();
+  let count = 0;
+  for(let r = 0; r < N; r++){
+    let full = true;
+    for(let c = 0; c < N; c++) if(board[r * N + c] === null) full = false;
+    if(full){ count++; for(let c = 0; c < N; c++) hit.add(r * N + c); }
+  }
+  for(let c = 0; c < N; c++){
+    let full = true;
+    for(let r = 0; r < N; r++) if(board[r * N + c] === null) full = false;
+    if(full){ count++; for(let r = 0; r < N; r++) hit.add(r * N + c); }
+  }
+  return { count, cells: hit };
+}
+
+function placePiece(slotIndex, row, col){
+  const p = tray[slotIndex];
+  p.shape.forEach(([dr, dc]) => { board[(row + dr) * N + col + dc] = p.color; });
+  score += p.shape.length;
+
+  // Refilled straight away rather than only once all three are gone: waiting
+  // strands the child holding two pieces that no longer fit anywhere.
+  tray[slotIndex] = newPiece();
+  renderTray();
+
+  const found = fullLines();
+  if(!found.count){
+    tone([300], "square", 0.05);
+    renderBoard();
+    updateHud();
+    messageEl.textContent = "";
+    checkStuck();
+    return;
+  }
+
+  lock = true;
+  renderBoard(found.cells);
+  tone([660, 880, 1100], "triangle", 0.12);
+
+  setTimeout(() => {
+    found.cells.forEach(i => { board[i] = null; });
+    lines += found.count;
+    score += found.count * 10 + (found.count > 1 ? found.count * 5 : 0);
+
+    const before = level;
+    level = Math.min(POOLS.length, 1 + Math.floor(lines / LINES_PER_LEVEL));
+    lock = false;
+
+    renderBoard();
+    updateHud();
+
+    const word = found.count === 1 ? "ligne" : "lignes";
+    messageEl.textContent = `${NUMBERS[found.count]} ${word} ! 🎉`;
+
+    if(level > before){
+      messageEl.textContent = `Niveau ${level} ! 🎯`;
+      speak(`Niveau ${level} !`);
+    } else {
+      speak(`${NUMBERS[found.count]} ${word} !`);
+    }
+
+    checkStuck();
+  }, 280);
+}
+
+// Running out of room is not losing. The grid empties, the score stays, and the
+// child gets a small celebration for filling it.
+function checkStuck(){
+  if(anyTrayFits()) return;
+
+  lock = true;
+  const filled = new Set();
+  for(let i = 0; i < N * N; i++) if(board[i] !== null) filled.add(i);
+  renderBoard(filled);
+  messageEl.textContent = "La grille est pleine ! On recommence 🎉";
+  speak("La grille est pleine ! On recommence !");
+  tone([523, 659, 784, 1047], "triangle", 0.14);
+
+  setTimeout(() => {
+    board = new Array(N * N).fill(null);
+    fillTray();
+    lock = false;
+    renderBoard();
+    renderTray();
+  }, 700);
+}
+
+// ---------- controls ----------
+document.getElementById("hint").onclick = () => {
+  if(lock) return;
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  for(const p of tray){
+    const spot = p && findSpot(p.shape);
+    if(!spot) continue;
+    p.shape.forEach(([dr, dc]) => cells[(spot.row + dr) * N + spot.col + dc].classList.add("hint"));
+    setTimeout(() => cells.forEach(c => c.classList.remove("hint")), 1400);
+    return;
+  }
+};
+
+document.getElementById("restart").onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  board = new Array(N * N).fill(null);
+  score = 0;
+  lines = 0;
+  level = 1;
+  lock = false;
+  fillTray();
+  renderBoard();
+  renderTray();
+  updateHud();
+  messageEl.textContent = "Glisse un bloc sur la grille !";
+  speak("Range les blocs !");
+};
+
+fillTray();
+renderBoard();
+renderTray();
+updateHud();
+</script>
+</body>
+</html>
