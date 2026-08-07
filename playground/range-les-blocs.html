@@ -195,9 +195,16 @@ const SHAPES = {
   ld: [[0,1],[1,0],[1,1]],
   h4: [[0,0],[0,1],[0,2],[0,3]],
   v4: [[0,0],[1,0],[2,0],[3,0]],
+  // Nothing rotates in play, so every orientation a piece can arrive in has to
+  // be its own entry -- otherwise the T only ever points one way.
   tt: [[0,0],[0,1],[0,2],[1,1]],
+  tu: [[0,1],[1,0],[1,1],[1,2]],
+  tr: [[0,0],[1,0],[1,1],[2,0]],
+  tl: [[0,1],[1,0],[1,1],[2,1]],
   ss: [[0,1],[0,2],[1,0],[1,1]],
+  sv: [[0,0],[1,0],[1,1],[2,1]],
   zz: [[0,0],[0,1],[1,1],[1,2]],
+  zv: [[0,1],[1,0],[1,1],[2,0]],
 };
 
 // Difficulty is the shape of the pieces, never a clock. Awkward shapes arrive
@@ -205,7 +212,8 @@ const SHAPES = {
 const POOLS = [
   ["o1","h2","v2","sq"],
   ["o1","h2","v2","sq","h3","v3","la","lb","lc","ld"],
-  ["o1","h2","v2","sq","h3","v3","la","lb","lc","ld","h4","v4","tt","ss","zz"],
+  ["o1","h2","v2","sq","h3","v3","la","lb","lc","ld","h4","v4",
+   "tt","tu","tr","tl","ss","sv","zz","zv"],
 ];
 const LINES_PER_LEVEL = 10;
 
