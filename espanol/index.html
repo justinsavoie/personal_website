@@ -362,6 +362,11 @@ function sayFr(text){ tts(text, FR_LANG); }
 
 function tts(text, lang){
   try{
+    // Chrome pauses the synthesis engine when a page is hidden, and the paused
+    // flag is global: it outlives this page and would swallow the first, and
+    // only the first, utterance of whatever loads next -- which is exactly the
+    // prompt a game speaks on its own. Every game resumes for the same reason.
+    speechSynthesis.resume();
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     const v = voices.find(v => v.lang.replace("_", "-").toLowerCase().startsWith(lang.slice(0, 2)))
@@ -430,6 +435,7 @@ function artHTML(item, cls){
 
 // ---------- home ----------
 function renderHome(){
+  stopListening();
   homeEl.classList.remove("hide");
   lessonEl.classList.add("hide");
   backBtn.classList.add("hide");
@@ -499,6 +505,7 @@ function advance(){
 }
 
 function renderStep(){
+  stopListening();
   const pct = (lesson.index / lesson.steps.length) * 100;
   progressFill.style.width = pct + "%";
   const step = lesson.steps[lesson.index];
@@ -670,6 +677,26 @@ function stepPairs(step){
 // --- say it out loud: a bonus round that can never block progress ---
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+// This is the only microphone on the whole site. A session left running holds
+// the audio input and blocks speech synthesis browser-wide -- including in the
+// games, long after this page is gone -- until it times out on its own. So the
+// live one is kept here rather than in a click handler, and every way out of
+// this step aborts it.
+let activeRec = null;
+function stopListening(){
+  if(!activeRec) return;
+  const rec = activeRec;
+  activeRec = null;
+  try{ rec.abort(); }catch(e){}
+}
+
+// Leaving the page counts as a way out: cancel here too, so we never navigate
+// away mid-utterance and leave the engine wedged for the next page.
+addEventListener("pagehide", () => {
+  stopListening();
+  try{ speechSynthesis.cancel(); }catch(e){}
+});
+
 function normalize(s){
   return (s || "").toLowerCase()
     .normalize("NFD").replace(/[̀-ͯ]/g, "")
@@ -721,8 +748,10 @@ function stepSpeak(step){
   }
 
   micBtn.onclick = () => {
+    stopListening();
     let rec;
     try{ rec = new SR(); }catch(e){ micBtn.classList.add("hide"); return; }
+    activeRec = rec;
     rec.lang = ES_LANG;
     rec.interimResults = false;
     rec.maxAlternatives = 5;
@@ -752,15 +781,17 @@ function stepSpeak(step){
       msg.textContent = "Le micro n'a pas marché — appuie sur « Je l'ai dit »";
     };
     rec.onend = () => {
+      if(activeRec === rec) activeRec = null;
       micBtn.classList.remove("listening");
       micBtn.textContent = "🎤 Parle";
     };
-    try{ rec.start(); }catch(e){}
+    try{ rec.start(); }catch(e){ if(activeRec === rec) activeRec = null; }
   };
 }
 
 // ---------- end of lesson ----------
 function finishLesson(){
+  stopListening();
   progressFill.style.width = "100%";
   const rate = lesson.asked ? lesson.firstTry / lesson.asked : 1;
   const stars = rate >= 0.9 ? 3 : rate >= 0.6 ? 2 : 1;
