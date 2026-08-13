@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les oiseaux sur le fil</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #e0f2fe 0%, #7dd3fc 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#075985;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+/* The wire is tappable on purpose: counting the birds again, as often as you
+   like, is the strategy a six-year-old actually has. */
+.sky{
+  position:relative;
+  min-height:132px;
+  background:linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius:16px;
+  padding:10px 8px 0;
+  cursor:pointer;
+  overflow:hidden;
+}
+
+.wire{
+  display:flex;
+  flex-wrap:wrap;
+  gap:2px;
+  align-items:flex-end;
+  justify-content:center;
+  min-height:96px;
+  border-bottom:4px solid #475569;
+  padding-bottom:2px;
+}
+
+.bird{
+  font-size:30px;
+  line-height:1;
+  transition:transform 0.7s ease-in, opacity 0.7s ease-in;
+  user-select:none;
+}
+
+.bird.gone{ transform:translate(60px, -150px) rotate(25deg); opacity:0; }
+.bird.count{ animation:hop 0.4s ease; }
+
+@keyframes hop{
+  0%{ transform:translateY(0); }
+  50%{ transform:translateY(-16px) scale(1.25); }
+  100%{ transform:translateY(0); }
+}
+
+.sum{
+  text-align:center;
+  font-size:30px;
+  font-weight:900;
+  color:#0369a1;
+  min-height:36px;
+  letter-spacing:1px;
+}
+
+.task{
+  text-align:center;
+  font-size:17px;
+  font-weight:900;
+  color:#075985;
+  min-height:24px;
+}
+
+.choices{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+
+.choice{
+  border:none;
+  border-radius:18px;
+  background:#0284c7;
+  color:white;
+  font-size:32px;
+  font-weight:900;
+  min-height:78px;
+  cursor:pointer;
+  box-shadow:0 5px 0 rgba(0,0,0,0.18);
+}
+
+.choice:active{ transform:scale(0.96); }
+.choice.good{ background:#16a34a; }
+.choice.miss{ background:#94a3b8; }
+.choice:disabled{ opacity:0.6; }
+
+.message{
+  min-height:40px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#075985;
+}
+
+button.ctrl{
+  border:none;
+  border-radius:14px;
+  background:#0c4a6e;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+  min-height:54px;
+  font-size:18px;
+}
+
+button.ctrl:active{ transform:scale(0.96); }
+button.ctrl.ghost{ background:#fff; color:#0c4a6e; border:3px solid #bae6fd; box-shadow:none; }
+
+.controls{ display:grid; grid-template-columns:2fr 1fr 1fr; gap:8px; }
+
+@media (max-height:700px){
+  .sky{ min-height:110px; }
+  .wire{ min-height:78px; }
+  .bird{ font-size:25px; }
+  .choice{ min-height:64px; font-size:27px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>🐦 <span id="score">0</span></div>
+    <div>⭐ Série <span id="streak">0</span></div>
+    <div>🌤️ Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="sky" id="sky">
+      <div class="wire" id="wire"></div>
+    </div>
+
+    <div class="sum" id="sum"></div>
+    <div class="task" id="task">Appuie sur Jouer !</div>
+
+    <div class="choices" id="choices"></div>
+
+    <div class="message" id="message"></div>
+
+    <div class="controls">
+      <button class="ctrl" id="start">Jouer</button>
+      <button class="ctrl ghost" id="repeat">🔊</button>
+      <button class="ctrl ghost" id="recount">👆</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Subtraction is shown before it is written: birds physically leave. The
+// written form only turns up at level 3, next to the picture and never
+// instead of it.
+const BANDS = [
+  { max: 5,  written: false },
+  { max: 10, written: false },
+  { max: 20, written: true  },
+];
+const ROUNDS_PER_LEVEL = 6;
+
+const NUMBERS = ["zéro","un","deux","trois","quatre","cinq","six","sept","huit","neuf","dix",
+                 "onze","douze","treize","quatorze","quinze","seize","dix-sept","dix-huit",
+                 "dix-neuf","vingt"];
+
+let score = 0;
+let streak = 0;
+let level = 1;
+let round = null;
+let lock = false;
+let voices = [];
+let audioCtx = null;
+
+const wireEl = document.getElementById("wire");
+const skyEl = document.getElementById("sky");
+const sumEl = document.getElementById("sum");
+const taskEl = document.getElementById("task");
+const choicesEl = document.getElementById("choices");
+const messageEl = document.getElementById("message");
+const scoreEl = document.getElementById("score");
+const streakEl = document.getElementById("streak");
+const levelEl = document.getElementById("level");
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text, rate){
+  speechSynthesis.resume();
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = rate || 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function getAudioContext(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tone(freqs, type, dur){
+  try{
+    const ctx = getAudioContext();
+    if(ctx.state === "suspended") ctx.resume();
+    freqs.forEach((f, i) => setTimeout(() => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      const t = ctx.currentTime;
+      o.type = type;
+      o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.09, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + dur + 0.05);
+    }, i * 70));
+  }catch(e){}
+}
+
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+function shuffle(a){
+  const c = a.slice();
+  for(let i = c.length - 1; i > 0; i--){
+    const j = randInt(0, i);
+    [c[i], c[j]] = [c[j], c[i]];
+  }
+  return c;
+}
+
+function plural(n, one, many){ return n <= 1 ? one : many; }
+
+// Three choices: the answer plus two near neighbours, because a child who is
+// one out has made an interesting mistake and should see it as an option.
+function makeChoices(answer, max){
+  const out = new Set([answer]);
+  const near = shuffle([answer - 1, answer + 1, answer - 2, answer + 2]);
+  for(const n of near){
+    if(out.size >= 3) break;
+    if(n >= 0 && n <= max) out.add(n);
+  }
+  let n = 0;
+  while(out.size < 3){ if(n !== answer) out.add(n); n++; }
+  return shuffle([...out]);
+}
+
+function newRound(){
+  const band = BANDS[level - 1];
+  const total = randInt(3, band.max);
+  const away = randInt(1, Math.max(1, total - 1));
+  round = { total, away, left: total - away, written: band.written, revealed: false };
+  lock = true;
+
+  renderBirds(total);
+  sumEl.textContent = "";
+  choicesEl.innerHTML = "";
+  messageEl.textContent = "";
+  taskEl.textContent = `Il y a ${total} ${plural(total, "oiseau", "oiseaux")}.`;
+  speak(`Il y a ${NUMBERS[total]} ${plural(total, "oiseau", "oiseaux")}.`);
+
+  setTimeout(() => flyAway(), 1700);
+}
+
+function renderBirds(n){
+  wireEl.innerHTML = "";
+  for(let i = 0; i < n; i++){
+    const b = document.createElement("span");
+    b.className = "bird";
+    b.textContent = "🐦";
+    wireEl.appendChild(b);
+  }
+}
+
+function flyAway(){
+  if(!round) return;
+  const birds = [...wireEl.children];
+  // The ones that leave are the last on the wire, so the ones remaining stay
+  // put -- nothing shuffles under the child's eyes mid-count.
+  const leaving = birds.slice(round.left);
+  taskEl.textContent = `${round.away} ${plural(round.away, "s'envole", "s'envolent")} !`;
+  speak(`${NUMBERS[round.away]} ${plural(round.away, "s'envole", "s'envolent")}.`);
+
+  leaving.forEach((b, i) => setTimeout(() => {
+    b.classList.add("gone");
+    tone([520 + i * 40], "sine", 0.1);
+  }, i * 180));
+
+  setTimeout(() => {
+    leaving.forEach(b => b.remove());
+    ask();
+  }, leaving.length * 180 + 800);
+}
+
+function ask(){
+  if(!round) return;
+  round.revealed = true;
+  lock = false;
+  if(round.written) sumEl.textContent = `${round.total} − ${round.away} = ?`;
+  taskEl.textContent = "Combien il en reste ?";
+  speak("Combien il en reste ?");
+
+  choicesEl.innerHTML = "";
+  makeChoices(round.left, BANDS[level - 1].max).forEach(n => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.textContent = n;
+    b.onclick = () => answer(n, b);
+    choicesEl.appendChild(b);
+  });
+}
+
+function answer(n, btn){
+  if(lock || !round) return;
+  lock = true;
+
+  if(n === round.left){
+    score++;
+    streak++;
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+    btn.classList.add("good");
+    tone([660, 880, 1100], "triangle", 0.12);
+    const left = round.left;
+    messageEl.textContent = `Oui ! Il en reste ${left} 🎉`;
+    speak(`Oui ! Il en reste ${NUMBERS[left]}.`);
+    [...choicesEl.children].forEach(c => c.disabled = true);
+
+    if(score % ROUNDS_PER_LEVEL === 0 && level < BANDS.length){
+      level++;
+      levelEl.textContent = level;
+      setTimeout(() => {
+        messageEl.textContent = `Niveau ${level} ! 🌤️`;
+        speak(`Niveau ${level} !`);
+      }, 1500);
+      setTimeout(newRound, 3000);
+    } else {
+      setTimeout(newRound, 2000);
+    }
+  } else {
+    // Never a mistake -- just a reason to count together.
+    streak = 0;
+    streakEl.textContent = 0;
+    btn.classList.add("miss");
+    tone([300, 240], "sine", 0.1);
+    messageEl.textContent = "On compte ensemble 👆";
+    countAloud(() => {
+      lock = false;
+      messageEl.textContent = "À toi !";
+    });
+  }
+}
+
+// Hops along the remaining birds, saying each number. Available on demand from
+// the 👆 button and from tapping the wire, as well as after a miss.
+function countAloud(then){
+  const birds = [...wireEl.children].filter(b => !b.classList.contains("gone"));
+  if(!birds.length){ if(then) then(); return; }
+  birds.forEach((b, i) => setTimeout(() => {
+    birds.forEach(x => x.classList.remove("count"));
+    b.classList.add("count");
+    tone([400 + i * 30], "sine", 0.07);
+    speak(NUMBERS[i + 1], 1);
+  }, i * 620));
+  setTimeout(() => {
+    birds.forEach(x => x.classList.remove("count"));
+    if(then) then();
+  }, birds.length * 620 + 300);
+}
+
+skyEl.onclick = () => {
+  if(!round || !round.revealed || lock) return;
+  getAudioContext().resume();
+  countAloud();
+};
+
+document.getElementById("recount").onclick = () => {
+  if(!round || !round.revealed || lock) return;
+  getAudioContext().resume();
+  countAloud();
+};
+
+document.getElementById("repeat").onclick = () => {
+  if(!round || lock) return;
+  getAudioContext().resume();
+  if(round.revealed) speak("Combien il en reste ?");
+  else speak(`Il y a ${NUMBERS[round.total]} ${plural(round.total, "oiseau", "oiseaux")}.`);
+};
+
+document.getElementById("start").onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  score = 0;
+  streak = 0;
+  level = 1;
+  scoreEl.textContent = 0;
+  streakEl.textContent = 0;
+  levelEl.textContent = 1;
+  newRound();
+};
+</script>
+</body>
+</html>

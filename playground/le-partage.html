@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le partage</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #fef9c3 0%, #86efac 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#14532d;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+/* Tapping the basket counts what is left out loud. Recounting has to be free,
+   or the child guesses instead of checking. */
+.basket{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  align-items:center;
+  justify-content:center;
+  min-height:78px;
+  padding:8px;
+  background:#fffbeb;
+  border:3px dashed #fbbf24;
+  border-radius:16px;
+  cursor:pointer;
+}
+
+.basket-hint{ font-size:14px; font-weight:700; color:#a8a29e; }
+
+.food{
+  font-size:27px;
+  line-height:1;
+  user-select:none;
+  transition:transform 0.15s ease;
+}
+
+.food.count{ animation:hop 0.4s ease; }
+
+@keyframes hop{
+  0%{ transform:translateY(0); }
+  50%{ transform:translateY(-12px) scale(1.3); }
+  100%{ transform:translateY(0); }
+}
+
+.task{
+  text-align:center;
+  font-size:17px;
+  font-weight:900;
+  color:#14532d;
+  min-height:44px;
+}
+
+.plates{ display:flex; gap:8px; justify-content:center; }
+
+/* The fraction rounds have a single plate; left to stretch it reads as an
+   empty table rather than as one friend's share. */
+.plates.one .plate{ flex:0 0 190px; }
+
+.plate{
+  flex:1;
+  min-height:118px;
+  background:#f0fdf4;
+  border:3px solid #bbf7d0;
+  border-radius:18px;
+  padding:6px 4px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  cursor:pointer;
+}
+
+.plate:active{ transform:scale(0.97); }
+.plate.sad{ background:#fef2f2; border-color:#fca5a5; }
+.plate.happy{ background:#dcfce7; border-color:#16a34a; }
+
+.friend{ font-size:30px; line-height:1; }
+
+.plate-items{
+  display:flex;
+  flex-wrap:wrap;
+  gap:2px;
+  justify-content:center;
+  align-content:flex-start;
+  flex:1;
+}
+
+.plate-items .food{ font-size:22px; }
+
+.plate-count{
+  font-size:17px;
+  font-weight:900;
+  color:#15803d;
+}
+
+.message{
+  min-height:40px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#14532d;
+}
+
+button.ctrl{
+  border:none;
+  border-radius:14px;
+  background:#15803d;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+  min-height:54px;
+  font-size:18px;
+}
+
+button.ctrl:active{ transform:scale(0.96); }
+button.ctrl.ghost{ background:#fff; color:#15803d; border:3px solid #bbf7d0; box-shadow:none; }
+button.ctrl:disabled{ opacity:0.45; }
+
+.controls{ display:grid; grid-template-columns:2fr 1fr 1fr; gap:8px; }
+
+@media (max-height:700px){
+  .basket{ min-height:62px; }
+  .plate{ min-height:98px; }
+  .food{ font-size:23px; }
+  .friend{ font-size:25px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>⭐ <span id="score">0</span></div>
+    <div>🍪 Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="basket" id="basket"><span class="basket-hint">Le panier</span></div>
+    <div class="task" id="task">Appuie sur Jouer !</div>
+    <div class="plates" id="plates"></div>
+    <div class="message" id="message"></div>
+
+    <div class="controls">
+      <button class="ctrl" id="ready">Jouer</button>
+      <button class="ctrl ghost" id="repeat">🔊</button>
+      <button class="ctrl ghost" id="reset">↩️</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FOODS = [
+  { emoji:"🍪", one:"biscuit",       many:"biscuits" },
+  { emoji:"🍓", one:"fraise",        many:"fraises" },
+  { emoji:"🍬", one:"bonbon",        many:"bonbons" },
+  { emoji:"🥕", one:"carotte",       many:"carottes" },
+  { emoji:"🍊", one:"orange",        many:"oranges" },
+  { emoji:"🧁", one:"petit gâteau",  many:"petits gâteaux" },
+];
+
+const FRIENDS = ["🧒","👦","👧","🧑"];
+
+// Fractions arrive as "how much of the pile", not as symbols. A quarter of
+// eight is something you can put on a plate; 1/4 is not, yet.
+const FRACTIONS = [
+  { den:2, name:"la moitié" },
+  { den:3, name:"un tiers" },
+  { den:4, name:"un quart" },
+];
+
+const NUMBERS = ["zéro","un","deux","trois","quatre","cinq","six","sept","huit","neuf","dix",
+                 "onze","douze"];
+
+const ROUNDS_PER_LEVEL = 4;
+const MAX_LEVEL = 3;
+
+let score = 0;
+let level = 1;
+let round = null;
+let lock = false;
+let voices = [];
+let audioCtx = null;
+
+const basketEl = document.getElementById("basket");
+const platesEl = document.getElementById("plates");
+const taskEl = document.getElementById("task");
+const messageEl = document.getElementById("message");
+const scoreEl = document.getElementById("score");
+const levelEl = document.getElementById("level");
+const readyEl = document.getElementById("ready");
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text, rate){
+  speechSynthesis.resume();
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = rate || 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function getAudioContext(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tone(freqs, type, dur){
+  try{
+    const ctx = getAudioContext();
+    if(ctx.state === "suspended") ctx.resume();
+    freqs.forEach((f, i) => setTimeout(() => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      const t = ctx.currentTime;
+      o.type = type;
+      o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.09, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + dur + 0.05);
+    }, i * 70));
+  }catch(e){}
+}
+
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(items){ return items[randInt(0, items.length - 1)]; }
+function plural(n, one, many){ return n <= 1 ? one : many; }
+function say(n){ return NUMBERS[n] !== undefined ? NUMBERS[n] : String(n); }
+
+function makeRound(){
+  const food = pick(FOODS);
+
+  if(level < MAX_LEVEL){
+    const nPlates = level === 1 ? 2 : randInt(3, 4);
+    const each = randInt(2, 3);
+    const total = nPlates * each;
+    return {
+      mode: "equal", food, total, each,
+      friends: FRIENDS.slice(0, nPlates),
+      plates: new Array(nPlates).fill(0),
+      inBasket: total,
+    };
+  }
+
+  const frac = pick(FRACTIONS);
+  const target = randInt(2, 3);
+  const total = frac.den * target;
+  return {
+    mode: "fraction", food, total, frac, target,
+    friends: [pick(FRIENDS)],
+    plates: [0],
+    inBasket: total,
+  };
+}
+
+function taskText(){
+  const f = round.food;
+  if(round.mode === "equal"){
+    const n = round.plates.length;
+    return `Partage les ${round.total} ${f.many} entre ${n} ${plural(n, "ami", "amis")}.`;
+  }
+  return `Donne ${round.frac.name} des ${round.total} ${f.many} à ton ami.`;
+}
+
+function taskSpeech(){
+  const f = round.food;
+  if(round.mode === "equal"){
+    const n = round.plates.length;
+    return `Partage les ${say(round.total)} ${f.many} entre ${say(n)} ${plural(n, "ami", "amis")}.`;
+  }
+  return `Donne ${round.frac.name} des ${say(round.total)} ${f.many} à ton ami.`;
+}
+
+function render(){
+  basketEl.innerHTML = "";
+  if(round.inBasket === 0){
+    const h = document.createElement("span");
+    h.className = "basket-hint";
+    h.textContent = "Le panier est vide";
+    basketEl.appendChild(h);
+  } else {
+    for(let i = 0; i < round.inBasket; i++){
+      const s = document.createElement("span");
+      s.className = "food";
+      s.textContent = round.food.emoji;
+      basketEl.appendChild(s);
+    }
+  }
+
+  platesEl.innerHTML = "";
+  platesEl.className = "plates" + (round.plates.length === 1 ? " one" : "");
+  round.plates.forEach((n, i) => {
+    const p = document.createElement("div");
+    p.className = "plate";
+
+    const f = document.createElement("div");
+    f.className = "friend";
+    f.textContent = round.friends[i];
+    p.appendChild(f);
+
+    const items = document.createElement("div");
+    items.className = "plate-items";
+    for(let k = 0; k < n; k++){
+      const s = document.createElement("span");
+      s.className = "food";
+      s.textContent = round.food.emoji;
+      // Taking one back has to be as easy as putting one on, or the child is
+      // punished for a mis-tap while still exploring.
+      s.onclick = e => { e.stopPropagation(); takeBack(i); };
+      items.appendChild(s);
+    }
+    p.appendChild(items);
+
+    const c = document.createElement("div");
+    c.className = "plate-count";
+    c.textContent = n;
+    p.appendChild(c);
+
+    p.onclick = () => give(i);
+    platesEl.appendChild(p);
+  });
+
+  taskEl.textContent = taskText();
+}
+
+function give(i){
+  if(lock || !round || round.inBasket === 0) return;
+  getAudioContext().resume();
+  round.inBasket--;
+  round.plates[i]++;
+  tone([420], "sine", 0.06);
+  messageEl.textContent = "";
+  render();
+}
+
+function takeBack(i){
+  if(lock || !round || round.plates[i] === 0) return;
+  getAudioContext().resume();
+  round.plates[i]--;
+  round.inBasket++;
+  tone([300], "sine", 0.06);
+  messageEl.textContent = "";
+  render();
+}
+
+// Counts whatever is in the basket out loud, on demand.
+function countBasket(){
+  const items = [...basketEl.querySelectorAll(".food")];
+  if(!items.length){ speak("Le panier est vide."); return; }
+  lock = true;
+  items.forEach((s, i) => setTimeout(() => {
+    items.forEach(x => x.classList.remove("count"));
+    s.classList.add("count");
+    tone([400 + i * 30], "sine", 0.07);
+    speak(say(i + 1), 1);
+  }, i * 560));
+  setTimeout(() => {
+    items.forEach(x => x.classList.remove("count"));
+    lock = false;
+  }, items.length * 560 + 300);
+}
+
+basketEl.onclick = () => {
+  if(lock || !round) return;
+  getAudioContext().resume();
+  countBasket();
+};
+
+// Nothing is judged until this is pressed. Up to here the child can move every
+// item as often as they like.
+readyEl.onclick = () => {
+  if(lock) return;
+  getAudioContext().resume();
+  speechSynthesis.resume();
+
+  // The same button starts the game and commits an answer, so there is only
+  // ever one big green thing to press.
+  if(!round){
+    score = 0;
+    level = 1;
+    scoreEl.textContent = 0;
+    levelEl.textContent = 1;
+    readyEl.textContent = "C'est prêt !";
+    newRound();
+    return;
+  }
+
+  const plateEls = [...platesEl.children];
+
+  if(round.mode === "equal"){
+    if(round.inBasket > 0){
+      tone([300, 240], "sine", 0.1);
+      messageEl.textContent = "Il en reste dans le panier ! 🧺";
+      speak("Il en reste dans le panier.");
+      return;
+    }
+    const first = round.plates[0];
+    const fair = round.plates.every(n => n === first);
+    if(!fair){
+      tone([300, 240], "sine", 0.1);
+      const most = Math.max(...round.plates);
+      plateEls.forEach((el, i) => { if(round.plates[i] !== most) el.classList.add("sad"); });
+      messageEl.textContent = "Ce n'est pas juste ! 🙁";
+      speak("Ce n'est pas juste ! Chacun doit en avoir autant.");
+      setTimeout(() => plateEls.forEach(el => el.classList.remove("sad")), 1600);
+      return;
+    }
+    win(`C'est juste ! Chacun en a ${first} 🎉`,
+        `C'est juste ! Chacun en a ${say(first)}.`, plateEls);
+    return;
+  }
+
+  if(round.plates[0] !== round.target){
+    tone([300, 240], "sine", 0.1);
+    messageEl.textContent = "Pas tout à fait — compte encore 👆";
+    speak("Pas tout à fait. Compte encore.");
+    return;
+  }
+  win(`${cap(round.frac.name)} de ${round.total}, c'est ${round.target} ! 🎉`,
+      `${cap(round.frac.name)} de ${say(round.total)}, c'est ${say(round.target)} !`, plateEls);
+};
+
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function win(text, spoken, plateEls){
+  lock = true;
+  score++;
+  scoreEl.textContent = score;
+  plateEls.forEach(el => el.classList.add("happy"));
+  tone([660, 880, 1100], "triangle", 0.12);
+  messageEl.textContent = text;
+  speak(spoken);
+
+  if(score % ROUNDS_PER_LEVEL === 0 && level < MAX_LEVEL){
+    level++;
+    levelEl.textContent = level;
+    setTimeout(() => {
+      messageEl.textContent = `Niveau ${level} ! 🍪`;
+      speak(`Niveau ${level} !`);
+    }, 1800);
+    setTimeout(newRound, 3300);
+  } else {
+    setTimeout(newRound, 2300);
+  }
+}
+
+function newRound(){
+  round = makeRound();
+  lock = false;
+  messageEl.textContent = "";
+  render();
+  setTimeout(() => speak(taskSpeech()), 300);
+}
+
+document.getElementById("repeat").onclick = () => {
+  if(lock || !round) return;
+  getAudioContext().resume();
+  speak(taskSpeech());
+};
+
+document.getElementById("reset").onclick = () => {
+  if(lock || !round) return;
+  getAudioContext().resume();
+  round.inBasket = round.total;
+  round.plates = round.plates.map(() => 0);
+  messageEl.textContent = "";
+  render();
+};
+
+</script>
+</body>
+</html>

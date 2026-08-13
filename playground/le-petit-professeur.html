@@ -362,6 +362,40 @@ function generateDatabase() {
     }
   }
 
+  // French articles depend on the noun's gender, its number, and whether it
+  // begins with a vowel sound. None of that is recoverable from the string, so
+  // every noun a sentence puts an article in front of is listed here.
+  // Writing the article into the template instead is what produced
+  // "la capitale de la la France" and "Le vache mange de l'herbe".
+  const GENRE = {
+    // pays
+    "Canada":"m", "France":"f", "Italie":"f", "Japon":"m", "Suisse":"f",
+    "Suède":"f", "Allemagne":"f", "Brésil":"m", "Espagne":"f",
+    "Royaume-Uni":"m", "États-Unis":"p", "Belgique":"f", "Portugal":"m",
+    "Grèce":"f", "Russie":"f", "Algérie":"f", "Maroc":"m",
+    // animaux
+    "lion":"m", "vache":"f", "poisson":"m", "oiseau":"m", "singe":"m",
+    "grenouille":"f", "girafe":"f", "lapin":"m", "tortue":"f", "éléphant":"m",
+    // espace
+    "Terre":"f", "Soleil":"m", "Lune":"f"
+  };
+
+  // "h" is deliberately absent: French has both the mute h that elides
+  // (l'homme) and the aspirate h that does not (le hibou, le hérisson), and a
+  // kids' animal list is far likelier to want the second. An h-word therefore
+  // gets "le"/"la", which is the safer default here.
+  function elide(n){ return /^[aeiouàâäéèêëîïôöûü]/i.test(n); }
+
+  function LE(n){
+    const g = GENRE[n];
+    return (g === "p" ? "les " : elide(n) ? "l'" : g === "f" ? "la " : "le ") + n;
+  }
+  function DE(n){
+    const g = GENRE[n];
+    return (g === "p" ? "des " : elide(n) ? "de l'" : g === "f" ? "de la " : "du ") + n;
+  }
+  function cap1(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
   // 2. Flags (Drapeaux)
   const flagsData = [
     { country: "Canada", colors: ["rouge", "blanc"], symbols: ["une feuille d'érable"], falseColor: "bleu", falseSymbol: "une étoile jaune" },
@@ -375,15 +409,16 @@ function generateDatabase() {
     { country: "Espagne", colors: ["rouge", "jaune"], symbols: [], falseColor: "violet", falseSymbol: "un carré vert" }
   ];
   flagsData.forEach(fd => {
+    // "a du ${col}" is safe as written: every colour in this data is masculine.
     fd.colors.forEach(col => {
-      DATABASE.push({ text: `Le drapeau du ${fd.country} a du ${col}.`, correct: true });
+      DATABASE.push({ text: `Le drapeau ${DE(fd.country)} a du ${col}.`, correct: true });
     });
-    DATABASE.push({ text: `Le drapeau du ${fd.country} a du ${fd.falseColor}.`, correct: false });
+    DATABASE.push({ text: `Le drapeau ${DE(fd.country)} a du ${fd.falseColor}.`, correct: false });
     fd.symbols.forEach(sym => {
-      DATABASE.push({ text: `Le drapeau du ${fd.country} a ${sym}.`, correct: true });
+      DATABASE.push({ text: `Le drapeau ${DE(fd.country)} a ${sym}.`, correct: true });
     });
     if (fd.falseSymbol) {
-      DATABASE.push({ text: `Le drapeau du ${fd.country} a ${fd.falseSymbol}.`, correct: false });
+      DATABASE.push({ text: `Le drapeau ${DE(fd.country)} a ${fd.falseSymbol}.`, correct: false });
     }
   });
   DATABASE.push({ text: "Un drapeau peut avoir des étoiles.", correct: true });
@@ -412,9 +447,9 @@ function generateDatabase() {
     { country: "Maroc", cap: "Rabat", wrong: "Tunis" }
   ];
   capData.forEach(cd => {
-    DATABASE.push({ text: `La capitale de la ${cd.country === 'Royaume-Uni' || cd.country === 'Canada' || cd.country === 'Japon' || cd.country === 'Brésil' || cd.country === 'Portugal' ? 'du' : cd.country === 'États-Unis' ? 'des' : 'la'} ${cd.country} est ${cd.cap}.`, correct: true });
-    DATABASE.push({ text: `La capitale de la ${cd.country === 'Royaume-Uni' || cd.country === 'Canada' || cd.country === 'Japon' || cd.country === 'Brésil' || cd.country === 'Portugal' ? 'du' : cd.country === 'États-Unis' ? 'des' : 'la'} ${cd.country} est ${cd.wrong}.`, correct: false });
-    DATABASE.push({ text: `${cd.cap} est la capitale de la ${cd.country === 'Royaume-Uni' || cd.country === 'Canada' || cd.country === 'Japon' || cd.country === 'Brésil' || cd.country === 'Portugal' ? 'du' : cd.country === 'États-Unis' ? 'des' : 'la'} ${cd.country}.`, correct: true });
+    DATABASE.push({ text: `La capitale ${DE(cd.country)} est ${cd.cap}.`, correct: true });
+    DATABASE.push({ text: `La capitale ${DE(cd.country)} est ${cd.wrong}.`, correct: false });
+    DATABASE.push({ text: `${cd.cap} est la capitale ${DE(cd.country)}.`, correct: true });
   });
 
   // 4. Words & Sentences (Mots)
@@ -463,10 +498,10 @@ function generateDatabase() {
   ];
   animData.forEach(ad => {
     ad.T.forEach(fact => {
-      DATABASE.push({ text: `Le ${ad.name} ${fact}.`, correct: true });
+      DATABASE.push({ text: `${cap1(LE(ad.name))} ${fact}.`, correct: true });
     });
     ad.F.forEach(fact => {
-      DATABASE.push({ text: `Le ${ad.name} ${fact}.`, correct: false });
+      DATABASE.push({ text: `${cap1(LE(ad.name))} ${fact}.`, correct: false });
     });
   });
   DATABASE.push({ text: "Le dauphin est un mammifère qui vit dans l'eau.", correct: true });
@@ -482,10 +517,10 @@ function generateDatabase() {
   ];
   spaceData.forEach(sd => {
     sd.T.forEach(fact => {
-      DATABASE.push({ text: `La ${sd.name === 'Soleil' ? 'Le' : 'la'} ${sd.name} ${fact}.`, correct: true });
+      DATABASE.push({ text: `${cap1(LE(sd.name))} ${fact}.`, correct: true });
     });
     sd.F.forEach(fact => {
-      DATABASE.push({ text: `La ${sd.name === 'Soleil' ? 'Le' : 'la'} ${sd.name} ${fact}.`, correct: false });
+      DATABASE.push({ text: `${cap1(LE(sd.name))} ${fact}.`, correct: false });
     });
   });
   DATABASE.push({ text: "La planète Mars est appelée la planète rouge.", correct: true });

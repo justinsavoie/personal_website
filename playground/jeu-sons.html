@@ -150,6 +150,21 @@ const words = [
 "gra","gre","gri","gro","gru"
 ];
 
+// The synthesizer normalises some fragments into whole words: asked for "tra"
+// it says "traverse". Measured, both take ~980 ms while the untouched siblings
+// "tro"/"tri"/"tru" take 423 ms -- it is literally speaking the longer word.
+//
+// A trailing silent "h" blocks the lookup without adding a sound: "trah" comes
+// back at 437 ms, within noise of its siblings. An "h" is never pronounced in
+// French, which makes it safer here than a silent consonant.
+//
+// This changes only what is spoken, never the tile on screen. The list is
+// device-specific -- a phone's voice normalises differently -- so add entries
+// from whatever actually sounds wrong on the phone.
+const SPOKEN = {
+  "tra": "trah",
+};
+
 let hits = 0;
 let misses = 0;
 let round = null;
@@ -188,7 +203,7 @@ function speak(word){
 
   speechSynthesis.cancel();
 
-  const utter = new SpeechSynthesisUtterance(word);
+  const utter = new SpeechSynthesisUtterance(SPOKEN[word] || word);
 
   // force FR si possible
   const frVoice = voices.find(v => v.lang.startsWith("fr"));

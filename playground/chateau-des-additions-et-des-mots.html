@@ -420,7 +420,11 @@ function finishCastle(){
     saveBestMedalIfBetter(medal.name);
     renderBestMedal();
     medalMessageEl.textContent = `Château terminé ! Précision: ${accuracy}%. Médaille: ${medal.emoji} ${medal.name} !`;
-    speak(`Bravo, ton château est fini ! Tu gagnes la médaille de ${medal.name} !`);
+    // "de" elides before a vowel: d'or, d'argent, but de bronze. The medal
+    // names are capitalised for the badge, so lowercase them for the sentence.
+    const metal = medal.name.toLowerCase();
+    const de = /^[aeiouàâéèêëîïôöûü]/i.test(metal) ? "d'" : "de ";
+    speak(`Bravo, ton château est fini ! Tu gagnes la médaille ${de}${metal} !`);
   } else {
     medalMessageEl.textContent = `Château terminé ! Précision: ${accuracy}%. Continue tes efforts !`;
     speak("Ton château est fini ! Continue tes efforts la prochaine fois !");

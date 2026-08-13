@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tape les syllabes</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #fdf2f8 0%, #f9a8d4 100%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#9d174d;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+.big{
+  text-align:center;
+  font-size:88px;
+  line-height:1;
+  min-height:104px;
+  user-select:none;
+}
+
+.word{
+  text-align:center;
+  font-size:30px;
+  font-weight:900;
+  color:#be185d;
+  letter-spacing:1px;
+  min-height:38px;
+}
+
+/* The syllable chunks, only ever shown while teaching -- seeing the answer
+   written down before trying would make the ear unnecessary. */
+.chunks{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  flex-wrap:wrap;
+  min-height:44px;
+}
+
+.chunk{
+  background:#fce7f3;
+  border:3px solid #fbcfe8;
+  border-radius:12px;
+  padding:5px 12px;
+  font-size:21px;
+  font-weight:900;
+  color:#9d174d;
+  transition:transform 0.15s ease, background 0.15s ease;
+}
+
+.chunk.on{ background:#fde68a; border-color:#f59e0b; transform:scale(1.16); }
+
+/* One dot per tap. The child is counting with their hand, so the count has to
+   be visible without anyone reading a number. */
+.dots{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  min-height:34px;
+  align-items:center;
+}
+
+.dot{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:#ec4899;
+  box-shadow:0 3px 0 rgba(0,0,0,0.18);
+  animation:pop 0.2s ease;
+}
+
+@keyframes pop{ from{ transform:scale(0.3); } to{ transform:scale(1); } }
+
+.drum{
+  border:none;
+  border-radius:24px;
+  background:#ec4899;
+  color:white;
+  font-size:56px;
+  min-height:120px;
+  cursor:pointer;
+  box-shadow:0 6px 0 rgba(0,0,0,0.2);
+  width:100%;
+}
+
+.drum:active{ transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,0.2); }
+
+.message{
+  min-height:40px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#9d174d;
+}
+
+button.ctrl{
+  border:none;
+  border-radius:14px;
+  background:#831843;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+  min-height:54px;
+  font-size:18px;
+}
+
+button.ctrl:active{ transform:scale(0.96); }
+button.ctrl.ghost{ background:#fff; color:#9d174d; border:3px solid #fbcfe8; box-shadow:none; }
+button.ctrl:disabled{ opacity:0.45; }
+
+.controls{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+
+@media (max-height:700px){
+  .big{ font-size:64px; min-height:76px; }
+  .drum{ min-height:92px; font-size:44px; }
+  .word{ font-size:25px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>⭐ <span id="score">0</span></div>
+    <div>🥁 Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="big" id="emoji">🥁</div>
+    <div class="word" id="word">Appuie sur Jouer !</div>
+    <div class="chunks" id="chunks"></div>
+    <div class="dots" id="dots"></div>
+
+    <button class="drum" id="drum">🥁</button>
+
+    <div class="message" id="message"></div>
+
+    <div class="controls">
+      <button class="ctrl" id="start">Jouer</button>
+      <button class="ctrl ghost" id="repeat">🔊</button>
+      <button class="ctrl ghost" id="undo">↩️</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Syllables are written out by hand rather than split by rule: French counts
+// spoken syllables, so "banane" is ba-nane and not ba-na-ne, and no short rule
+// gets that right.
+const WORDS = [
+  { w:"chat",      parts:["chat"],                emoji:"🐱" },
+  { w:"chien",     parts:["chien"],               emoji:"🐶" },
+  { w:"pain",      parts:["pain"],                emoji:"🍞" },
+  { w:"fleur",     parts:["fleur"],               emoji:"🌸" },
+  { w:"feu",       parts:["feu"],                 emoji:"🔥" },
+  { w:"main",      parts:["main"],                emoji:"✋" },
+  { w:"loup",      parts:["loup"],                emoji:"🐺" },
+  { w:"dent",      parts:["dent"],                emoji:"🦷" },
+  { w:"lit",       parts:["lit"],                 emoji:"🛏️" },
+  { w:"pont",      parts:["pont"],                emoji:"🌉" },
+
+  { w:"chapeau",   parts:["cha","peau"],          emoji:"🎩" },
+  { w:"souris",    parts:["sou","ris"],           emoji:"🐭" },
+  { w:"bateau",    parts:["ba","teau"],           emoji:"⛵" },
+  { w:"poisson",   parts:["pois","son"],          emoji:"🐟" },
+  { w:"gâteau",    parts:["gâ","teau"],           emoji:"🍰" },
+  { w:"maison",    parts:["mai","son"],           emoji:"🏠" },
+  { w:"canard",    parts:["ca","nard"],           emoji:"🦆" },
+  { w:"fromage",   parts:["fro","mage"],          emoji:"🧀" },
+  { w:"étoile",    parts:["é","toile"],           emoji:"⭐" },
+  { w:"banane",    parts:["ba","nane"],           emoji:"🍌" },
+  { w:"citron",    parts:["ci","tron"],           emoji:"🍋" },
+  { w:"lapin",     parts:["la","pin"],            emoji:"🐰" },
+  { w:"cheval",    parts:["che","val"],           emoji:"🐴" },
+  { w:"camion",    parts:["ca","mion"],           emoji:"🚚" },
+  { w:"girafe",    parts:["gi","rafe"],           emoji:"🦒" },
+  { w:"tortue",    parts:["tor","tue"],           emoji:"🐢" },
+  { w:"carotte",   parts:["ca","rotte"],          emoji:"🥕" },
+  { w:"ballon",    parts:["bal","lon"],           emoji:"🎈" },
+  { w:"soleil",    parts:["so","leil"],           emoji:"☀️" },
+
+  { w:"crocodile", parts:["cro","co","dile"],     emoji:"🐊" },
+  { w:"papillon",  parts:["pa","pil","lon"],      emoji:"🦋" },
+  { w:"éléphant",  parts:["é","lé","phant"],      emoji:"🐘" },
+  { w:"chocolat",  parts:["cho","co","lat"],      emoji:"🍫" },
+  { w:"téléphone", parts:["té","lé","phone"],     emoji:"📞" },
+  { w:"parapluie", parts:["pa","ra","pluie"],     emoji:"☂️" },
+  { w:"ananas",    parts:["a","na","nas"],        emoji:"🍍" },
+  { w:"dinosaure", parts:["di","no","saure"],     emoji:"🦕" },
+  { w:"kangourou", parts:["kan","gou","rou"],     emoji:"🦘" },
+  { w:"écureuil",  parts:["é","cu","reuil"],      emoji:"🐿️" },
+
+  { w:"ordinateur",  parts:["or","di","na","teur"],   emoji:"💻" },
+  { w:"hélicoptère", parts:["hé","li","cop","tère"],  emoji:"🚁" },
+  { w:"télévision",  parts:["té","lé","vi","sion"],   emoji:"📺" },
+  { w:"bicyclette",  parts:["bi","cy","clette"],      emoji:"🚲" },
+];
+
+// Which syllable counts each level draws from. Short words never disappear --
+// they are the ones that keep the beat obvious.
+const LEVELS = [[1,2], [1,2,3], [2,3,4]];
+const WORDS_PER_LEVEL = 6;
+
+let score = 0;
+let level = 1;
+let round = null;
+let taps = 0;
+let lock = false;
+let voices = [];
+let audioCtx = null;
+
+const emojiEl = document.getElementById("emoji");
+const wordEl = document.getElementById("word");
+const chunksEl = document.getElementById("chunks");
+const dotsEl = document.getElementById("dots");
+const drumEl = document.getElementById("drum");
+const messageEl = document.getElementById("message");
+const scoreEl = document.getElementById("score");
+const levelEl = document.getElementById("level");
+const undoEl = document.getElementById("undo");
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text, rate, onEnd){
+  speechSynthesis.resume();
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = rate || 0.9;
+  if(onEnd){
+    let fired = false;
+    const done = () => { if(fired) return; fired = true; onEnd(); };
+    utter.onend = done;
+    utter.onerror = done;
+    // onend does not fire on every engine, and a missed one would leave the
+    // game locked forever. The timer is a floor, not the normal path.
+    setTimeout(done, 1500 + text.length * 280);
+  }
+  speechSynthesis.speak(utter);
+}
+
+function getAudioContext(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function tone(freqs, type, dur){
+  try{
+    const ctx = getAudioContext();
+    if(ctx.state === "suspended") ctx.resume();
+    freqs.forEach((f, i) => setTimeout(() => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      const t = ctx.currentTime;
+      o.type = type;
+      o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.09, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + dur + 0.05);
+    }, i * 70));
+  }catch(e){}
+}
+
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(items){ return items[randInt(0, items.length - 1)]; }
+
+function poolFor(lvl){
+  const sizes = LEVELS[lvl - 1];
+  return WORDS.filter(w => sizes.includes(w.parts.length));
+}
+
+function renderDots(){
+  dotsEl.innerHTML = "";
+  for(let i = 0; i < taps; i++){
+    const d = document.createElement("div");
+    d.className = "dot";
+    dotsEl.appendChild(d);
+  }
+  undoEl.disabled = taps === 0;
+}
+
+function renderChunks(show){
+  chunksEl.innerHTML = "";
+  if(!round || !show) return;
+  round.parts.forEach((p, i) => {
+    const c = document.createElement("div");
+    c.className = "chunk";
+    c.textContent = p;
+    c.dataset.i = i;
+    chunksEl.appendChild(c);
+  });
+}
+
+function newRound(){
+  let next = pick(poolFor(level));
+  // Never the same word twice running -- the answer would already be known.
+  let guard = 0;
+  while(round && next.w === round.w && guard++ < 20) next = pick(poolFor(level));
+  round = next;
+  taps = 0;
+  lock = false;
+  renderDots();
+  renderChunks(false);
+  emojiEl.textContent = round.emoji;
+  wordEl.textContent = round.w;
+  messageEl.textContent = "Écoute, puis tape !";
+  setTimeout(() => speak(round.w), 250);
+}
+
+// The lesson after a miss: hear it slowly, feel the beat, hear it again.
+//
+// A syllable is never spoken on its own, deliberately. The synthesizer mangles
+// isolated fragments -- asked for "é" it reads out "e accent aigu", asked for
+// "tra" it says "traverse" -- and even when it behaves, a syllable in isolation
+// does not sound the way it does inside the word. So the voice always says the
+// whole word, and the drum carries the splitting.
+function beatOut(then){
+  if(!round) return;
+  lock = true;
+  renderChunks(true);
+  const chips = [...chunksEl.children];
+
+  speak(round.w, 0.5, () => {
+    round.parts.forEach((p, i) => setTimeout(() => {
+      chips.forEach(c => c.classList.remove("on"));
+      chips[i].classList.add("on");
+      tone([300], "square", 0.09);
+    }, i * 620));
+
+    setTimeout(() => {
+      chips.forEach(c => c.classList.remove("on"));
+      speak(round.w, 0.85, () => {
+        lock = false;
+        if(then) then();
+      });
+    }, round.parts.length * 620 + 320);
+  });
+}
+
+drumEl.onclick = () => {
+  if(lock || !round) return;
+  getAudioContext().resume();
+  taps++;
+  renderDots();
+  tone([340], "square", 0.08);
+  messageEl.textContent = "";
+  // Judged on every tap, not only on a matching one: stopping IS the answer,
+  // so two taps for a three-syllable word has to be heard as "two" rather than
+  // leaving the child waiting for something that never comes.
+  checkSoon();
+};
+
+// Each tap restarts the clock. Long enough that a slow, deliberate tapper is
+// not cut off between syllables; short enough to still feel like a reply.
+let pending = null;
+function checkSoon(){
+  clearTimeout(pending);
+  pending = setTimeout(check, 1100);
+}
+
+function check(){
+  if(!round || lock) return;
+  if(taps === round.parts.length){
+    score++;
+    scoreEl.textContent = score;
+    tone([660, 880, 1100], "triangle", 0.12);
+    renderChunks(true);
+    [...chunksEl.children].forEach(c => c.classList.add("on"));
+    const n = round.parts.length;
+    messageEl.textContent = n === 1 ? "Bravo ! 1 syllabe 🎉" : `Bravo ! ${n} syllabes 🎉`;
+    speak(n === 1 ? "Bravo ! Une syllabe !" : `Bravo ! ${n} syllabes !`);
+    lock = true;
+
+    if(score % WORDS_PER_LEVEL === 0 && level < LEVELS.length){
+      level++;
+      levelEl.textContent = level;
+      setTimeout(() => {
+        messageEl.textContent = `Niveau ${level} ! 🥁`;
+        speak(`Niveau ${level} !`);
+      }, 1400);
+      setTimeout(newRound, 2900);
+    } else {
+      setTimeout(newRound, 1900);
+    }
+  } else {
+    // Not wrong, just not heard yet.
+    messageEl.textContent = "Écoute encore 👂";
+    tone([300, 240], "sine", 0.1);
+    beatOut(() => {
+      taps = 0;
+      renderDots();
+      renderChunks(false);
+      messageEl.textContent = "À toi !";
+    });
+  }
+}
+
+document.getElementById("repeat").onclick = () => {
+  if(lock || !round) return;
+  getAudioContext().resume();
+  speak(round.w);
+};
+
+undoEl.onclick = () => {
+  if(lock || !round || taps === 0) return;
+  clearTimeout(pending);
+  taps = 0;
+  renderDots();
+  messageEl.textContent = "";
+};
+
+document.getElementById("start").onclick = () => {
+  getAudioContext().resume();
+  speechSynthesis.resume();
+  score = 0;
+  level = 1;
+  scoreEl.textContent = 0;
+  levelEl.textContent = 1;
+  round = null;
+  newRound();
+};
+
+renderDots();
+</script>
+</body>
+</html>
