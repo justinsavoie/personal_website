@@ -436,6 +436,7 @@ function artHTML(item, cls){
 // ---------- home ----------
 function renderHome(){
   stopListening();
+  stepToken++;              // going home expires whatever the last step queued
   homeEl.classList.remove("hide");
   lessonEl.classList.add("hide");
   backBtn.classList.add("hide");
@@ -508,8 +509,22 @@ function advance(){
   else renderStep();
 }
 
+// Every step schedules audio on a delay. Nothing used to cancel those timers,
+// so leaving a step inside its delay -- by answering fast, or by going home --
+// let the old step talk over the new one: the Spanish word from a "learn" card
+// landing on top of the French question of the next prompt. A stale advance was
+// worse, since it could skip a step or walk back into a finished lesson.
+//
+// So timers belong to the step that set them, and expire with it.
+let stepToken = 0;
+function stepLater(fn, ms){
+  const mine = stepToken;
+  return setTimeout(() => { if(mine === stepToken) fn(); }, ms);
+}
+
 function renderStep(){
   stopListening();
+  stepToken++;
   const pct = (lesson.index / lesson.steps.length) * 100;
   progressFill.style.width = pct + "%";
   const step = lesson.steps[lesson.index];
@@ -527,7 +542,7 @@ function stepLearn(step){
     <div class="word-fr">${it.fr}</div>
     <button class="speak-btn" id="again">🔊</button>
     <button class="btn" id="next">Continuer</button>`;
-  setTimeout(() => sayEs(it), 350);
+  stepLater(() => sayEs(it), 350);
   document.getElementById("again").onclick = () => sayEs(it);
   document.getElementById("next").onclick = advance;
 }
@@ -560,7 +575,7 @@ function stepListen(step){
         dingGood();
         sayEs(it);
         document.getElementById("msg").textContent = "¡Sí! " + it.es;
-        setTimeout(advance, 1300);
+        stepLater(advance, 1300);
       } else {
         // Wrong taps cost nothing but a nudge — he can keep trying.
         b.classList.add("bad");
@@ -574,7 +589,7 @@ function stepListen(step){
   });
 
   document.getElementById("again").onclick = () => sayEs(it);
-  setTimeout(() => { sayFr("Touche"); setTimeout(() => sayEs(it), 700); }, 250);
+  stepLater(() => { sayFr("Touche"); stepLater(() => sayEs(it), 700); }, 250);
 }
 
 // --- what do you say? ---
@@ -610,7 +625,7 @@ function stepReply(step){
         dingGood();
         sayEs(it);
         document.getElementById("msg").textContent = "¡Sí! " + it.es;
-        setTimeout(advance, 1500);
+        stepLater(advance, 1500);
       } else {
         // A wrong tap says the wrong phrase out loud rather than buzzing --
         // hearing "buenas noches" when it is morning is the actual lesson.
@@ -627,7 +642,7 @@ function stepReply(step){
 
   const askAgain = () => sayFr(it.ask + " Qu'est-ce que tu dis ?");
   document.getElementById("again").onclick = askAgain;
-  setTimeout(askAgain, 300);
+  stepLater(askAgain, 300);
 }
 
 // --- hear a number, tap the group with that many things ---
@@ -661,7 +676,7 @@ function stepCount(step){
         dingGood();
         sayEs(it);
         document.getElementById("msg").textContent = "¡Sí! " + it.es;
-        setTimeout(advance, 1300);
+        stepLater(advance, 1300);
       } else {
         b.classList.add("bad");
         box.dataset.retried = "1";
@@ -673,7 +688,7 @@ function stepCount(step){
   });
 
   document.getElementById("again").onclick = () => sayEs(it);
-  setTimeout(() => { sayFr("Combien ?"); setTimeout(() => sayEs(it), 800); }, 250);
+  stepLater(() => { sayFr("Combien ?"); stepLater(() => sayEs(it), 800); }, 250);
 }
 
 // --- memory pairs ---
@@ -711,7 +726,7 @@ function stepPairs(step){
             open = []; busy = false;
             if(matched === step.items.length){
               lesson.asked++; lesson.firstTry++;
-              setTimeout(advance, 800);
+              stepLater(advance, 800);
             }
           }, 500);
         } else {
@@ -728,7 +743,7 @@ function stepPairs(step){
     grid.appendChild(c);
   });
 
-  setTimeout(() => sayFr("Trouve les paires."), 300);
+  stepLater(() => sayFr("Trouve les paires."), 300);
 }
 
 // --- say it out loud: a bonus round that can never block progress ---
@@ -795,7 +810,7 @@ function stepSpeak(step){
   document.getElementById("again").onclick = () => sayEs(it);
   // Always available, so a failed or unsupported microphone is never a dead end.
   document.getElementById("skip").onclick = () => { dingGood(); advance(); };
-  setTimeout(() => sayEs(it), 350);
+  stepLater(() => sayEs(it), 350);
 
   const micBtn = document.getElementById("mic");
   if(!SR){
@@ -825,7 +840,7 @@ function stepSpeak(step){
       if(ok){
         dingGood();
         msg.textContent = "¡Perfecto! 🎉";
-        setTimeout(advance, 1100);
+        stepLater(advance, 1100);
       } else {
         // Never "wrong" — just an invitation to try again.
         dingSoft();
