@@ -39,4 +39,12 @@ window.ESPANOL_AUDIO = [
  "vaca",
  "verde"
 ];
+window.ESPANOL_FR = [
+ "fr-adios",
+ "fr-buenas-noches",
+ "fr-buenos-dias",
+ "fr-gracias",
+ "fr-hola",
+ "fr-si"
+];
 window.ESPANOL_IMAGES = [];

@@ -324,6 +324,7 @@ button.btn:disabled{ opacity:0.5; }
 // emoji art and browser speech, so the whole thing works before any of that is
 // made. Slugs are the contract between the two.
 const HAS_AUDIO  = new Set(window.ESPANOL_AUDIO  || []);
+const HAS_FR     = new Set(window.ESPANOL_FR     || []);
 const HAS_IMAGE  = new Set(window.ESPANOL_IMAGES || []);
 const AUDIO_DIR  = "assets/audio/";
 const IMAGE_DIR  = "assets/img/";
@@ -361,8 +362,27 @@ function sayEs(item){
   tts(text, ES_LANG);
 }
 
-// Every instruction is spoken in French: he cannot read yet, so text on screen
-// is decoration and the audio carries the meaning.
+// French is used in exactly one place now -- the situation in the reply step,
+// where it IS the question. Everywhere else it only narrated the screen, so it
+// was removed rather than recorded.
+//
+// It plays a recording for the same reason the Spanish does. This is the only
+// part of the site that plays <audio>, and on at least one machine that leaves
+// speechSynthesis silent while recordings play fine; browser speech stays as
+// the fallback for a prompt that has no clip.
+function sayAsk(item){
+  const slug = "fr-" + item.slug;
+  if(HAS_FR.has(slug)){
+    let a = audioEls[slug];
+    if(!a){ a = new Audio(AUDIO_DIR + slug + ".m4a"); audioEls[slug] = a; }
+    a.currentTime = 0;
+    const p = a.play();
+    if(p && p.catch) p.catch(() => sayFr(item.ask + " Qu'est-ce que tu dis ?"));
+    return;
+  }
+  sayFr(item.ask + " Qu'est-ce que tu dis ?");
+}
+
 function sayFr(text){ tts(text, FR_LANG); }
 
 // Picks the voice by hand rather than leaving it to the browser's default.
@@ -604,7 +624,9 @@ function stepListen(step){
   });
 
   document.getElementById("again").onclick = () => sayEs(it);
-  stepLater(() => { sayFr("Touche"); stepLater(() => sayEs(it), 700); }, 250);
+  // No French here. "Touche" only narrates what the screen already shows, and
+  // hearing it every single card is noise between him and the Spanish.
+  stepLater(() => sayEs(it), 250);
 }
 
 // --- what do you say? ---
@@ -655,7 +677,7 @@ function stepReply(step){
     box.appendChild(b);
   });
 
-  const askAgain = () => sayFr(it.ask + " Qu'est-ce que tu dis ?");
+  const askAgain = () => sayAsk(it);
   document.getElementById("again").onclick = askAgain;
   stepLater(askAgain, 300);
 }
@@ -703,7 +725,9 @@ function stepCount(step){
   });
 
   document.getElementById("again").onclick = () => sayEs(it);
-  stepLater(() => { sayFr("Combien ?"); stepLater(() => sayEs(it), 800); }, 250);
+  // The Spanish number IS the question -- hearing "cinco" is what tells him
+  // which group to tap. "Combien ?" added nothing.
+  stepLater(() => sayEs(it), 250);
 }
 
 // --- memory pairs ---
@@ -758,7 +782,8 @@ function stepPairs(step){
     grid.appendChild(c);
   });
 
-  stepLater(() => sayFr("Trouve les paires."), 300);
+  // Silent on entry: the grid of face-down cards says "find the pairs" better
+  // than a sentence does, and the Spanish arrives as he turns them over.
 }
 
 // --- say it out loud: a bonus round that can never block progress ---
@@ -891,7 +916,8 @@ function finishLesson(){
     <p class="sub">${"⭐".repeat(stars)}</p>
     <button class="btn" id="again">Recommencer</button>
     <button class="btn ghost" id="home-btn">Autres leçons</button>`;
-  sayFr("Bravo !");
+  // The 🎉, the stars and dingWin() already say this. A French "Bravo !" on top
+  // is one more sentence he does not need.
   document.getElementById("again").onclick = () => startLesson(lesson.unit);
   document.getElementById("home-btn").onclick = renderHome;
 }
