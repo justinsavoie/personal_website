@@ -365,6 +365,23 @@ function sayEs(item){
 // is decoration and the audio carries the meaning.
 function sayFr(text){ tts(text, FR_LANG); }
 
+// Picks the voice by hand rather than leaving it to the browser's default.
+//
+// The order getVoices() returns is not specified, and the list can contain
+// network voices -- "Google français" is one. A network voice produces no
+// sound and no error with no connection, and these lessons are precached
+// precisely so they work with no connection. So a local voice wins even when a
+// network one is the closer regional match.
+function pickVoice(lang){
+  const want = lang.toLowerCase();
+  const prefix = want.slice(0, 2);
+  const norm = v => v.lang.replace("_", "-").toLowerCase();
+  const exact = voices.filter(v => norm(v) === want);
+  const near  = voices.filter(v => norm(v).startsWith(prefix));
+  return exact.find(v => v.localService) || near.find(v => v.localService)
+      || exact[0] || near[0] || null;
+}
+
 function tts(text, lang){
   try{
     // Chrome pauses the synthesis engine when a page is hidden, and the paused
@@ -374,9 +391,7 @@ function tts(text, lang){
     speechSynthesis.resume();
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    const v = voices.find(v => v.lang.replace("_", "-").toLowerCase().startsWith(lang.slice(0, 2)))
-           && voices.find(v => v.lang.replace("_", "-").toLowerCase() === lang.toLowerCase())
-           || voices.find(v => v.lang.replace("_", "-").toLowerCase().startsWith(lang.slice(0, 2)));
+    const v = pickVoice(lang);
     if(v) u.voice = v;
     u.lang = lang;
     u.rate = 0.85;
