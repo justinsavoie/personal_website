@@ -82,14 +82,25 @@ window.CURRICULUM = [
     title: "Los saludos",
     titleFr: "Les salutations",
     icon: "👋",
-    // Greetings are hard to draw, so this unit leans on the reply exercise:
-    // someone says something, the child picks the answer.
+    // Every other unit teaches nouns, where the picture IS the meaning: 🐱 is
+    // el gato. Greetings are not things, so a bare ☀️ for "buenos días" taught
+    // the wrong lesson -- a sun is el sol, and the child said so.
+    //
+    // So each greeting starts with 👋, meaning "this is something you say",
+    // and the second glyph says when. Plain 👋 is hola: the greeting with no
+    // particular moment attached.
+    //
+    // This is a patch on the real problem, not a solution to it. The honest
+    // fix is a reply exercise -- someone says "¿Hola?" and the child picks the
+    // answer -- which is what replyTo below is for. Nothing reads it yet.
     items: [
       { slug: "hola",         es: "hola",         fr: "salut",     emoji: "👋",
         replyTo: "¿Hola?", prompt: "hola" },
-      { slug: "buenos-dias",  es: "buenos días",  fr: "bonjour",   emoji: "☀️" },
-      { slug: "buenas-noches",es: "buenas noches",fr: "bonne nuit",emoji: "🌙" },
-      { slug: "adios",        es: "adiós",        fr: "au revoir", emoji: "🚪" },
+      { slug: "buenos-dias",  es: "buenos días",  fr: "bonjour",   emoji: "👋☀️" },
+      { slug: "buenas-noches",es: "buenas noches",fr: "bonne nuit",emoji: "👋🌙" },
+      { slug: "adios",        es: "adiós",        fr: "au revoir", emoji: "👋🚶" },
+      // gracias is not a moment, so the 👋 + when pattern does not fit it.
+      // It stays a bare glyph until the reply exercise exists.
       { slug: "gracias",      es: "gracias",      fr: "merci",     emoji: "🙏" },
       { slug: "si",           es: "sí",           fr: "oui",       emoji: "✅" },
     ],
