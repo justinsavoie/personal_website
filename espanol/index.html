@@ -105,7 +105,6 @@ h1{
 }
 
 .unit:active{ transform:scale(0.98); }
-.unit.locked{ opacity:0.45; }
 
 .unit-icon{ font-size:38px; line-height:1; flex:none; }
 .unit-name{ font-size:19px; font-weight:900; color:#7c2d12; }
@@ -154,6 +153,12 @@ h1{
   grid-template-columns:1fr 1fr;
   gap:12px;
 }
+
+/* The reply step carries a scene and a caption above its choices, so three of
+   them in a 2-wide grid push the last one under the fold. One row of three,
+   with smaller art so the two-glyph greetings still fit. */
+.choices.three{ grid-template-columns:repeat(3, 1fr); }
+.choices.three .choice{ min-height:92px; font-size:38px; }
 
 .choice{
   border:4px solid #fed7aa;
@@ -413,14 +418,9 @@ function saveStars(unitId, stars){
   try{ localStorage.setItem(SAVE_KEY, JSON.stringify(p)); }catch(e){}
 }
 
-// A unit opens once the one before it has been finished at all. Stars are for
-// pride, not for gating.
-function unlockedCount(){
-  const p = loadProgress();
-  let n = 1;
-  for(const u of CURRICULUM){ if(p[u.id]) n++; else break; }
-  return n;
-}
+// Nothing is gated. Every unit is open from the first visit: a child who wants
+// the animals today should get the animals today, and a locked row is a "no"
+// from a thing that is supposed to be a toy. Stars are for pride only.
 
 // ---------- art ----------
 function artHTML(item, cls){
@@ -442,25 +442,20 @@ function renderHome(){
   progressEl.classList.add("hide");
 
   const p = loadProgress();
-  const open = unlockedCount();
   unitsEl.innerHTML = "";
 
-  CURRICULUM.forEach((unit, i) => {
-    const locked = i >= open;
+  CURRICULUM.forEach(unit => {
     const stars = p[unit.id] || 0;
     const btn = document.createElement("button");
-    btn.className = "unit" + (locked ? " locked" : "");
+    btn.className = "unit";
     btn.innerHTML = `
-      <div class="unit-icon">${locked ? "🔒" : unit.icon}</div>
+      <div class="unit-icon">${unit.icon}</div>
       <div>
         <div class="unit-name">${unit.title}</div>
         <div class="unit-fr">${unit.titleFr}</div>
       </div>
       <div class="unit-stars">${"⭐".repeat(stars)}${"·".repeat(Math.max(0, 3 - stars))}</div>`;
-    btn.onclick = () => {
-      if(locked){ sayFr("Termine la leçon d'avant d'abord."); dingSoft(); return; }
-      startLesson(unit);
-    };
+    btn.onclick = () => startLesson(unit);
     unitsEl.appendChild(btn);
   });
 }
@@ -477,8 +472,17 @@ function startLesson(unit){
   // 1. Meet each word: picture, sound, French. No question asked yet.
   items.forEach(it => steps.push({ type: "learn", item: it }));
 
-  // 2. Hear it, tap the picture. Needs no reading at all.
-  shuffle(items).forEach(it => steps.push({ type: "listen", item: it }));
+  // 2. Practise recognising it.
+  //
+  // Nouns get "hear it, tap the picture", which works because the picture is
+  // the meaning. Greetings are not things, so that step can only ever teach
+  // "sun = buenos días". They get the reply step instead: a situation, and
+  // what you say in it.
+  if(items.every(it => it.ask)){
+    shuffle(items).forEach(it => steps.push({ type: "reply", item: it }));
+  } else {
+    shuffle(items).forEach(it => steps.push({ type: "listen", item: it }));
+  }
 
   // 3. Unit-specific practice.
   if(unit.id === "numeros"){
@@ -509,7 +513,7 @@ function renderStep(){
   const pct = (lesson.index / lesson.steps.length) * 100;
   progressFill.style.width = pct + "%";
   const step = lesson.steps[lesson.index];
-  ({ learn: stepLearn, listen: stepListen, count: stepCount,
+  ({ learn: stepLearn, listen: stepListen, reply: stepReply, count: stepCount,
      pairs: stepPairs, speak: stepSpeak })[step.type](step);
 }
 
@@ -571,6 +575,59 @@ function stepListen(step){
 
   document.getElementById("again").onclick = () => sayEs(it);
   setTimeout(() => { sayFr("Touche"); setTimeout(() => sayEs(it), 700); }, 250);
+}
+
+// --- what do you say? ---
+// The step the greetings unit exists for. A situation is shown and narrated in
+// French; the child picks what to say in Spanish. The prompt art is a scene,
+// never the item's own art, so the answer cannot come from matching pictures.
+function stepReply(step){
+  const it = step.item;
+  const others = shuffle(lesson.unit.items.filter(x => x.slug !== it.slug)).slice(0, 2);
+  const options = shuffle([it, ...others]);
+  let answered = false;
+
+  stageEl.innerHTML = `
+    <div class="prompt">Qu'est-ce que tu dis ?</div>
+    <div class="big">${it.askEmoji}</div>
+    <div class="word-fr">${it.ask}</div>
+    <button class="speak-btn" id="again">🔊</button>
+    <div class="choices three" id="choices"></div>
+    <div class="msg" id="msg"></div>`;
+
+  const box = document.getElementById("choices");
+  options.forEach(opt => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.innerHTML = artHTML(opt);
+    b.onclick = () => {
+      if(answered) return;
+      if(opt.slug === it.slug){
+        answered = true;
+        lesson.asked++;
+        if(!b.dataset.retried) lesson.firstTry++;
+        b.classList.add("good");
+        dingGood();
+        sayEs(it);
+        document.getElementById("msg").textContent = "¡Sí! " + it.es;
+        setTimeout(advance, 1500);
+      } else {
+        // A wrong tap says the wrong phrase out loud rather than buzzing --
+        // hearing "buenas noches" when it is morning is the actual lesson.
+        b.classList.add("bad");
+        b.dataset.retried = "1";
+        Array.from(box.children).forEach(c => c.dataset.retried = "1");
+        dingSoft();
+        sayEs(opt);
+        setTimeout(() => b.classList.remove("bad"), 500);
+      }
+    };
+    box.appendChild(b);
+  });
+
+  const askAgain = () => sayFr(it.ask + " Qu'est-ce que tu dis ?");
+  document.getElementById("again").onclick = askAgain;
+  setTimeout(askAgain, 300);
 }
 
 // --- hear a number, tap the group with that many things ---

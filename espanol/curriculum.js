@@ -90,19 +90,26 @@ window.CURRICULUM = [
     // and the second glyph says when. Plain 👋 is hola: the greeting with no
     // particular moment attached.
     //
-    // This is a patch on the real problem, not a solution to it. The honest
-    // fix is a reply exercise -- someone says "¿Hola?" and the child picks the
-    // answer -- which is what replyTo below is for. Nothing reads it yet.
+    // The art is still only a hint, so this unit also gets the "reply" step,
+    // which teaches the thing a picture cannot: WHEN you say it. Each item
+    // carries a situation -- narrated in French, drawn with a scene emoji that
+    // is deliberately different from the item's own art, so the child answers
+    // from the situation and not by matching two pictures.
     items: [
       { slug: "hola",         es: "hola",         fr: "salut",     emoji: "👋",
-        replyTo: "¿Hola?", prompt: "hola" },
-      { slug: "buenos-dias",  es: "buenos días",  fr: "bonjour",   emoji: "👋☀️" },
-      { slug: "buenas-noches",es: "buenas noches",fr: "bonne nuit",emoji: "👋🌙" },
-      { slug: "adios",        es: "adiós",        fr: "au revoir", emoji: "👋🚶" },
-      // gracias is not a moment, so the 👋 + when pattern does not fit it.
-      // It stays a bare glyph until the reply exercise exists.
-      { slug: "gracias",      es: "gracias",      fr: "merci",     emoji: "🙏" },
-      { slug: "si",           es: "sí",           fr: "oui",       emoji: "✅" },
+        ask: "Un ami arrive.",              askEmoji: "🧑‍🤝‍🧑" },
+      { slug: "buenos-dias",  es: "buenos días",  fr: "bonjour",   emoji: "👋☀️",
+        ask: "C'est le matin, tu te lèves.", askEmoji: "🌅" },
+      { slug: "buenas-noches",es: "buenas noches",fr: "bonne nuit",emoji: "👋🌙",
+        ask: "Tu vas dormir.",              askEmoji: "🛏️" },
+      { slug: "adios",        es: "adiós",        fr: "au revoir", emoji: "👋🚶",
+        ask: "Tu t'en vas.",                askEmoji: "🚗" },
+      // gracias is not a moment, so the 👋 + when pattern never fitted it.
+      // The situation carries it instead: someone gives you something.
+      { slug: "gracias",      es: "gracias",      fr: "merci",     emoji: "🙏",
+        ask: "On te donne un cadeau.",      askEmoji: "🎁" },
+      { slug: "si",           es: "sí",           fr: "oui",       emoji: "✅",
+        ask: "On te demande : tu en veux ?", askEmoji: "🍫" },
     ],
   },
 ];
