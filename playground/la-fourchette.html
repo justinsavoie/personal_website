@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Trouve le mat !</title>
+<title>La fourchette !</title>
 
 <style>
 *{ box-sizing:border-box; }
@@ -11,7 +11,7 @@ body{
   margin:0;
   font-family:system-ui;
   min-height:100vh;
-  background:linear-gradient(180deg, #e0e7ff 0%, #a5b4fc 100%);
+  background:linear-gradient(180deg, #dcfce7 0%, #86efac 100%);
   display:flex;
   justify-content:center;
   align-items:center;
@@ -32,7 +32,7 @@ body{
   justify-content:space-between;
   font-weight:900;
   font-size:16px;
-  color:#312e81;
+  color:#14532d;
 }
 
 .card{
@@ -49,7 +49,7 @@ body{
   text-align:center;
   font-size:19px;
   font-weight:900;
-  color:#312e81;
+  color:#14532d;
   min-height:26px;
 }
 
@@ -145,7 +145,7 @@ button.ctrl:disabled{ opacity:0.45; }
   text-align:center;
   font-size:16px;
   font-weight:800;
-  color:#312e81;
+  color:#14532d;
 }
 
 @media (max-height:640px){
@@ -158,7 +158,7 @@ button.ctrl:disabled{ opacity:0.45; }
 <body>
 <div class="app">
   <div class="top">
-    <div>♛ <span id="solved">0</span></div>
+    <div>🍴 <span id="solved">0</span></div>
     <div>⭐ Série: <span id="streak">0</span></div>
   </div>
 
@@ -175,11 +175,8 @@ button.ctrl:disabled{ opacity:0.45; }
 </div>
 
 <script src="assets/chess.min.js"></script>
-<script src="assets/puzzles-mat.js"></script>
+<script src="assets/puzzles-fourchette.js"></script>
 <script>
-// Lichess convention: the FEN is the position *before* the opponent blunders.
-// Moves[0] is that opponent move (played for the child); the odd-indexed moves
-// are the solution. Every puzzle in this set ends in checkmate.
 const FILES = "abcdefgh";
 const GLYPH = { p:"♟︎", n:"♞︎", b:"♝︎", r:"♜︎", q:"♛︎", k:"♚︎" };
 
@@ -247,7 +244,7 @@ function playSound(freqs, type, duration){
 }
 
 function sfxMove(){ playSound([440], "triangle", 0.1); }
-function sfxMate(){ playSound([523.25, 659.25, 783.99, 1046.5], "sine", 0.3); }
+function sfxWin(){ playSound([523.25, 659.25, 783.99, 1046.5], "sine", 0.3); }
 function sfxNudge(){ playSound([210], "sine", 0.14); }
 
 function uci(move){
@@ -258,25 +255,53 @@ function toMoveArg(u){
   return { from: u.slice(0, 2), to: u.slice(2, 4), promotion: u.length === 5 ? u[4] : undefined };
 }
 
-// Difficulty is a mix of tiers rather than a hard switch, so a good run never
-// becomes a wall of one thing. The tiers come from build_puzzles.py:
-//   t1 mate in 1 at the rating floor -- nearly all back rank, the pattern he
-//      learns to recognise before he learns to calculate
-//   t2 mate in 1 up to 800 -- other shapes appear: kingside, opera, pillsbury
-//   t3 mate in 2      t4 mate in 3
+
+// ---- the oracle ----
+// A capture only counts if it survives the reply. Taking a defended knight and
+// getting recaptured is not winning a piece, so after the child moves we look
+// one ply ahead and take the opponent's best answer.
+const VALUE = { p:1, n:3, b:3, r:5, q:9, k:0 };
+const PIECE_FR = { p:["un","pion"], n:["un","cavalier"], b:["un","fou"], r:["une","tour"], q:["une","dame"] };
+
+let baseline = 0;   // material edge just after the opponent's blunder
+
+function material(color){
+  let sum = 0;
+  for(const row of game.board())
+    for(const sq of row)
+      if(sq && sq.color === color) sum += VALUE[sq.type];
+  return sum;
+}
+
+function edge(){
+  return material(solverColor) - material(solverColor === "w" ? "b" : "w");
+}
+
+function wonMaterial(){
+  if(edge() <= baseline) return false;
+  let worst = Infinity;
+  for(const m of game.moves({ verbose: true })){
+    game.move(m);
+    worst = Math.min(worst, edge());
+    game.undo();
+  }
+  return (worst === Infinity ? edge() : worst) > baseline;
+}
+
+// Difficulty comes from the puzzle rating, which is what Lichess derives from
+// how often real players miss it. The tiers come from build_puzzles.py:
+//   t1 forks up to 700    t2 700-899    t3 900-1199
 function pickPuzzle(){
-  const P = window.PUZZLES_MAT;
+  const P = window.PUZZLES_FOURCHETTE;
   const r = Math.random();
   let key;
   if(solved < 8)       key = "t1";
-  else if(solved < 20) key = r < 0.5  ? "t1" : "t2";
-  else if(solved < 32) key = r < 0.25 ? "t1" : (r < 0.70 ? "t2" : "t3");
-  else                 key = r < 0.15 ? "t1" : (r < 0.50 ? "t2" : (r < 0.85 ? "t3" : "t4"));
+  else if(solved < 20) key = r < 0.6 ? "t1" : "t2";
+  else                 key = r < 0.25 ? "t1" : (r < 0.70 ? "t2" : "t3");
   const pool = (P[key] && P[key].length) ? P[key] : P.t1;
   const [fen, moves] = pool[randInt(0, pool.length - 1)];
   return { fen, moves: moves.split(" ") };
 }
-
 function squareName(r, c){
   return FILES[c] + (8 - r);
 }
@@ -352,9 +377,9 @@ function tapSquare(name){
   render();
 }
 
+
 function attempt(from, to){
   const expected = puzzle.moves[ply];
-  // Match the stored promotion when the child plays the solution move.
   let promotion = "q";
   if(expected && expected.length === 5 && expected.slice(0, 2) === from && expected.slice(2, 4) === to){
     promotion = expected[4];
@@ -363,13 +388,15 @@ function attempt(from, to){
   const move = game.move({ from, to, promotion });
   if(!move) return;
 
-  // Any move that delivers mate counts — several of these positions have more
-  // than one mate, and refusing an equally good one would just confuse a child.
-  if(game.in_checkmate()){
+  // Any move that wins material counts, exactly as any mate counts in
+  // trouve-le-mat. Several of these positions have more than one way to
+  // collect, and refusing an equally good one would just confuse a child.
+  // A mate found along the way is a win too.
+  if(game.in_checkmate() || wonMaterial()){
     lastMove = { from, to };
     ply++;
     render();
-    succeed();
+    succeed(move.captured);
     return;
   }
 
@@ -380,7 +407,6 @@ function attempt(from, to){
     render();
     replyThenContinue();
   } else {
-    // Take it back and leave the opponent's move highlighted as it was.
     game.undo();
     sfxNudge();
     render();
@@ -395,7 +421,7 @@ function replyThenContinue(){
   messageEl.textContent = "";
   setTimeout(() => {
     const reply = puzzle.moves[ply];
-    if(!reply){ succeed(); return; }
+    if(!reply){ succeed(null); return; }
     game.move(toMoveArg(reply));
     lastMove = { from: reply.slice(0, 2), to: reply.slice(2, 4) };
     ply++;
@@ -406,15 +432,18 @@ function replyThenContinue(){
   }, 550);
 }
 
-function succeed(){
+function succeed(captured){
   lock = true;
   solved++;
   streak++;
   solvedEl.textContent = solved;
   streakEl.textContent = streak;
-  sfxMate();
-  messageEl.textContent = "Échec et mat ! Bravo ! 🎉";
-  speak("Échec et mat ! Bravo !");
+  sfxWin();
+  // Naming the piece is the whole reward -- he sees what the fork earned him.
+  const named = captured && PIECE_FR[captured];
+  const what = named ? `${named[0]} ${named[1]}` : "une pièce";
+  messageEl.textContent = `Tu gagnes ${what} ! 🎉`;
+  speak(`Tu gagnes ${what} !`);
   boardEl.classList.add("solved");
   setTimeout(() => {
     boardEl.classList.remove("solved");
@@ -452,9 +481,7 @@ function sideLabel(){
 }
 
 function taskText(){
-  const n = Math.ceil((puzzle.moves.length - 1) / 2);
-  const inN = n === 1 ? "en un coup" : `en ${n} coups`;
-  return `${sideLabel()} jouent et font mat ${inN} !`;
+  return `${sideLabel()} jouent et gagnent une pièce !`;
 }
 
 function loadPuzzle(){
@@ -466,20 +493,19 @@ function loadPuzzle(){
   selected = null;
   lastMove = null;
   lock = true;
-  // Stays disabled until the opponent's move lands, otherwise an early tap
-  // would play that move a second time.
   hintBtn.disabled = true;
 
   turnEl.textContent = "Regarde bien…";
   messageEl.textContent = "";
   render();
 
-  // Play the opponent's move first, so the child sees what just happened.
   setTimeout(() => {
     const first = puzzle.moves[0];
     game.move(toMoveArg(first));
     lastMove = { from: first.slice(0, 2), to: first.slice(2, 4) };
     ply = 1;
+    // Measured after the blunder, so "won material" means won it from here.
+    baseline = edge();
     sfxMove();
     lock = false;
     hintBtn.disabled = false;
