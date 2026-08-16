@@ -37,9 +37,11 @@ window.CURRICULUM = [
   {
     id: "numeros",
     title: "Los números",
-    titleFr: "Les nombres",
+    titleFr: "Les nombres 1–6",
     icon: "🔢",
-    // `count` drives the counting exercise: that many objects to tally.
+    // `count` drives the counting exercise: that many objects to tally. Any
+    // unit whose items all carry one gets that exercise, so a second numbers
+    // unit needs no code change.
     items: [
       { slug: "uno",    es: "uno",    fr: "un",     emoji: "1️⃣", count: 1 },
       { slug: "dos",    es: "dos",    fr: "deux",   emoji: "2️⃣", count: 2 },
@@ -47,6 +49,53 @@ window.CURRICULUM = [
       { slug: "cuatro", es: "cuatro", fr: "quatre", emoji: "4️⃣", count: 4 },
       { slug: "cinco",  es: "cinco",  fr: "cinq",   emoji: "5️⃣", count: 5 },
       { slug: "seis",   es: "seis",   fr: "six",    emoji: "6️⃣", count: 6 },
+    ],
+  },
+  {
+    id: "numeros2",
+    title: "Los números",
+    titleFr: "Les nombres 7–12",
+    icon: "🔟",
+    // Keycap emoji stop at 🔟, so eleven and twelve are written as two keycaps
+    // side by side. That reads as "11" and "12" and keeps the digits looking
+    // like every other number in the app.
+    items: [
+      { slug: "siete",  es: "siete",  fr: "sept",   emoji: "7️⃣",   count: 7 },
+      { slug: "ocho",   es: "ocho",   fr: "huit",   emoji: "8️⃣",   count: 8 },
+      { slug: "nueve",  es: "nueve",  fr: "neuf",   emoji: "9️⃣",   count: 9 },
+      { slug: "diez",   es: "diez",   fr: "dix",    emoji: "🔟",   count: 10 },
+      { slug: "once",   es: "once",   fr: "onze",   emoji: "1️⃣1️⃣", count: 11 },
+      { slug: "doce",   es: "doce",   fr: "douze",  emoji: "1️⃣2️⃣", count: 12 },
+    ],
+  },
+  {
+    id: "cuerpo",
+    title: "El cuerpo",
+    titleFr: "Le corps",
+    icon: "🧍",
+    // The one unit that works away from the screen: he can point at his own
+    // nose in the car.
+    items: [
+      { slug: "mano",   es: "la mano",   fr: "la main",    emoji: "✋" },
+      { slug: "pie",    es: "el pie",    fr: "le pied",    emoji: "🦶" },
+      { slug: "ojo",    es: "el ojo",    fr: "l'œil",      emoji: "👁️" },
+      { slug: "boca",   es: "la boca",   fr: "la bouche",  emoji: "👄" },
+      { slug: "nariz",  es: "la nariz",  fr: "le nez",     emoji: "👃" },
+      { slug: "oreja",  es: "la oreja",  fr: "l'oreille",  emoji: "👂" },
+    ],
+  },
+  {
+    id: "transporte",
+    title: "El transporte",
+    titleFr: "Les transports",
+    icon: "🚗",
+    items: [
+      { slug: "coche",    es: "el coche",    fr: "la voiture", emoji: "🚗" },
+      { slug: "autobus",  es: "el autobús",  fr: "l'autobus",  emoji: "🚌" },
+      { slug: "tren",     es: "el tren",     fr: "le train",   emoji: "🚂" },
+      { slug: "avion",    es: "el avión",    fr: "l'avion",    emoji: "✈️" },
+      { slug: "barco",    es: "el barco",    fr: "le bateau",  emoji: "🚢" },
+      { slug: "bici",     es: "la bici",     fr: "le vélo",    emoji: "🚲" },
     ],
   },
   {

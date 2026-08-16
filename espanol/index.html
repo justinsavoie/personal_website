@@ -520,8 +520,10 @@ function startLesson(unit){
     shuffle(items).forEach(it => steps.push({ type: "listen", item: it }));
   }
 
-  // 3. Unit-specific practice.
-  if(unit.id === "numeros"){
+  // 3. Unit-specific practice, chosen by what the items carry rather than by
+  // unit id -- a second numbers unit would otherwise have silently dropped to
+  // the memory game.
+  if(items.every(it => typeof it.count === "number")){
     shuffle(items).slice(0, 4).forEach(it => steps.push({ type: "count", item: it }));
   } else {
     steps.push({ type: "pairs", items: shuffle(items).slice(0, 4) });
