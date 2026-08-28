@@ -248,8 +248,7 @@
             }
         };
     </script>
-    <link rel="manifest" href="../manifest.webmanifest">
-    <meta name="theme-color" content="#4c1d95">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
 
@@ -471,38 +470,14 @@
                 <a href="../playground/le-partage.html">Le partage</a>
             </div>
             <div class="blog-item">
+                <a href="../playground/quel-rythme.html">Quel rythme ?</a>
+            </div>
+            <div class="blog-item">
                 <a href="../espanol/">¡Español!</a>
             </div>
         </div>
     </div>
     
-    <p id="offline-note" style="color:#666;font-size:14px;margin-top:30px;"></p>
-    <script>
-    (function () {
-      if (!('serviceWorker' in navigator)) return;
-      var note = document.getElementById('offline-note');
-
-      // Shows real counts while downloading, then disappears. It says nothing
-      // until it knows something true.
-      navigator.serviceWorker.addEventListener('message', function (e) {
-        var d = e.data || {};
-        if (d.type !== 'precache') return;
-        if (d.done >= d.total) {
-          note.textContent = '';
-        } else {
-          note.textContent = 'Téléchargement des jeux pour le mode hors ligne… '
-                           + d.done + '/' + d.total;
-        }
-      });
-
-      navigator.serviceWorker.register('../sw.js', { scope: '../' })
-        .then(function () { return navigator.serviceWorker.ready; })
-        .then(function (reg) {
-          if (reg.active) reg.active.postMessage({ type: 'status' });
-        });
-    })();
-    </script>
-
     
     <footer>
         <p>© 2025 Justin Savoie</p>

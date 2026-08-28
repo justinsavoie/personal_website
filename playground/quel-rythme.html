@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quel rythme ?</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #ede9fe 0%, #c4b5fd 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: manipulation;
+  color: #2e1065;
+  padding: 12px;
+}
+
+.app {
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 900;
+  font-size: 16px;
+  color: #5b21b6;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8px 14px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(91, 33, 182, 0.08);
+}
+
+.top .stats {
+  display: flex;
+  gap: 14px;
+}
+
+.card {
+  background: white;
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 24px rgba(109, 40, 217, 0.15);
+}
+
+.header-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.drum-visual {
+  font-size: 72px;
+  line-height: 1;
+  user-select: none;
+  transition: transform 0.1s ease;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+
+.drum-visual.beat {
+  transform: scale(1.3) rotate(-6deg);
+}
+
+.drum-visual.beat-accent {
+  transform: scale(1.45) rotate(6deg);
+}
+
+.drum-visual.rest {
+  transform: scale(0.9);
+  opacity: 0.6;
+}
+
+.rhythm-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  font-size: 19px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #4c1d95;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.rhythm-play-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #4c1d95;
+}
+
+.rhythm-play-btn.playing {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 5px 0 #b45309;
+  animation: pulse-border 0.8s infinite alternate;
+}
+
+@keyframes pulse-border {
+  from { transform: scale(1); }
+  to { transform: scale(1.02); }
+}
+
+.instructions {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #6b21a8;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.choice-btn {
+  background: #faf5ff;
+  border: 3px solid #e9d5ff;
+  border-radius: 16px;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #d8b4fe;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.choice-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #d8b4fe;
+}
+
+.choice-btn.selected-correct {
+  background: #ecfdf5;
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transform: scale(1.02);
+}
+
+.choice-btn.selected-wrong {
+  background: #fff1f2;
+  border-color: #f43f5e;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.2);
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.choice-notes {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #4c1d95;
+  line-height: 1.2;
+}
+
+.choice-words {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7c3aed;
+  opacity: 0.85;
+}
+
+.message {
+  min-height: 28px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: #5b21b6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+}
+
+button.ctrl {
+  border: none;
+  border-radius: 14px;
+  background: #6d28d9;
+  color: white;
+  font-weight: 900;
+  font-size: 17px;
+  padding: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #4c1d95;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+button.ctrl:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #4c1d95;
+}
+
+button.ctrl.ghost {
+  background: #ffffff;
+  color: #6d28d9;
+  border: 3px solid #ddd6fe;
+  box-shadow: 0 3px 0 #c4b5fd;
+}
+
+button.ctrl:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none !important;
+}
+
+@media (max-height: 680px) {
+  .drum-visual { font-size: 56px; }
+  .choice-btn { padding: 10px 8px; }
+  .choice-notes { font-size: 22px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div class="stats">
+      <div>⭐ <span id="score">0</span></div>
+      <div>🔥 <span id="streak">0</span></div>
+    </div>
+    <div>🥁 Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="header-stage">
+      <div class="drum-visual" id="drum-visual">🥁</div>
+      <div class="instructions" id="instructions">Écoute bien le rythme !</div>
+    </div>
+
+    <button class="rhythm-play-btn" id="play-rhythm">
+      <span>▶</span> Écouter le rythme
+    </button>
+
+    <div class="choices" id="choices"></div>
+
+    <div class="message" id="message"></div>
+
+    <div class="controls">
+      <button class="ctrl" id="next-btn">Suivant ➜</button>
+      <button class="ctrl ghost" id="voice-btn">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Rhythm patterns structured by difficulty level.
+// beats: array of beat durations in quarter note units (1 = noire, 0.5 = croche, 2 = blanche)
+// rests: optional set of indices that are rests (silence)
+const PATTERNS_BY_LEVEL = {
+  1: [
+    { id: "1A", beats: [1, 1, 1, 1], label: "♩ ♩ ♩ ♩", words: "Ta - Ta - Ta - Ta" },
+    { id: "1B", beats: [0.5, 0.5, 1, 1, 1], label: "♪♪ ♩ ♩ ♩", words: "Ti-ti - Ta - Ta - Ta" },
+    { id: "1C", beats: [1, 0.5, 0.5, 1, 1], label: "♩ ♪♪ ♩ ♩", words: "Ta - Ti-ti - Ta - Ta" },
+    { id: "1D", beats: [1, 1, 0.5, 0.5, 1], label: "♩ ♩ ♪♪ ♩", words: "Ta - Ta - Ti-ti - Ta" },
+    { id: "1E", beats: [1, 1, 1, 0.5, 0.5], label: "♩ ♩ ♩ ♪♪", words: "Ta - Ta - Ta - Ti-ti" },
+    { id: "1F", beats: [0.5, 0.5, 0.5, 0.5, 1, 1], label: "♪♪ ♪♪ ♩ ♩", words: "Ti-ti - Ti-ti - Ta - Ta" },
+    { id: "1G", beats: [1, 1, 0.5, 0.5, 0.5, 0.5], label: "♩ ♩ ♪♪ ♪♪", words: "Ta - Ta - Ti-ti - Ti-ti" },
+    { id: "1H", beats: [0.5, 0.5, 1, 0.5, 0.5, 1], label: "♪♪ ♩ ♪♪ ♩", words: "Ti-ti - Ta - Ti-ti - Ta" }
+  ],
+  2: [
+    { id: "2A", beats: [1, 1, 1, 1], rests: [1], label: "♩ 𝄽 ♩ ♩", words: "Ta - (chut) - Ta - Ta" },
+    { id: "2B", beats: [1, 1, 1, 1], rests: [2], label: "♩ ♩ 𝄽 ♩", words: "Ta - Ta - (chut) - Ta" },
+    { id: "2C", beats: [0.5, 0.5, 1, 1, 1], rests: [2], label: "♪♪ 𝄽 ♩ ♩", words: "Ti-ti - (chut) - Ta - Ta" },
+    { id: "2D", beats: [1, 0.5, 0.5, 1, 1], rests: [3], label: "♩ ♪♪ 𝄽 ♩", words: "Ta - Ti-ti - (chut) - Ta" },
+    { id: "2E", beats: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1], label: "♪♪ ♪♪ ♪♪ ♩", words: "Ti-ti - Ti-ti - Ti-ti - Ta" },
+    { id: "2F", beats: [1, 1, 1, 1], rests: [1, 3], label: "♩ 𝄽 ♩ 𝄽", words: "Ta - (chut) - Ta - (chut)" }
+  ],
+  3: [
+    { id: "3A", beats: [2, 2], label: "𝅗𝅥 𝅗𝅥", words: "Taaah - Taaah" },
+    { id: "3B", beats: [2, 1, 1], label: "𝅗𝅥 ♩ ♩", words: "Taaah - Ta - Ta" },
+    { id: "3C", beats: [1, 1, 2], label: "♩ ♩ 𝅗𝅥", words: "Ta - Ta - Taaah" },
+    { id: "3D", beats: [2, 0.5, 0.5, 1], label: "𝅗𝅥 ♪♪ ♩", words: "Taaah - Ti-ti - Ta" },
+    { id: "3E", beats: [0.5, 0.5, 1, 2], label: "♪♪ ♩ 𝅗𝅥", words: "Ti-ti - Ta - Taaah" },
+    { id: "3F", beats: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5], label: "♪♪ ♪♪ ♪♪ ♪♪", words: "Ti-ti - Ti-ti - Ti-ti - Ti-ti" }
+  ]
+};
+
+let score = 0;
+let streak = 0;
+let level = 1;
+let currentPattern = null;
+let answered = false;
+let isPlayingRhythm = false;
+let voices = [];
+let voicesReady = false;
+let audioCtx = null;
+
+const scoreEl = document.getElementById("score");
+const streakEl = document.getElementById("streak");
+const levelEl = document.getElementById("level");
+const drumVisual = document.getElementById("drum-visual");
+const instructionsEl = document.getElementById("instructions");
+const playRhythmBtn = document.getElementById("play-rhythm");
+const choicesEl = document.getElementById("choices");
+const messageEl = document.getElementById("message");
+const nextBtn = document.getElementById("next-btn");
+const voiceBtn = document.getElementById("voice-btn");
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+// Text-to-speech
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (voices.length > 0) voicesReady = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text) {
+  if (!voicesReady && !speechSynthesis.getVoices().length) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const v = voices.find(v => v.lang.startsWith("fr"));
+  if (v) utter.voice = v;
+  utter.lang = "fr-FR";
+  utter.rate = 0.95;
+  speechSynthesis.speak(utter);
+}
+
+// Web Audio synthesizer
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+// Drum & woodblock synthesizer
+function playDrumBeat(time, isAccent = false, isLong = false) {
+  const ctx = getAudioContext();
+  
+  if (isLong) {
+    // Rich marimba chime tone for half note
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(440, time);
+    
+    gain.gain.setValueAtTime(0.35, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.7);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(time);
+    osc.stop(time + 0.75);
+    return;
+  }
+
+  // Snappy woodblock / tom sound
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  
+  osc.type = "sine";
+  const startFreq = isAccent ? 720 : 540;
+  const endFreq = isAccent ? 280 : 220;
+  
+  osc.frequency.setValueAtTime(startFreq, time);
+  osc.frequency.exponentialRampToValueAtTime(endFreq, time + 0.08);
+  
+  gain.gain.setValueAtTime(isAccent ? 0.4 : 0.28, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.09);
+  
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  
+  osc.start(time);
+  osc.stop(time + 0.1);
+}
+
+// Sound effects for success/try-again
+function sfxSuccess() {
+  const ctx = getAudioContext();
+  const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+  notes.forEach((freq, idx) => {
+    const t = ctx.currentTime + idx * 0.09;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.25, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.25);
+  });
+}
+
+function sfxTryAgain() {
+  const ctx = getAudioContext();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(320, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(260, ctx.currentTime + 0.2);
+  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.25);
+}
+
+function playRhythm() {
+  if (isPlayingRhythm || !currentPattern) return;
+  isPlayingRhythm = true;
+  playRhythmBtn.classList.add("playing");
+  playRhythmBtn.innerHTML = "<span>🔊</span> Écoute...";
+
+  const ctx = getAudioContext();
+  const bpm = 112;
+  const beatSec = 60 / bpm;
+  let startTime = ctx.currentTime + 0.1;
+  let cumulativeTime = 0;
+
+  const restsSet = new Set(currentPattern.rests || []);
+
+  currentPattern.beats.forEach((duration, index) => {
+    const hitTime = startTime + cumulativeTime;
+    const isRest = restsSet.has(index);
+    const isLong = duration >= 2;
+    const isAccent = index === 0;
+
+    // Trigger visual pulse in sync with audio
+    const delayMs = (cumulativeTime + 0.1) * 1000;
+    setTimeout(() => {
+      if (isRest) {
+        drumVisual.className = "drum-visual rest";
+      } else if (isAccent) {
+        drumVisual.className = "drum-visual beat-accent";
+      } else {
+        drumVisual.className = "drum-visual beat";
+      }
+      setTimeout(() => {
+        drumVisual.className = "drum-visual";
+      }, Math.min(180, duration * beatSec * 600));
+    }, delayMs);
+
+    if (!isRest) {
+      playDrumBeat(hitTime, isAccent, isLong);
+    }
+
+    cumulativeTime += duration * beatSec;
+  });
+
+  const totalDurationMs = (cumulativeTime + 0.25) * 1000;
+  setTimeout(() => {
+    isPlayingRhythm = false;
+    playRhythmBtn.classList.remove("playing");
+    playRhythmBtn.innerHTML = "<span>▶</span> Réécouter";
+  }, totalDurationMs);
+}
+
+function newRound() {
+  answered = false;
+  messageEl.textContent = "";
+  nextBtn.disabled = true;
+  drumVisual.textContent = "🥁";
+
+  // Select pattern from current level pool
+  const pool = PATTERNS_BY_LEVEL[level] || PATTERNS_BY_LEVEL[1];
+  currentPattern = pool[Math.floor(Math.random() * pool.length)];
+
+  // Pick 2 distractors
+  const distractors = shuffle(pool.filter(p => p.id !== currentPattern.id)).slice(0, 2);
+  const choices = shuffle([currentPattern, ...distractors]);
+
+  choicesEl.innerHTML = "";
+  choices.forEach(pattern => {
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    
+    const notesSpan = document.createElement("span");
+    notesSpan.className = "choice-notes";
+    notesSpan.textContent = pattern.label;
+    
+    const wordsSpan = document.createElement("span");
+    wordsSpan.className = "choice-words";
+    wordsSpan.textContent = pattern.words;
+
+    btn.appendChild(notesSpan);
+    btn.appendChild(wordsSpan);
+
+    btn.addEventListener("click", () => handleChoice(pattern, btn));
+    choicesEl.appendChild(btn);
+  });
+
+  // Automatically play rhythm on new round
+  setTimeout(() => {
+    playRhythm();
+  }, 350);
+}
+
+function handleChoice(pattern, btn) {
+  if (answered || isPlayingRhythm) return;
+
+  if (pattern.id === currentPattern.id) {
+    answered = true;
+    score += 10;
+    streak += 1;
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+
+    btn.classList.add("selected-correct");
+    drumVisual.textContent = "🎉";
+    messageEl.textContent = "Bravo ! C'est le bon rythme ! 👏";
+    sfxSuccess();
+    speak("Bravo !");
+
+    // Level progression every 5 streaks
+    if (streak % 5 === 0 && level < 3) {
+      level += 1;
+      levelEl.textContent = level;
+      messageEl.textContent = `🎉 Niveau ${level} débloqué !`;
+      speak(`Niveau ${level} !`);
+    }
+
+    nextBtn.disabled = false;
+
+    // Disable all other buttons
+    Array.from(choicesEl.children).forEach(b => {
+      if (b !== btn) b.disabled = true;
+    });
+
+  } else {
+    btn.classList.add("selected-wrong");
+    messageEl.textContent = "Presque ! Réécoute et réessaie 👂";
+    sfxTryAgain();
+    speak("Presque ! Réécoute.");
+    streak = 0;
+    streakEl.textContent = streak;
+
+    setTimeout(() => {
+      btn.classList.remove("selected-wrong");
+    }, 600);
+  }
+}
+
+playRhythmBtn.addEventListener("click", () => {
+  getAudioContext();
+  playRhythm();
+});
+
+nextBtn.addEventListener("click", () => {
+  newRound();
+});
+
+voiceBtn.addEventListener("click", () => {
+  speak("Écoute le rythme du tambour, puis choisis la bonne musique !");
+});
+
+// Start game
+newRound();
+</script>
+</body>
+</html>
