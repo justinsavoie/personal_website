@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L'escalier des sons</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: manipulation;
+  color: #0369a1;
+  padding: 12px;
+}
+
+.app {
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 900;
+  font-size: 16px;
+  color: #0284c7;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 8px 14px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(3, 105, 161, 0.1);
+}
+
+.top .stats {
+  display: flex;
+  gap: 14px;
+}
+
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.18);
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 140px;
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 20px;
+  border: 3px dashed #bae6fd;
+  position: relative;
+  overflow: hidden;
+}
+
+.notes-display {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 36px;
+  height: 100px;
+  width: 100%;
+  padding-bottom: 15px;
+}
+
+.note-pillar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+}
+
+.note-bubble {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #38bdf8;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(56, 189, 248, 0.4);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.note-bubble.playing {
+  transform: scale(1.25);
+  background: #f59e0b;
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.5);
+}
+
+.note-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0369a1;
+}
+
+.rhythm-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px;
+  font-size: 19px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: white;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #075985;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.rhythm-play-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #075985;
+}
+
+.rhythm-play-btn.playing {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 5px 0 #b45309;
+}
+
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.choices-grid.three-cols {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.choice-card {
+  background: #f8fafc;
+  border: 4px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #cbd5e1;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.choice-card:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #cbd5e1;
+}
+
+.choice-card.up {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  box-shadow: 0 4px 0 #86efac;
+}
+
+.choice-card.down {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  box-shadow: 0 4px 0 #fdba74;
+}
+
+.choice-card.same {
+  background: #fdf4ff;
+  border-color: #f5d0fe;
+  box-shadow: 0 4px 0 #f0abfc;
+}
+
+.choice-card.correct {
+  background: #dcfce7 !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4) !important;
+  transform: scale(1.05);
+}
+
+.choice-card.wrong {
+  background: #ffe4e6 !important;
+  border-color: #f43f5e !important;
+  box-shadow: 0 3px 8px rgba(244, 63, 94, 0.3) !important;
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.choice-icon {
+  font-size: 42px;
+  line-height: 1;
+}
+
+.choice-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.choice-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.message {
+  min-height: 28px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: #0369a1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+}
+
+button.ctrl {
+  border: none;
+  border-radius: 14px;
+  background: #0284c7;
+  color: white;
+  font-weight: 900;
+  font-size: 17px;
+  padding: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #0369a1;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+button.ctrl:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #0369a1;
+}
+
+button.ctrl.ghost {
+  background: #ffffff;
+  color: #0284c7;
+  border: 3px solid #bae6fd;
+  box-shadow: 0 3px 0 #7dd3fc;
+}
+
+button.ctrl:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none !important;
+}
+
+@media (max-height: 680px) {
+  .stage { height: 115px; }
+  .choice-icon { font-size: 34px; }
+  .choice-card { padding: 10px 4px; }
+  .note-bubble { width: 44px; height: 44px; font-size: 20px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div class="stats">
+      <div>⭐ <span id="score">0</span></div>
+      <div>🔥 <span id="streak">0</span></div>
+    </div>
+    <div>🎵 Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="stage">
+      <div class="notes-display">
+        <div class="note-pillar" id="pillar-1">
+          <div class="note-bubble" id="bubble-1">1</div>
+          <div class="note-label">1ère note</div>
+        </div>
+        <div class="note-pillar" id="pillar-2">
+          <div class="note-bubble" id="bubble-2">2</div>
+          <div class="note-label">2e note</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="rhythm-play-btn" id="play-btn">
+      <span>▶</span> Écouter les 2 notes
+    </button>
+
+    <div class="choices-grid" id="choices"></div>
+
+    <div class="message" id="message"></div>
+
+    <div class="controls">
+      <button class="ctrl" id="next-btn">Suivant ➜</button>
+      <button class="ctrl ghost" id="voice-btn">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Musical frequencies (Do 4 to Do 5)
+const NOTES = {
+  "Do": 261.63,
+  "Ré": 293.66,
+  "Mi": 329.63,
+  "Fa": 349.23,
+  "Sol": 392.00,
+  "La": 440.00,
+  "Si": 493.88,
+  "Do+": 523.25,
+  "Ré+": 587.33,
+  "Mi+": 659.25,
+  "Sol+": 783.99
+};
+
+const NOTE_KEYS = Object.keys(NOTES);
+
+let score = 0;
+let streak = 0;
+let level = 1;
+let currentRound = null;
+let answered = false;
+let isPlaying = false;
+let voices = [];
+let voicesReady = false;
+let audioCtx = null;
+
+const scoreEl = document.getElementById("score");
+const streakEl = document.getElementById("streak");
+const levelEl = document.getElementById("level");
+const bubble1 = document.getElementById("bubble-1");
+const bubble2 = document.getElementById("bubble-2");
+const pillar1 = document.getElementById("pillar-1");
+const pillar2 = document.getElementById("pillar-2");
+const playBtn = document.getElementById("play-btn");
+const choicesEl = document.getElementById("choices");
+const messageEl = document.getElementById("message");
+const nextBtn = document.getElementById("next-btn");
+const voiceBtn = document.getElementById("voice-btn");
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+// Text-to-speech
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (voices.length > 0) voicesReady = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text) {
+  if (!voicesReady && !speechSynthesis.getVoices().length) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const v = voices.find(v => v.lang.startsWith("fr"));
+  if (v) utter.voice = v;
+  utter.lang = "fr-FR";
+  utter.rate = 0.95;
+  speechSynthesis.speak(utter);
+}
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+// Soft musical chime / xylophone sound
+function playTone(freq, time, duration = 0.5) {
+  const ctx = getAudioContext();
+  
+  // Fundamental tone (warm triangle)
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc1.type = "sine";
+  osc1.frequency.setValueAtTime(freq, time);
+
+  // Soft overtone
+  osc2.type = "triangle";
+  osc2.frequency.setValueAtTime(freq * 2, time);
+
+  gain.gain.setValueAtTime(0.001, time);
+  gain.gain.linearRampToValueAtTime(0.35, time + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+  osc1.connect(gain);
+  osc2.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc1.start(time);
+  osc2.start(time);
+  osc1.stop(time + duration + 0.05);
+  osc2.stop(time + duration + 0.05);
+}
+
+function sfxVictory() {
+  const ctx = getAudioContext();
+  const chord = [523.25, 659.25, 783.99, 1046.50];
+  chord.forEach((freq, i) => {
+    playTone(freq, ctx.currentTime + i * 0.09, 0.4);
+  });
+}
+
+function sfxGentleTryAgain() {
+  const ctx = getAudioContext();
+  playTone(293.66, ctx.currentTime, 0.25);
+  playTone(261.63, ctx.currentTime + 0.15, 0.35);
+}
+
+function generateRound() {
+  // Available direction types depending on level
+  let possibleTypes = ["UP", "DOWN"];
+  if (level >= 2) possibleTypes.push("SAME");
+
+  const type = possibleTypes[Math.floor(Math.random() * possibleTypes.length)];
+  let idx1 = 0, idx2 = 0;
+
+  if (type === "UP") {
+    idx1 = Math.floor(Math.random() * (NOTE_KEYS.length - 3));
+    const step = 1 + Math.floor(Math.random() * 4);
+    idx2 = Math.min(NOTE_KEYS.length - 1, idx1 + step);
+  } else if (type === "DOWN") {
+    idx1 = 2 + Math.floor(Math.random() * (NOTE_KEYS.length - 2));
+    const step = 1 + Math.floor(Math.random() * 4);
+    idx2 = Math.max(0, idx1 - step);
+  } else {
+    idx1 = Math.floor(Math.random() * (NOTE_KEYS.length - 2));
+    idx2 = idx1;
+  }
+
+  const name1 = NOTE_KEYS[idx1];
+  const name2 = NOTE_KEYS[idx2];
+  const freq1 = NOTES[name1];
+  const freq2 = NOTES[name2];
+
+  return { type, name1, name2, freq1, freq2, idx1, idx2 };
+}
+
+function playRoundAudio() {
+  if (isPlaying || !currentRound) return;
+  isPlaying = true;
+  playBtn.classList.add("playing");
+  playBtn.innerHTML = "<span>🔊</span> Écoute bien...";
+
+  const ctx = getAudioContext();
+  const t0 = ctx.currentTime + 0.1;
+  const t1 = t0 + 0.65;
+
+  // Visual highlight for note 1
+  setTimeout(() => {
+    bubble1.classList.add("playing");
+    bubble1.textContent = "🎵";
+    setTimeout(() => {
+      bubble1.classList.remove("playing");
+      bubble1.textContent = "1";
+    }, 450);
+  }, 100);
+
+  // Visual highlight for note 2
+  setTimeout(() => {
+    bubble2.classList.add("playing");
+    bubble2.textContent = "🎵";
+    setTimeout(() => {
+      bubble2.classList.remove("playing");
+      bubble2.textContent = "2";
+    }, 450);
+  }, 750);
+
+  playTone(currentRound.freq1, t0, 0.55);
+  playTone(currentRound.freq2, t1, 0.55);
+
+  setTimeout(() => {
+    isPlaying = false;
+    playBtn.classList.remove("playing");
+    playBtn.innerHTML = "<span>▶</span> Réécouter";
+  }, 1400);
+}
+
+function newRound() {
+  answered = false;
+  messageEl.textContent = "";
+  nextBtn.disabled = true;
+  bubble1.textContent = "1";
+  bubble2.textContent = "2";
+  pillar1.style.transform = "translateY(0px)";
+  pillar2.style.transform = "translateY(0px)";
+
+  currentRound = generateRound();
+  renderChoices();
+
+  setTimeout(() => {
+    playRoundAudio();
+  }, 300);
+}
+
+function renderChoices() {
+  choicesEl.innerHTML = "";
+
+  const options = [
+    { type: "UP", icon: "🚀", title: "Ça monte !", sub: "Plus aigu ⬆️", class: "up" },
+    { type: "DOWN", icon: "𝛑🛝", title: "Ça descend !", sub: "Plus grave ⬇️", class: "down", displayIcon: "🛝" }
+  ];
+
+  if (level >= 2) {
+    options.push({ type: "SAME", icon: "🟰", title: "C'est pareil !", sub: "Même note 🐥", class: "same" });
+    choicesEl.className = "choices-grid three-cols";
+  } else {
+    choicesEl.className = "choices-grid";
+  }
+
+  options.forEach(opt => {
+    const card = document.createElement("button");
+    card.className = `choice-card ${opt.class}`;
+
+    const icon = document.createElement("div");
+    icon.className = "choice-icon";
+    icon.textContent = opt.displayIcon || opt.icon;
+
+    const title = document.createElement("div");
+    title.className = "choice-title";
+    title.textContent = opt.title;
+
+    const sub = document.createElement("div");
+    sub.className = "choice-sub";
+    sub.textContent = opt.sub;
+
+    card.appendChild(icon);
+    card.appendChild(title);
+    card.appendChild(sub);
+
+    card.addEventListener("click", () => handleChoice(opt.type, card));
+    choicesEl.appendChild(card);
+  });
+}
+
+function handleChoice(selectedType, btn) {
+  if (answered || isPlaying) return;
+
+  if (selectedType === currentRound.type) {
+    answered = true;
+    score += 10;
+    streak += 1;
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+
+    btn.classList.add("correct");
+
+    // Animate the pillars to visually demonstrate the interval!
+    if (currentRound.type === "UP") {
+      pillar1.style.transform = "translateY(15px)";
+      pillar2.style.transform = "translateY(-15px)";
+      bubble2.textContent = "🚀";
+      messageEl.textContent = "Bravo ! Le son est monté ! 👏";
+      speak("Bravo ! Ça monte !");
+    } else if (currentRound.type === "DOWN") {
+      pillar1.style.transform = "translateY(-15px)";
+      pillar2.style.transform = "translateY(15px)";
+      bubble2.textContent = "🛝";
+      messageEl.textContent = "Super ! Le son est descendu ! 👏";
+      speak("Super ! Ça descend !");
+    } else {
+      bubble1.textContent = "🐥";
+      bubble2.textContent = "🐥";
+      messageEl.textContent = "Exact ! C'est la même note ! 👏";
+      speak("Exact ! C'est pareil !");
+    }
+
+    sfxVictory();
+
+    // Progress level every 5 consecutive streaks
+    if (streak % 5 === 0 && level < 2) {
+      level += 1;
+      levelEl.textContent = level;
+      messageEl.textContent = `🎉 Niveau ${level} débloqué !`;
+      speak(`Niveau ${level} !`);
+    }
+
+    nextBtn.disabled = false;
+    Array.from(choicesEl.children).forEach(b => {
+      if (b !== btn) b.disabled = true;
+    });
+
+  } else {
+    btn.classList.add("wrong");
+    messageEl.textContent = "Presque ! Réécoute les deux sons 👂";
+    sfxGentleTryAgain();
+    speak("Presque ! Réécoute.");
+    streak = 0;
+    streakEl.textContent = streak;
+
+    setTimeout(() => {
+      btn.classList.remove("wrong");
+    }, 600);
+  }
+}
+
+playBtn.addEventListener("click", () => {
+  getAudioContext();
+  playRoundAudio();
+});
+
+nextBtn.addEventListener("click", () => {
+  newRound();
+});
+
+voiceBtn.addEventListener("click", () => {
+  speak("Écoute les deux notes ! Est-ce que le son monte ou descend ?");
+});
+
+newRound();
+</script>
+</body>
+</html>
