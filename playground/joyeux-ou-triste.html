@@ -333,11 +333,92 @@ const ROOTS = [
   { name: "La", freq: 440.00 }
 ];
 
+// Diverse melody templates / contours
+const MELODY_PATTERNS = [
+  {
+    name: "Arpège classique",
+    notes: [
+      { deg: 1, delay: 0.0, dur: 0.45 },
+      { deg: 3, delay: 0.28, dur: 0.45 },
+      { deg: 5, delay: 0.56, dur: 0.45 },
+      { deg: 8, delay: 0.84, dur: 0.55 },
+      { deg: 5, delay: 1.15, dur: 0.45 },
+      { deg: 3, delay: 1.42, dur: 0.65 }
+    ],
+    chordDelay: 1.75,
+    totalTime: 2.65
+  },
+  {
+    name: "Petite chansonnette",
+    notes: [
+      { deg: 1, delay: 0.0, dur: 0.35 },
+      { deg: 2, delay: 0.25, dur: 0.35 },
+      { deg: 3, delay: 0.50, dur: 0.45 },
+      { deg: 4, delay: 0.75, dur: 0.35 },
+      { deg: 5, delay: 1.00, dur: 0.55 },
+      { deg: 3, delay: 1.35, dur: 0.45 },
+      { deg: 1, delay: 1.65, dur: 0.75 }
+    ],
+    chordDelay: 1.95,
+    totalTime: 2.85
+  },
+  {
+    name: "La fanfare sautillante",
+    notes: [
+      { deg: 1, delay: 0.0, dur: 0.25 },
+      { deg: 1, delay: 0.22, dur: 0.25 },
+      { deg: 3, delay: 0.48, dur: 0.35 },
+      { deg: 5, delay: 0.74, dur: 0.45 },
+      { deg: 8, delay: 1.05, dur: 0.85 }
+    ],
+    chordDelay: 1.45,
+    totalTime: 2.35
+  },
+  {
+    name: "La cascade",
+    notes: [
+      { deg: 8, delay: 0.0, dur: 0.35 },
+      { deg: 5, delay: 0.24, dur: 0.35 },
+      { deg: 3, delay: 0.48, dur: 0.35 },
+      { deg: 2, delay: 0.72, dur: 0.35 },
+      { deg: 1, delay: 0.96, dur: 0.75 }
+    ],
+    chordDelay: 1.35,
+    totalTime: 2.25
+  },
+  {
+    name: "Accord boîte à musique",
+    notes: [
+      { deg: 1, delay: 0.0, dur: 0.7 },
+      { deg: 3, delay: 0.12, dur: 0.7 },
+      { deg: 5, delay: 0.24, dur: 0.7 },
+      { deg: 8, delay: 0.36, dur: 0.9 },
+      { deg: 5, delay: 0.95, dur: 0.45 },
+      { deg: 3, delay: 1.25, dur: 0.75 }
+    ],
+    chordDelay: 1.6,
+    totalTime: 2.5
+  },
+  {
+    name: "Balancier waltz",
+    notes: [
+      { deg: 1, delay: 0.0, dur: 0.45 },
+      { deg: 3, delay: 0.30, dur: 0.35 },
+      { deg: 5, delay: 0.58, dur: 0.35 },
+      { deg: 3, delay: 0.86, dur: 0.45 },
+      { deg: 1, delay: 1.18, dur: 0.75 }
+    ],
+    chordDelay: 1.5,
+    totalTime: 2.4
+  }
+];
+
 let score = 0;
 let streak = 0;
 let level = 1;
 let currentMode = "MAJOR"; // "MAJOR" or "MINOR"
 let currentRoot = ROOTS[0];
+let currentPattern = MELODY_PATTERNS[0];
 let answered = false;
 let isPlaying = false;
 let voices = [];
@@ -390,6 +471,19 @@ function noteFreq(rootFreq, semitones) {
   return rootFreq * Math.pow(2, semitones / 12);
 }
 
+function getScaleOffsets(isMajor) {
+  return {
+    1: 0,
+    2: 2,
+    3: isMajor ? 4 : 3, // Major 3rd (+4) vs Minor 3rd (+3)
+    4: 5,
+    5: 7,
+    6: isMajor ? 9 : 8,
+    7: isMajor ? 11 : 10,
+    8: 12
+  };
+}
+
 // Warm harp / glockenspiel / marimba synth
 function playTone(freq, time, duration = 0.65, gainLevel = 0.35) {
   const ctx = getAudioContext();
@@ -433,7 +527,7 @@ function sfxGentleTryAgain() {
 }
 
 function playMusicPhrase() {
-  if (isPlaying) return;
+  if (isPlaying || !currentPattern) return;
   isPlaying = true;
   playBtn.classList.add("playing");
   playBtn.innerHTML = "<span>🔊</span> Écoute bien...";
@@ -442,32 +536,24 @@ function playMusicPhrase() {
   const ctx = getAudioContext();
   const rFreq = currentRoot.freq;
   const isMajor = currentMode === "MAJOR";
-  const thirdInterval = isMajor ? 4 : 3; // Major 3rd (+4 st) vs Minor 3rd (+3 st)
-
-  // Melodic notes sequence: Root -> 3rd -> 5th -> Octave -> 5th -> 3rd -> Final chord bloom
-  const sequence = [
-    { semitones: 0, delay: 0.0, dur: 0.45 },
-    { semitones: thirdInterval, delay: 0.28, dur: 0.45 },
-    { semitones: 7, delay: 0.56, dur: 0.45 },
-    { semitones: 12, delay: 0.84, dur: 0.55 },
-    { semitones: 7, delay: 1.15, dur: 0.45 },
-    { semitones: thirdInterval, delay: 1.42, dur: 0.65 }
-  ];
+  const scale = getScaleOffsets(isMajor);
 
   const startTime = ctx.currentTime + 0.1;
 
-  sequence.forEach(item => {
-    const f = noteFreq(rFreq, item.semitones);
+  // Play melodic notes
+  currentPattern.notes.forEach(item => {
+    const semitones = scale[item.deg] !== undefined ? scale[item.deg] : 0;
+    const f = noteFreq(rFreq, semitones);
     playTone(f, startTime + item.delay, item.dur);
   });
 
-  // Final sustained harmony bloom
+  // Final sustained harmony bloom (Root + 3rd + 5th)
   setTimeout(() => {
     const tBloom = ctx.currentTime;
-    playTone(noteFreq(rFreq, 0), tBloom, 0.9, 0.2);
-    playTone(noteFreq(rFreq, thirdInterval), tBloom, 0.9, 0.2);
-    playTone(noteFreq(rFreq, 7), tBloom, 0.9, 0.2);
-  }, 1750);
+    playTone(noteFreq(rFreq, scale[1]), tBloom, 0.9, 0.2);
+    playTone(noteFreq(rFreq, scale[3]), tBloom, 0.9, 0.2);
+    playTone(noteFreq(rFreq, scale[5]), tBloom, 0.9, 0.2);
+  }, currentPattern.chordDelay * 1000);
 
   setTimeout(() => {
     isPlaying = false;
@@ -476,7 +562,7 @@ function playMusicPhrase() {
     if (!answered) {
       characterEl.className = "character-visual";
     }
-  }, 2700);
+  }, currentPattern.totalTime * 1000);
 }
 
 function newRound() {
@@ -493,9 +579,10 @@ function newRound() {
   btnMajor.disabled = false;
   btnMinor.disabled = false;
 
-  // Pick random mode & root
+  // Pick random mode, root & melody pattern
   currentMode = Math.random() < 0.5 ? "MAJOR" : "MINOR";
   currentRoot = ROOTS[Math.floor(Math.random() * ROOTS.length)];
+  currentPattern = MELODY_PATTERNS[Math.floor(Math.random() * MELODY_PATTERNS.length)];
 
   setTimeout(() => {
     playMusicPhrase();
