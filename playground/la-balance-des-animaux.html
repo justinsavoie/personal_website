@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La balance des animaux</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: manipulation;
+  color: #065f46;
+  padding: 12px;
+}
+
+.app {
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 900;
+  font-size: 16px;
+  color: #047857;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 8px 14px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(4, 120, 87, 0.1);
+}
+
+.top-bar .stats {
+  display: flex;
+  gap: 14px;
+}
+
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.15);
+}
+
+/* ⚖️ Scale Construction */
+.scale-stage {
+  height: 200px;
+  background: linear-gradient(180deg, #f0fdf4 0%, #e6fcf5 100%);
+  border-radius: 20px;
+  border: 3px dashed #a7f3d0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Pillar & Pivot */
+.scale-base {
+  position: absolute;
+  bottom: 12px;
+  width: 50px;
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 2;
+}
+
+.scale-fulcrum {
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 75px solid #0f766e;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+}
+
+.scale-foot {
+  width: 65px;
+  height: 12px;
+  background: #115e59;
+  border-radius: 6px;
+}
+
+/* Needle / Pointer in the center */
+.scale-needle {
+  position: absolute;
+  top: 38px;
+  width: 4px;
+  height: 28px;
+  background: #dc2626;
+  border-radius: 2px;
+  transform-origin: bottom center;
+  transition: transform 0.3s cubic-bezier(.2,.8,.3,1.2);
+  z-index: 5;
+}
+
+/* Crossbeam */
+.scale-beam-wrap {
+  position: absolute;
+  top: 65px;
+  width: 290px;
+  height: 14px;
+  z-index: 10;
+  transform-origin: center center;
+  transition: transform 0.4s cubic-bezier(.34, 1.4, .64, 1);
+}
+
+.scale-beam {
+  width: 100%;
+  height: 12px;
+  background: linear-gradient(180deg, #14b8a6 0%, #0d9488 100%);
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+.scale-beam-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  background: #f59e0b;
+  border: 3px solid #b45309;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 12;
+}
+
+/* Hanging Pans */
+.pan-hanger {
+  position: absolute;
+  top: 6px;
+  width: 100px;
+  height: 105px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: top center;
+  transition: transform 0.4s cubic-bezier(.34, 1.4, .64, 1);
+}
+
+.pan-left { left: -10px; }
+.pan-right { right: -10px; }
+
+.hanger-strings {
+  width: 80px;
+  height: 48px;
+  position: relative;
+}
+
+.hanger-strings::before, .hanger-strings::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 52px;
+  background: #64748b;
+}
+.hanger-strings::before { left: 8px; transform: rotate(20deg); transform-origin: top; }
+.hanger-strings::after { right: 8px; transform: rotate(-20deg); transform-origin: top; }
+
+.pan-plate {
+  width: 90px;
+  min-height: 48px;
+  background: #ffffff;
+  border: 3px solid #0d9488;
+  border-radius: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 4px;
+  position: relative;
+}
+
+.pan-weight-tag {
+  position: absolute;
+  top: -14px;
+  background: #0f766e;
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+/* Pan item chip */
+.pan-item {
+  font-size: 20px;
+  line-height: 1;
+  user-select: none;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.pan-item:active { transform: scale(0.85); }
+
+/* Equilibrium pulse effect */
+.scale-stage.balanced {
+  background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #10b981;
+}
+
+.scale-stage.balanced .scale-beam {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+}
+
+.scale-stage.balanced .pan-plate {
+  border-color: #10b981;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+}
+
+/* Item Tray / Supply */
+.tray-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tray-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #065f46;
+  text-align: center;
+}
+
+.tray-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tray-btn {
+  background: #f0fdf4;
+  border: 3px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #86efac;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.tray-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #86efac;
+}
+
+.tray-icon {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.tray-name {
+  font-size: 13px;
+  font-weight: 900;
+  color: #065f46;
+}
+
+.tray-weight {
+  font-size: 11px;
+  font-weight: 800;
+  color: #047857;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.message {
+  min-height: 24px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 900;
+  color: #047857;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 6px;
+}
+
+button.ctrl {
+  border: none;
+  border-radius: 14px;
+  background: #059669;
+  color: white;
+  font-weight: 900;
+  font-size: 16px;
+  padding: 12px 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #047857;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+button.ctrl:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #047857;
+}
+
+button.ctrl.ghost {
+  background: #ffffff;
+  color: #047857;
+  border: 3px solid #a7f3d0;
+  box-shadow: 0 3px 0 #6ee7b7;
+}
+
+button.ctrl.validate {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 0 #047857;
+}
+
+button.ctrl:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none !important;
+}
+
+@media (max-height: 680px) {
+  .scale-stage { height: 180px; }
+  .scale-beam-wrap { top: 55px; width: 260px; }
+  .tray-icon { font-size: 24px; }
+  .tray-btn { padding: 6px 2px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top-bar">
+    <div class="stats">
+      <div>⭐ <span id="score">0</span></div>
+      <div>🔥 <span id="streak">0</span></div>
+    </div>
+    <div>⚖️ Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="scale-stage" id="stage">
+      <div class="scale-needle" id="needle"></div>
+
+      <div class="scale-beam-wrap" id="beam-wrap">
+        <div class="scale-beam">
+          <div class="scale-beam-center"></div>
+        </div>
+
+        <div class="pan-hanger pan-left" id="pan-left-hanger">
+          <div class="hanger-strings"></div>
+          <div class="pan-plate" id="pan-left">
+            <span class="pan-weight-tag" id="left-tag">0 kg</span>
+          </div>
+        </div>
+
+        <div class="pan-hanger pan-right" id="pan-right-hanger">
+          <div class="hanger-strings"></div>
+          <div class="pan-plate" id="pan-right">
+            <span class="pan-weight-tag" id="right-tag">0 kg</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scale-base">
+        <div class="scale-fulcrum"></div>
+        <div class="scale-foot"></div>
+      </div>
+    </div>
+
+    <div class="tray-section">
+      <div class="tray-title">Touche un animal pour l'ajouter sur le plateau de droite :</div>
+      <div class="tray-grid" id="tray"></div>
+    </div>
+
+    <div class="message" id="message">Équilibre la balance !</div>
+
+    <div class="controls">
+      <button class="ctrl validate" id="validate-btn" disabled>Valider ✨</button>
+      <button class="ctrl ghost" id="clear-btn">Effacer ↩️</button>
+      <button class="ctrl ghost" id="voice-btn">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Catalog of items
+const ITEMS = {
+  CHICK:  { id: "CHICK",  name: "Poussin", icon: "🐥", weight: 1 },
+  RABBIT: { id: "RABBIT", name: "Lapin",   icon: "🐰", weight: 2 },
+  FOX:    { id: "FOX",    name: "Renard",  icon: "🦊", weight: 3 },
+  SHEEP:  { id: "SHEEP",  name: "Mouton",  icon: "🐑", weight: 4 },
+  PIG:    { id: "PIG",    name: "Cochon",  icon: "🐷", weight: 5 },
+  BEAR:   { id: "BEAR",   name: "Ours",    icon: "🐻", weight: 6 },
+  LION:   { id: "LION",   name: "Lion",    icon: "🦁", weight: 8 },
+  ELEPHANT:{ id:"ELEPHANT",name:"Éléphant",icon: "🐘", weight: 10 }
+};
+
+// Target animal challenges per level
+const ROUNDS_BY_LEVEL = {
+  1: [
+    { targetItems: [{ ...ITEMS.RABBIT, count: 1 }], availableTray: [ITEMS.CHICK, ITEMS.RABBIT] },
+    { targetItems: [{ ...ITEMS.FOX, count: 1 }], availableTray: [ITEMS.CHICK, ITEMS.RABBIT] },
+    { targetItems: [{ ...ITEMS.SHEEP, count: 1 }], availableTray: [ITEMS.CHICK, ITEMS.RABBIT] },
+    { targetItems: [{ ...ITEMS.PIG, count: 1 }], availableTray: [ITEMS.CHICK, ITEMS.RABBIT] },
+    { targetItems: [{ ...ITEMS.BEAR, count: 1 }], availableTray: [ITEMS.CHICK, ITEMS.RABBIT] }
+  ],
+  2: [
+    { targetItems: [{ ...ITEMS.BEAR, count: 1 }], availableTray: [ITEMS.CHICK, ITEMS.RABBIT, ITEMS.FOX] },
+    { targetItems: [{ ...ITEMS.LION, count: 1 }], availableTray: [ITEMS.RABBIT, ITEMS.FOX, ITEMS.SHEEP] },
+    { targetItems: [{ ...ITEMS.PIG, count: 1 }, { ...ITEMS.RABBIT, count: 1 }], availableTray: [ITEMS.CHICK, ITEMS.RABBIT, ITEMS.FOX] },
+    { targetItems: [{ ...ITEMS.ELEPHANT, count: 1 }], availableTray: [ITEMS.RABBIT, ITEMS.FOX, ITEMS.PIG] }
+  ],
+  3: [
+    { targetItems: [{ ...ITEMS.ELEPHANT, count: 1 }, { ...ITEMS.RABBIT, count: 1 }], availableTray: [ITEMS.RABBIT, ITEMS.FOX, ITEMS.PIG] },
+    { targetItems: [{ ...ITEMS.LION, count: 1 }, { ...ITEMS.FOX, count: 1 }], availableTray: [ITEMS.CHICK, ITEMS.FOX, ITEMS.PIG] },
+    { targetItems: [{ ...ITEMS.BEAR, count: 2 }], availableTray: [ITEMS.RABBIT, ITEMS.SHEEP, ITEMS.BEAR] }
+  ]
+};
+
+let score = 0;
+let streak = 0;
+let level = 1;
+let currentRound = null;
+let targetWeight = 0;
+let rightItems = [];
+let answered = false;
+let voices = [];
+let voicesReady = false;
+let audioCtx = null;
+
+const scoreEl = document.getElementById("score");
+const streakEl = document.getElementById("streak");
+const levelEl = document.getElementById("level");
+const stageEl = document.getElementById("stage");
+const needleEl = document.getElementById("needle");
+const beamWrap = document.getElementById("beam-wrap");
+const panLeftHanger = document.getElementById("pan-left-hanger");
+const panRightHanger = document.getElementById("pan-right-hanger");
+const panLeft = document.getElementById("pan-left");
+const panRight = document.getElementById("pan-right");
+const leftTag = document.getElementById("left-tag");
+const rightTag = document.getElementById("right-tag");
+const trayEl = document.getElementById("tray");
+const messageEl = document.getElementById("message");
+const validateBtn = document.getElementById("validate-btn");
+const clearBtn = document.getElementById("clear-btn");
+const voiceBtn = document.getElementById("voice-btn");
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+// Text-to-speech
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (voices.length > 0) voicesReady = true;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text) {
+  if (!voicesReady && !speechSynthesis.getVoices().length) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const v = voices.find(v => v.lang.startsWith("fr"));
+  if (v) utter.voice = v;
+  utter.lang = "fr-FR";
+  utter.rate = 0.95;
+  speechSynthesis.speak(utter);
+}
+
+// Pleasant pop & chime synth
+function playPop(pitch = 440) {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(pitch, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 1.5, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.1);
+  } catch(e) {}
+}
+
+function sfxVictory() {
+  const ctx = getAudioContext();
+  const notes = [523.25, 659.25, 783.99, 1046.50];
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+    const t = ctx.currentTime + i * 0.09;
+    gain.gain.setValueAtTime(0.25, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.35);
+  });
+}
+
+function updateScalePhysics() {
+  const currentRightWeight = rightItems.reduce((acc, it) => acc + it.weight, 0);
+  rightTag.textContent = `${currentRightWeight} kg`;
+
+  // Calculate tilt angle: capped between -16deg (left down) and +16deg (right down)
+  const diff = currentRightWeight - targetWeight;
+  const tilt = Math.max(-16, Math.min(16, diff * 3.5));
+
+  beamWrap.style.transform = `rotate(${tilt}deg)`;
+  // Keep hanging pans vertical
+  panLeftHanger.style.transform = `rotate(${-tilt}deg)`;
+  panRightHanger.style.transform = `rotate(${-tilt}deg)`;
+  needleEl.style.transform = `rotate(${-tilt * 1.4}deg)`;
+
+  if (diff === 0 && rightItems.length > 0) {
+    stageEl.classList.add("balanced");
+    messageEl.textContent = "Équilibre parfait ! Appuie sur Valider ✨";
+    validateBtn.disabled = false;
+  } else {
+    stageEl.classList.remove("balanced");
+    validateBtn.disabled = true;
+
+    if (diff < 0) {
+      messageEl.textContent = "Trop léger à droite ! Ajoute des animaux ⬇️";
+    } else if (diff > 0) {
+      messageEl.textContent = "Trop lourd à droite ! Enlève un animal ⬆️";
+    } else {
+      messageEl.textContent = "Pose des animaux pour équilibrer la balance !";
+    }
+  }
+}
+
+function renderLeftPan() {
+  panLeft.innerHTML = "";
+  let totalLeft = 0;
+
+  currentRound.targetItems.forEach(item => {
+    totalLeft += item.weight * (item.count || 1);
+    for (let i = 0; i < (item.count || 1); i++) {
+      const span = document.createElement("span");
+      span.className = "pan-item";
+      span.textContent = item.icon;
+      span.title = `${item.name} (${item.weight} kg)`;
+      panLeft.appendChild(span);
+    }
+  });
+
+  targetWeight = totalLeft;
+  leftTag.textContent = `${targetWeight} kg`;
+  panLeft.appendChild(leftTag);
+}
+
+function renderRightPan() {
+  panRight.innerHTML = "";
+  rightItems.forEach((item, index) => {
+    const span = document.createElement("span");
+    span.className = "pan-item";
+    span.textContent = item.icon;
+    span.title = "Touche pour enlever";
+    span.addEventListener("click", () => {
+      if (answered) return;
+      rightItems.splice(index, 1);
+      playPop(320);
+      renderRightPan();
+      updateScalePhysics();
+    });
+    panRight.appendChild(span);
+  });
+  panRight.appendChild(rightTag);
+}
+
+function renderTray() {
+  trayEl.innerHTML = "";
+  currentRound.availableTray.forEach(item => {
+    const btn = document.createElement("button");
+    btn.className = "tray-btn";
+
+    const icon = document.createElement("div");
+    icon.className = "tray-icon";
+    icon.textContent = item.icon;
+
+    const name = document.createElement("div");
+    name.className = "tray-name";
+    name.textContent = item.name;
+
+    const wTag = document.createElement("div");
+    wTag.className = "tray-weight";
+    wTag.textContent = `${item.weight} kg`;
+
+    btn.appendChild(icon);
+    btn.appendChild(name);
+    btn.appendChild(wTag);
+
+    btn.addEventListener("click", () => {
+      if (answered) return;
+      rightItems.push(item);
+      playPop(420 + item.weight * 40);
+      renderRightPan();
+      updateScalePhysics();
+    });
+
+    trayEl.appendChild(btn);
+  });
+}
+
+function newRound() {
+  answered = false;
+  rightItems = [];
+  validateBtn.disabled = true;
+  stageEl.classList.remove("balanced");
+
+  const pool = ROUNDS_BY_LEVEL[level] || ROUNDS_BY_LEVEL[1];
+  currentRound = pool[Math.floor(Math.random() * pool.length)];
+
+  renderLeftPan();
+  renderRightPan();
+  renderTray();
+  updateScalePhysics();
+}
+
+validateBtn.addEventListener("click", () => {
+  if (answered || validateBtn.disabled) return;
+  answered = true;
+
+  score += 10;
+  streak += 1;
+  scoreEl.textContent = score;
+  streakEl.textContent = streak;
+
+  sfxVictory();
+  messageEl.textContent = "🎉 BRAVO ! La balance est parfaitement équilibrée !";
+  speak("Bravo ! La balance est en équilibre !");
+
+  if (streak % 4 === 0 && level < 3) {
+    level += 1;
+    levelEl.textContent = level;
+    messageEl.textContent = `🎉 Niveau ${level} débloqué !`;
+    speak(`Niveau ${level} débloqué !`);
+  }
+
+  setTimeout(() => {
+    newRound();
+  }, 1800);
+});
+
+clearBtn.addEventListener("click", () => {
+  if (answered) return;
+  rightItems = [];
+  playPop(300);
+  renderRightPan();
+  updateScalePhysics();
+});
+
+voiceBtn.addEventListener("click", () => {
+  speak(`La balance pèse ${targetWeight} kilos à gauche. Ajoute les bons animaux à droite pour trouver l'équilibre !`);
+});
+
+newRound();
+</script>
+</body>
+</html>
