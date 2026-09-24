@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Aurélien et Maxence construisent un bateau</title>
+  <style>
+    /* Vendored from Google Fonts (latin subset, variable weight) so the book works offline. */
+    @font-face {
+      font-family: 'Fredoka';
+      font-weight: 300 700;
+      font-display: swap;
+      src: url(../../assets/fonts/fredoka-latin.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Nunito';
+      font-weight: 200 1000;
+      font-display: swap;
+      src: url(../../assets/fonts/nunito-latin.woff2) format('woff2');
+    }
+
+    :root {
+      --bg-color: #f7f5f0;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --accent: #f59e0b;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow-x: hidden;
+      padding: 12px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px 10px 12px;
+    }
+
+    .book-title {
+      font-family: 'Fredoka', cursive, sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1e3a8a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+    }
+
+    .page-counter {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.05);
+      padding: 4px 12px;
+      border-radius: 9999px;
+    }
+
+    /* Progress bar */
+    .progress-bar-container {
+      width: 100%;
+      max-width: 720px;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #6366f1);
+      width: 8.33%;
+      transition: width 0.3s ease;
+      border-radius: 999px;
+    }
+
+    /* Book Stage */
+    main {
+      width: 100%;
+      max-width: 720px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .slide {
+      display: none;
+      flex-direction: column;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: fadeIn 0.25s ease-out;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Image Container (Top) */
+    .slide-image-wrapper {
+      width: 100%;
+      background-color: #e2e8f0;
+      aspect-ratio: 4 / 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Text Container (Bottom) */
+    .slide-text-wrapper {
+      padding: 22px 20px 24px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 110px;
+      background: #ffffff;
+    }
+
+    .slide-text {
+      font-size: 1.35rem;
+      line-height: 1.55;
+      font-weight: 600;
+      text-align: center;
+      color: #1f2937;
+    }
+
+    /* Sound effects & highlights */
+    .highlight {
+      font-family: 'Fredoka', cursive, sans-serif;
+      color: #ea580c;
+      font-weight: 700;
+      font-size: 1.45rem;
+    }
+
+    /* Navigation Controls */
+    footer {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 4px 6px 4px;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #ffffff;
+      color: #1e3a8a;
+      border: 2px solid #dbeafe;
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      padding: 12px 22px;
+      border-radius: 9999px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+      min-width: 130px;
+      user-select: none;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: #eff6ff;
+      border-color: #93c5fd;
+      transform: translateY(-1px);
+    }
+
+    .nav-btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: #e5e7eb;
+      color: #9ca3af;
+    }
+
+    .nav-btn.primary {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+
+    .nav-btn.primary:hover:not(:disabled) {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    /* Dot indicators */
+    .dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #d1d5db;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dot.active {
+      background: #2563eb;
+      transform: scale(1.35);
+      width: 10px;
+      height: 10px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      body {
+        padding: 8px;
+      }
+      .book-title {
+        font-size: 1.0rem;
+      }
+      .slide-text {
+        font-size: 1.15rem;
+        line-height: 1.45;
+      }
+      .nav-btn {
+        min-width: 100px;
+        padding: 10px 16px;
+        font-size: 0.95rem;
+      }
+      .dots {
+        display: none; /* Hide dots on very small screens to give room to buttons */
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="book-title">🚢 Aurélien et Maxence construisent un bateau</div>
+    <div class="page-counter" id="page-counter">Page 1 / 12</div>
+  </header>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar-fill" id="progress-bar"></div>
+  </div>
+
+  <main id="book-container">
+
+    <section class="slide active" data-page="1">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_01.jpg" alt="Page 1" loading="eager">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">Cet après-midi, Aurélien renverse son grand bac de Lego sur le plancher du salon. Il veut fabriquer un grand bateau !</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="2">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_02.jpg" alt="Page 2" loading="eager">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">Maxence arrive à quatre pattes. Il regarde toutes ces belles couleurs vives avec de grands yeux tout ronds.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="3">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_03.jpg" alt="Page 3" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">« Regarde, Maxence ! On va construire le plus beau paquebot du monde », dit Aurélien très fier.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="4">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_04.jpg" alt="Page 4" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">Aurélien pose de longs Lego gris pour former le bas de la coque. C’est la base solide du bateau.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="5">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_05.jpg" alt="Page 5" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">Maxence tend sa petite main potelée et attrape un joli Lego jaune. Il veut aider son grand frère !</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="6">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_06.jpg" alt="Page 6" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">Aurélien monte la cabine avec des Lego roses et violets. Il ajoute une grande cheminée noire tout en haut.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="7">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_07.jpg" alt="Page 7" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">Maxence veut poser son Lego jaune… mais son pied accroche la cheminée. <span class="highlight">Patatras !</span> La tour noire dégringole sur le tapis.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="8">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_08.jpg" alt="Page 8" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">« Oh non ! » crie Aurélien, un peu fâché. Maxence baisse la tête, tout triste d'avoir cassé le jeu.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="9">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_09.jpg" alt="Page 9" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">Maman s’approche en souriant : « Ce n’est rien Aurélien. Montre doucement à Maxence comment appuyer sur le Lego. »</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="10">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_10.jpg" alt="Page 10" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">Aurélien prend la main de Maxence : « Viens, on appuie ensemble. <span class="highlight">Clic !</span> Voilà, c’est bien réparé ! »</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="11">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_11.jpg" alt="Page 11" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">Aurélien installe un petit bonhomme en plastique tout en haut de la cabine. C’est le capitaine du paquebot !</p>
+      </div>
+    </section>
+
+    <section class="slide" data-page="12">
+      <div class="slide-image-wrapper">
+        <img class="slide-image" src="images/page_12.jpg" alt="Page 12" loading="lazy">
+      </div>
+      <div class="slide-text-wrapper">
+        <p class="slide-text">« <span class="highlight">Tchou-tchou, en route !</span> » crie Aurélien. Maxence applaudit très fort en rigolant. Le voyage peut enfin commencer !</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <button class="nav-btn" id="prev-btn" aria-label="Page précédente">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Précédent
+    </button>
+
+    <div class="dots" id="dots-container">
+      <div class="dot active" data-index="0"></div>
+      <div class="dot" data-index="1"></div>
+      <div class="dot" data-index="2"></div>
+      <div class="dot" data-index="3"></div>
+      <div class="dot" data-index="4"></div>
+      <div class="dot" data-index="5"></div>
+      <div class="dot" data-index="6"></div>
+      <div class="dot" data-index="7"></div>
+      <div class="dot" data-index="8"></div>
+      <div class="dot" data-index="9"></div>
+      <div class="dot" data-index="10"></div>
+      <div class="dot" data-index="11"></div>
+    </div>
+
+    <button class="nav-btn primary" id="next-btn" aria-label="Page suivante">
+      Suivant
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </footer>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const dots = Array.from(document.querySelectorAll('.dot'));
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const pageCounter = document.getElementById('page-counter');
+    const progressBar = document.getElementById('progress-bar');
+    const totalPages = slides.length;
+    let currentIndex = 0;
+
+    function updateView() {
+      slides.forEach((slide, idx) => {
+        slide.classList.toggle('active', idx === currentIndex);
+      });
+
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentIndex);
+      });
+
+      pageCounter.textContent = `Page ${currentIndex + 1} / ${totalPages}`;
+      progressBar.style.width = `${((currentIndex + 1) / totalPages) * 100}%`;
+
+      prevBtn.disabled = currentIndex === 0;
+      if (currentIndex === totalPages - 1) {
+        nextBtn.innerHTML = `Terminer <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+      } else {
+        nextBtn.innerHTML = `Suivant <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`;
+      }
+    }
+
+    function goTo(index) {
+      if (index >= 0 && index < totalPages) {
+        currentIndex = index;
+        updateView();
+      }
+    }
+
+    prevBtn.addEventListener('click', () => goTo(currentIndex - 1));
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex < totalPages - 1) {
+        goTo(currentIndex + 1);
+      } else {
+        // Reset to first page if clicked on finish
+        goTo(0);
+      }
+    });
+
+    dots.forEach((dot, idx) => {
+      dot.addEventListener('click', () => goTo(idx));
+    });
+
+    // Keyboard navigation (Left / Right arrows)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        if (currentIndex < totalPages - 1) goTo(currentIndex + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        if (currentIndex > 0) goTo(currentIndex - 1);
+      }
+    });
+
+    // Touch swipe gesture support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const stage = document.getElementById('book-container');
+
+    stage.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    stage.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 40) {
+        if (diff < 0 && currentIndex < totalPages - 1) {
+          goTo(currentIndex + 1); // Swipe left -> next
+        } else if (diff > 0 && currentIndex > 0) {
+          goTo(currentIndex - 1); // Swipe right -> prev
+        }
+      }
+    }
+
+    updateView();
+  </script>
+</body>
+</html>
