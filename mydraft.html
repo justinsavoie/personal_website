@@ -563,6 +563,17 @@
       text-overflow: ellipsis;
     }
 
+    /* Unlisted picks banner */
+    .unlisted-banner {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #fde68a;
+      margin-top: 10px;
+    }
+
     /* Search Box */
     .search-input {
       width: 100%;
@@ -881,6 +892,7 @@
       <div class="league-grid" id="leagueGridContainer">
         <!-- Rendered by JS -->
       </div>
+      <div id="unlistedBannerContainer"></div>
     </div>
 
   </main>
@@ -923,6 +935,16 @@
         .replace(/[^a-z0-9]/g, '');
     }
 
+    // Unlisted position detection
+    function detectUnlistedPosition(str) {
+      if (!str) return null;
+      const s = str.trim();
+      if (/[\(\[\s\-_—\/]F[\)\]\s\-_—\/]?$/i.test(s) || /(forward|fwd)/i.test(s) || /—\s*F/i.test(s) || s.toLowerCase().includes('unlisted forward')) return 'F';
+      if (/[\(\[\s\-_—\/]D[\)\]\s\-_—\/]?$/i.test(s) || /(defense|def|dman)/i.test(s) || /—\s*D/i.test(s) || s.toLowerCase().includes('unlisted defenseman')) return 'D';
+      if (/[\(\[\s\-_—\/]G[\)\]\s\-_—\/]?$/i.test(s) || /(goalie|g)/i.test(s) || /—\s*G/i.test(s) || s.toLowerCase().includes('unlisted goalie')) return 'G';
+      return null;
+    }
+
     // Initialize Alias Dictionary
     const ALIAS_MAP = new Map();
     const PLAYER_MAP = new Map();
@@ -946,11 +968,12 @@
       ALIAS_MAP.get(norm).add(pid);
     }
 
-    // Run Scarcity Heuristic (exact methodology of draft_helper.py)
+    // Run Scarcity Heuristic (exact methodology of draft_helper.py + unlisted player support)
     function runAnalysis(participants, meName) {
       const targets = { F: 9, D: 2, G: 2 };
       const picked = new Set();
       const counts = {};
+      const unlistedPicks = [];
 
       for (const part of participants) {
         counts[part.owner] = { F: 0, D: 0, G: 0, total: 0, lastPick: null };
@@ -964,6 +987,19 @@
             counts[part.owner][p.pos]++;
             counts[part.owner].total++;
             counts[part.owner].lastPick = p.name;
+          } else {
+            // Unlisted player detected!
+            let pos = detectUnlistedPosition(pickStr);
+            if (!pos) {
+              // If position not specified in text, assign to the position participant needs most
+              if (counts[part.owner].F < targets.F) pos = 'F';
+              else if (counts[part.owner].D < targets.D) pos = 'D';
+              else pos = 'G';
+            }
+            counts[part.owner][pos]++;
+            counts[part.owner].total++;
+            counts[part.owner].lastPick = `${pickStr} (${pos})`;
+            unlistedPicks.push({ owner: part.owner, pick: pickStr, pos });
           }
         }
       }
@@ -1026,7 +1062,8 @@
         candidates,
         topPick: candidates[0] || null,
         available,
-        participants
+        participants,
+        unlistedPicks
       };
     }
 
@@ -1065,7 +1102,7 @@
         participants.push({ owner, picks });
       }
 
-      // If sheet only has single placeholder cell (initial state), provide existing board from draft.xlsx
+      // If sheet only has single placeholder cell (initial state), provide existing board
       if (participants.length <= 1 && (!participants[0] || participants[0].picks.length === 0)) {
         return [
           { owner: 'Olivier', picks: ['Connor McDavid — Edm — F [S001]'] },
@@ -1225,6 +1262,15 @@
 
       // 5. Render Opponents League Grid
       renderLeagueGrid(data);
+
+      // 6. Unlisted Picks Info Banner
+      const unlistedContainer = document.getElementById('unlistedBannerContainer');
+      if (data.unlistedPicks && data.unlistedPicks.length > 0) {
+        const items = data.unlistedPicks.map(u => `<strong>${u.pick}</strong> (${u.pos} by ${u.owner})`).join(', ');
+        unlistedContainer.innerHTML = `<div class="unlisted-banner">⚡ <strong>Unlisted picks detected:</strong> ${items} — accurately counted toward positional demand.</div>`;
+      } else {
+        unlistedContainer.innerHTML = '';
+      }
     }
 
     function switchTab(pos) {
