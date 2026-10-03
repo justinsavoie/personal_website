@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b0f17">
+  <title>NHL Draft 2026 Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card-bg: #131b2a;
+      --card-border: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --f-color: #60a5fa;
+      --d-color: #a78bfa;
+      --g-color: #f472b6;
+      --radius: 14px;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font);
+      line-height: 1.5;
+      padding-bottom: 95px;
+      min-height: 100vh;
+    }
+
+    /* Sticky Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 15, 23, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 16px;
+    }
+
+    .nav-container {
+      max-width: 680px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      font-size: 22px;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .sync-status {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.syncing {
+      background: var(--warning);
+      box-shadow: 0 0 8px var(--warning);
+    }
+
+    .status-dot.error {
+      background: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.9); }
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    select.participant-select {
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .icon-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: var(--text-main);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+      background: #334155;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Hero Recommendation Card */
+    .hero-card {
+      background: linear-gradient(135deg, #132238 0%, #0f172a 100%);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px rgba(56, 189, 248, 0.08);
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .hero-player-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-badges {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .badge-pos-F { background: rgba(96, 165, 250, 0.2); color: var(--f-color); border: 1px solid rgba(96, 165, 250, 0.3); }
+    .badge-pos-D { background: rgba(167, 139, 250, 0.2); color: var(--d-color); border: 1px solid rgba(167, 139, 250, 0.3); }
+    .badge-pos-G { background: rgba(244, 114, 182, 0.2); color: var(--g-color); border: 1px solid rgba(244, 114, 182, 0.3); }
+    .badge-team { background: #1e293b; color: var(--text-muted); border: 1px solid #334155; }
+
+    .hero-value-banner {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .hero-value-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero-value-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #6ee7b7;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-value-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .hero-value-number {
+      font-size: 24px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--success);
+      white-space: nowrap;
+    }
+
+    .hero-points-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .hero-points-val {
+      color: #fff;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    /* Roster Slot Pills */
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .roster-pill {
+      background: #182234;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    .roster-pill-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .roster-pill-val {
+      font-size: 16px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: #fff;
+      margin: 2px 0;
+    }
+
+    .roster-pill-sub {
+      font-size: 10px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .roster-pill.full .roster-pill-sub {
+      color: var(--success);
+    }
+
+    /* Scarcity Table */
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .scarcity-card-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #162030;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      gap: 8px;
+    }
+
+    .scarcity-card-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .scarcity-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pos-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+
+    .pos-circle-F { background: rgba(96, 165, 250, 0.2); color: var(--f-color); }
+    .pos-circle-D { background: rgba(167, 139, 250, 0.2); color: var(--d-color); }
+    .pos-circle-G { background: rgba(244, 114, 182, 0.2); color: var(--g-color); }
+
+    .scarcity-details {
+      min-width: 0;
+    }
+
+    .scarcity-top-player {
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .scarcity-cutoff-info {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .scarcity-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .scarcity-value-badge {
+      font-size: 15px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--success);
+    }
+
+    .scarcity-demand-tag {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Tabs for Available Players */
+    .tab-nav {
+      display: flex;
+      gap: 6px;
+      background: #162030;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tab-btn.active {
+      background: #253347;
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-count {
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-family: var(--font-mono);
+    }
+
+    /* Player Table / List */
+    .player-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #162030;
+      border-radius: 8px;
+      font-size: 13px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .player-row:active {
+      background: #233145;
+      transform: scale(0.99);
+    }
+
+    .player-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .player-rank {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      width: 22px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .player-name {
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .player-points {
+      font-weight: 800;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Opponents Table */
+    .league-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+    }
+
+    .league-user-card {
+      background: #162030;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #1e293b;
+    }
+
+    .league-user-card.active {
+      border-color: var(--accent);
+      background: #17263c;
+    }
+
+    .league-user-name {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .league-user-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .league-user-last-pick {
+      font-size: 10px;
+      color: #cbd5e1;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #233145;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Search Box */
+    .search-input {
+      width: 100%;
+      background: #162030;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: var(--font);
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e293b;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid #334155;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Sheet Link Footer Bar */
+    .mobile-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(11, 15, 23, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--card-border);
+      padding: 10px 16px;
+      z-index: 100;
+    }
+
+    .mobile-bar-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-sheet {
+      flex: 1;
+      background: #107c41;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(16, 124, 65, 0.3);
+    }
+
+    .btn-sheet:active {
+      transform: scale(0.98);
+      background: #0d6334;
+    }
+
+    .btn-refresh {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 0 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .btn-refresh:active {
+      transform: scale(0.96);
+    }
+
+    /* Modal / Config Drawer */
+    .config-box {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      background: #162030;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .config-box.open {
+      display: block;
+    }
+
+    .config-input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin-top: 6px;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Top Header -->
+  <header>
+    <div class="nav-container">
+      <div class="brand">
+        <span class="brand-icon">🏒</span>
+        <div>
+          <div class="brand-title">NHL Draft 2026</div>
+          <div class="sync-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="syncText">Connecting to Sheet...</span>
+          </div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <select class="participant-select" id="meSelect" onchange="onSelectMe(this.value)">
+          <option value="Justin">Justin</option>
+          <option value="Olivier">Olivier</option>
+          <option value="Francois">Francois</option>
+          <option value="Luc">Luc</option>
+          <option value="Manou">Manou</option>
+          <option value="Pierre">Pierre</option>
+          <option value="Jean">Jean</option>
+        </select>
+        <button class="icon-btn" onclick="toggleConfig()" title="Settings">⚙️</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main>
+
+    <!-- Config drawer (hidden by default) -->
+    <div class="config-box" id="configBox">
+      <div><strong>Google Sheet ID:</strong></div>
+      <input type="text" class="config-input" id="sheetIdInput" value="1icHGh1Q-f_JDt8D4rUyEZKk0XI3qdcxDiaY1nVCLB4w" onchange="saveSheetId(this.value)">
+      <div style="margin-top: 10px; display: flex; gap: 8px;">
+        <button onclick="triggerSync()" style="flex:1; padding: 8px; background:#2563eb; color:#fff; border:none; border-radius:6px; font-weight:700; cursor:pointer;">Save & Re-sync</button>
+        <button onclick="toggleConfig()" style="padding: 8px 14px; background:#334155; color:#fff; border:none; border-radius:6px; font-weight:600; cursor:pointer;">Close</button>
+      </div>
+    </div>
+
+    <!-- 1. Hero Recommendation Card -->
+    <div class="card hero-card" id="heroCard">
+      <div class="hero-tag">⭐ Highest Scarcity Value Pick</div>
+      <div class="hero-name-row">
+        <div class="hero-player-name" id="recName">Nathan MacKinnon</div>
+      </div>
+      <div class="hero-badges">
+        <span class="badge badge-pos-F" id="recPos">F</span>
+        <span class="badge badge-team" id="recTeam">Col</span>
+        <span class="badge" id="recRank" style="background:#1e293b; color:#94a3b8;">#1 Available</span>
+      </div>
+
+      <div class="hero-value-banner">
+        <div class="hero-value-left">
+          <div class="hero-value-title">Position Scarcity Advantage</div>
+          <div class="hero-value-sub" id="recCutoffText">vs. last forward needed (J.T. Miller, 67.0 pts)</div>
+        </div>
+        <div class="hero-value-number" id="recValue">+65.0</div>
+      </div>
+
+      <div class="hero-points-row">
+        <span>Projected Pool Points: <strong class="hero-points-val" id="recPoints">132.0 pts</strong></span>
+        <span>Baseline Cutoff: <strong class="hero-points-val" id="recBaseline">67.0 pts</strong></span>
+      </div>
+    </div>
+
+    <!-- 2. My Roster Status -->
+    <div class="card">
+      <div class="section-title">
+        <span>📋 My Roster Status</span>
+        <span id="myRosterTotal" style="color:#fff; font-family:var(--font-mono); font-size:12px;">1 / 13 Picks</span>
+      </div>
+      <div class="roster-grid">
+        <div class="roster-pill" id="pillF">
+          <div class="roster-pill-label">Forwards</div>
+          <div class="roster-pill-val" id="cntF">1 / 9</div>
+          <div class="roster-pill-sub" id="remF">8 needed</div>
+        </div>
+        <div class="roster-pill" id="pillD">
+          <div class="roster-pill-label">Defense</div>
+          <div class="roster-pill-val" id="cntD">0 / 2</div>
+          <div class="roster-pill-sub" id="remD">2 needed</div>
+        </div>
+        <div class="roster-pill" id="pillG">
+          <div class="roster-pill-label">Goalies</div>
+          <div class="roster-pill-val" id="cntG">0 / 2</div>
+          <div class="roster-pill-sub" id="remG">2 needed</div>
+        </div>
+        <div class="roster-pill">
+          <div class="roster-pill-label">Total</div>
+          <div class="roster-pill-val" id="cntTot">1 / 13</div>
+          <div class="roster-pill-sub" id="remTot">12 left</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Positional Scarcity Breakdown -->
+    <div class="card">
+      <div class="section-title">
+        <span>📊 Positional Scarcity Breakdown</span>
+        <span style="font-size:10px; color:var(--text-muted);">Cutoff based on league demand</span>
+      </div>
+
+      <!-- F Scarcity -->
+      <div class="scarcity-card-item">
+        <div class="scarcity-left">
+          <div class="pos-circle pos-circle-F">F</div>
+          <div class="scarcity-details">
+            <div class="scarcity-top-player" id="scTopF">Nathan MacKinnon (132.0)</div>
+            <div class="scarcity-cutoff-info" id="scCutoffF">Cutoff #60: J.T. Miller (67.0)</div>
+          </div>
+        </div>
+        <div class="scarcity-right">
+          <div class="scarcity-value-badge" id="scValF">+65.0</div>
+          <div class="scarcity-demand-tag" id="scDemandF">Demand: 60</div>
+        </div>
+      </div>
+
+      <!-- D Scarcity -->
+      <div class="scarcity-card-item">
+        <div class="scarcity-left">
+          <div class="pos-circle pos-circle-D">D</div>
+          <div class="scarcity-details">
+            <div class="scarcity-top-player" id="scTopD">Evan Bouchard (90.0)</div>
+            <div class="scarcity-cutoff-info" id="scCutoffD">Cutoff #14: Roman Josi (61.0)</div>
+          </div>
+        </div>
+        <div class="scarcity-right">
+          <div class="scarcity-value-badge" id="scValD">+29.0</div>
+          <div class="scarcity-demand-tag" id="scDemandD">Demand: 14</div>
+        </div>
+      </div>
+
+      <!-- G Scarcity -->
+      <div class="scarcity-card-item">
+        <div class="scarcity-left">
+          <div class="pos-circle pos-circle-G">G</div>
+          <div class="scarcity-details">
+            <div class="scarcity-top-player" id="scTopG">Andrei Vasilevskiy (80.0)</div>
+            <div class="scarcity-cutoff-info" id="scCutoffG">Cutoff #14: Jakub Dobes (54.0)</div>
+          </div>
+        </div>
+        <div class="scarcity-right">
+          <div class="scarcity-value-badge" id="scValG">+26.0</div>
+          <div class="scarcity-demand-tag" id="scDemandG">Demand: 14</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Available Players Tabs -->
+    <div class="card">
+      <div class="section-title">
+        <span>🔥 Top Available Players</span>
+        <span style="font-size:10px; color:var(--text-muted);">Tap a player to copy name</span>
+      </div>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" id="tabBtnF" onclick="switchTab('F')">
+          Forwards <span class="tab-count" id="countBadgeF">195</span>
+        </button>
+        <button class="tab-btn" id="tabBtnD" onclick="switchTab('D')">
+          Defense <span class="tab-count" id="countBadgeD">42</span>
+        </button>
+        <button class="tab-btn" id="tabBtnG" onclick="switchTab('G')">
+          Goalies <span class="tab-count" id="countBadgeG">40</span>
+        </button>
+      </div>
+
+      <input type="text" class="search-input" id="playerSearch" placeholder="🔍 Search players in this position..." oninput="renderPlayerList()">
+
+      <div class="player-list" id="playerListContainer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- 5. All Participants League Overview -->
+    <div class="card">
+      <div class="section-title">
+        <span>👥 Opponents & League Rosters</span>
+      </div>
+      <div class="league-grid" id="leagueGridContainer">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">Copied player name to clipboard!</div>
+
+  <!-- Sticky Bottom Quick Actions Bar -->
+  <div class="mobile-bar">
+    <div class="mobile-bar-inner">
+      <a href="https://docs.google.com/spreadsheets/d/1icHGh1Q-f_JDt8D4rUyEZKk0XI3qdcxDiaY1nVCLB4w/edit" target="_blank" class="btn-sheet" id="openSheetBtn">
+        <span>📊 Open Google Sheet</span>
+      </a>
+      <button class="btn-refresh" onclick="triggerSync()">
+        <span>🔄</span> Sync
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Embedded Player Database from 2026-2027 Liste des Listes
+    const PLAYERS_DB = [{"id": "S001", "name": "Connor McDavid", "selection": "Connor McDavid \u2014 Edm \u2014 F [S001]", "pos": "F", "team": "Edm", "avg": 138.0, "so": 0.0, "notes": ""}, {"id": "S002", "name": "Nikita Kucherov", "selection": "Nikita Kucherov \u2014 TB \u2014 F [S002]", "pos": "F", "team": "TB", "avg": 133.0, "so": 0.0, "notes": ""}, {"id": "S003", "name": "Nathan MacKinnon", "selection": "Nathan MacKinnon \u2014 Col \u2014 F [S003]", "pos": "F", "team": "Col", "avg": 132.0, "so": 0.0, "notes": ""}, {"id": "S004", "name": "Macklin Celebrini", "selection": "Macklin Celebrini \u2014 SJ \u2014 F [S004]", "pos": "F", "team": "SJ", "avg": 111.0, "so": 0.0, "notes": ""}, {"id": "S005", "name": "Leon Draisaitl", "selection": "Leon Draisaitl \u2014 Edm \u2014 F [S005]", "pos": "F", "team": "Edm", "avg": 110.0, "so": 0.0, "notes": ""}, {"id": "S006", "name": "David Pastrnak", "selection": "David Pastrnak \u2014 Bos \u2014 F [S006]", "pos": "F", "team": "Bos", "avg": 103.0, "so": 0.0, "notes": ""}, {"id": "S007", "name": "Nick Suzuki", "selection": "Nick Suzuki \u2014 Mtl \u2014 F [S007]", "pos": "F", "team": "Mtl", "avg": 99.0, "so": 0.0, "notes": ""}, {"id": "S008", "name": "Mark Scheifele", "selection": "Mark Scheifele \u2014 Win \u2014 F [S008]", "pos": "F", "team": "Win", "avg": 98.0, "so": 0.0, "notes": ""}, {"id": "S009", "name": "Martin Necas", "selection": "Martin Necas \u2014 Col \u2014 F [S009]", "pos": "F", "team": "Col", "avg": 97.0, "so": 0.0, "notes": ""}, {"id": "S010", "name": "William Nylander", "selection": "William Nylander \u2014 Tor \u2014 F [S010]", "pos": "F", "team": "Tor", "avg": 95.0, "so": 0.0, "notes": ""}, {"id": "S011", "name": "Jason Robertson", "selection": "Jason Robertson \u2014 Dal \u2014 F [S011]", "pos": "F", "team": "Dal", "avg": 94.0, "so": 0.0, "notes": ""}, {"id": "S012", "name": "Jack Eichel", "selection": "Jack Eichel \u2014 Vgk \u2014 F [S012]", "pos": "F", "team": "Vgk", "avg": 94.0, "so": 0.0, "notes": ""}, {"id": "S013", "name": "Kirill Kaprizov", "selection": "Kirill Kaprizov \u2014 Min \u2014 F [S013]", "pos": "F", "team": "Min", "avg": 93.0, "so": 0.0, "notes": ""}, {"id": "S014", "name": "Clayton Keller", "selection": "Clayton Keller \u2014 Uta \u2014 F [S014]", "pos": "F", "team": "Uta", "avg": 92.0, "so": 0.0, "notes": ""}, {"id": "S015", "name": "Kyle Connor", "selection": "Kyle Connor \u2014 Win \u2014 F [S015]", "pos": "F", "team": "Win", "avg": 91.0, "so": 0.0, "notes": ""}, {"id": "S016", "name": "Evan Bouchard", "selection": "Evan Bouchard \u2014 Edm \u2014 D [S016]", "pos": "D", "team": "Edm", "avg": 90.0, "so": 0.0, "notes": ""}, {"id": "S017", "name": "Jake Guentzel", "selection": "Jake Guentzel \u2014 TB \u2014 F [S017]", "pos": "F", "team": "TB", "avg": 90.0, "so": 0.0, "notes": ""}, {"id": "S018", "name": "Wyatt Johnston", "selection": "Wyatt Johnston \u2014 Dal \u2014 F [S018]", "pos": "F", "team": "Dal", "avg": 90.0, "so": 0.0, "notes": ""}, {"id": "S019", "name": "Mitch Marner", "selection": "Mitch Marner \u2014 Vgk \u2014 F [S019]", "pos": "F", "team": "Vgk", "avg": 89.0, "so": 0.0, "notes": ""}, {"id": "S020", "name": "Mikko Rantanen", "selection": "Mikko Rantanen \u2014 Dal \u2014 F [S020]", "pos": "F", "team": "Dal", "avg": 89.0, "so": 0.0, "notes": ""}, {"id": "S021", "name": "Matt Boldy", "selection": "Matt Boldy \u2014 Min \u2014 F [S021]", "pos": "F", "team": "Min", "avg": 88.0, "so": 0.0, "notes": ""}, {"id": "S022", "name": "Artemi Panarin", "selection": "Artemi Panarin \u2014 LA \u2014 F [S022]", "pos": "F", "team": "LA", "avg": 87.0, "so": 0.0, "notes": ""}, {"id": "S023", "name": "Jack Hughes", "selection": "Jack Hughes \u2014 NJ \u2014 F [S023]", "pos": "F", "team": "NJ", "avg": 87.0, "so": 0.0, "notes": ""}, {"id": "S024", "name": "Cale Makar", "selection": "Cale Makar \u2014 Col \u2014 D [S024]", "pos": "D", "team": "Col", "avg": 85.0, "so": 0.0, "notes": ""}, {"id": "S025", "name": "Cole Caufield", "selection": "Cole Caufield \u2014 Mtl \u2014 F [S025]", "pos": "F", "team": "Mtl", "avg": 85.0, "so": 0.0, "notes": ""}, {"id": "S026", "name": "Sidney Crosby", "selection": "Sidney Crosby \u2014 Pit \u2014 F [S026]", "pos": "F", "team": "Pit", "avg": 85.0, "so": 0.0, "notes": ""}, {"id": "S027", "name": "Auston Matthews", "selection": "Auston Matthews \u2014 Tor \u2014 F [S027]", "pos": "F", "team": "Tor", "avg": 84.0, "so": 0.0, "notes": ""}, {"id": "S028", "name": "Alex DeBrincat", "selection": "Alex DeBrincat \u2014 Det \u2014 F [S028]", "pos": "F", "team": "Det", "avg": 83.0, "so": 0.0, "notes": ""}, {"id": "S029", "name": "Sebastian Aho", "selection": "Sebastian Aho \u2014 Car \u2014 F [S029]", "pos": "F", "team": "Car", "avg": 83.0, "so": 0.0, "notes": ""}, {"id": "S030", "name": "Zach Werenski", "selection": "Zach Werenski \u2014 Cbj \u2014 D [S030]", "pos": "D", "team": "Cbj", "avg": 83.0, "so": 0.0, "notes": ""}, {"id": "S031", "name": "Quinn Hughes", "selection": "Quinn Hughes \u2014 Van \u2014 D [S031]", "pos": "D", "team": "Van", "avg": 83.0, "so": 0.0, "notes": ""}, {"id": "S032", "name": "Tim St\u00fctzle", "selection": "Tim St\u00fctzle \u2014 Ott \u2014 F [S032]", "pos": "F", "team": "Ott", "avg": 83.0, "so": 0.0, "notes": ""}, {"id": "S033", "name": "Brandon Hagel", "selection": "Brandon Hagel \u2014 TB \u2014 F [S033]", "pos": "F", "team": "TB", "avg": 82.0, "so": 0.0, "notes": ""}, {"id": "S034", "name": "Tage Thompson", "selection": "Tage Thompson \u2014 Buf \u2014 F [S034]", "pos": "F", "team": "Buf", "avg": 81.0, "so": 0.0, "notes": ""}, {"id": "S035", "name": "Mika Zibanejad", "selection": "Mika Zibanejad \u2014 NYR \u2014 F [S035]", "pos": "F", "team": "NYR", "avg": 79.0, "so": 0.0, "notes": ""}, {"id": "S036", "name": "Lucas Raymond", "selection": "Lucas Raymond \u2014 Det \u2014 F [S036]", "pos": "F", "team": "Det", "avg": 79.0, "so": 0.0, "notes": ""}, {"id": "S037", "name": "Matthew Tkachuk", "selection": "Matthew Tkachuk \u2014 Flo \u2014 F [S037]", "pos": "F", "team": "Flo", "avg": 79.0, "so": 0.0, "notes": ""}, {"id": "S038", "name": "Filip Forsberg", "selection": "Filip Forsberg \u2014 Nsh \u2014 F [S038]", "pos": "F", "team": "Nsh", "avg": 79.0, "so": 0.0, "notes": ""}, {"id": "S039", "name": "Jesper Bratt", "selection": "Jesper Bratt \u2014 NJ \u2014 F [S039]", "pos": "F", "team": "NJ", "avg": 79.0, "so": 0.0, "notes": ""}, {"id": "S040", "name": "Robert Thomas", "selection": "Robert Thomas \u2014 Stl \u2014 F [S040]", "pos": "F", "team": "Stl", "avg": 79.0, "so": 0.0, "notes": ""}, {"id": "S041", "name": "Lane Hutson", "selection": "Lane Hutson \u2014 Mtl \u2014 D [S041]", "pos": "D", "team": "Mtl", "avg": 76.0, "so": 0.0, "notes": ""}, {"id": "S042", "name": "Rasmus Dahlin", "selection": "Rasmus Dahlin \u2014 Buf \u2014 D [S042]", "pos": "D", "team": "Buf", "avg": 76.0, "so": 0.0, "notes": ""}, {"id": "S043", "name": "Sam Reinhart", "selection": "Sam Reinhart \u2014 Flo \u2014 F [S043]", "pos": "F", "team": "Flo", "avg": 75.0, "so": 0.0, "notes": ""}, {"id": "S044", "name": "Mark Stone", "selection": "Mark Stone \u2014 Vgk \u2014 F [S044]", "pos": "F", "team": "Vgk", "avg": 75.0, "so": 0.0, "notes": ""}, {"id": "S045", "name": "Nick Schmaltz", "selection": "Nick Schmaltz \u2014 Uta \u2014 F [S045]", "pos": "F", "team": "Uta", "avg": 74.0, "so": 0.0, "notes": ""}, {"id": "S046", "name": "Adrian Kempe", "selection": "Adrian Kempe \u2014 LA \u2014 F [S046]", "pos": "F", "team": "LA", "avg": 74.0, "so": 0.0, "notes": ""}, {"id": "S047", "name": "Dylan Guenther", "selection": "Dylan Guenther \u2014 Uta \u2014 F [S047]", "pos": "F", "team": "Uta", "avg": 74.0, "so": 0.0, "notes": ""}, {"id": "S048", "name": "Juraj Slafkovsky", "selection": "Juraj Slafkovsky \u2014 Mtl \u2014 F [S048]", "pos": "F", "team": "Mtl", "avg": 74.0, "so": 0.0, "notes": ""}, {"id": "S049", "name": "Aleksander Barkov", "selection": "Aleksander Barkov \u2014 Flo \u2014 F [S049]", "pos": "F", "team": "Flo", "avg": 73.0, "so": 0.0, "notes": ""}, {"id": "S050", "name": "Nikolaj Ehlers", "selection": "Nikolaj Ehlers \u2014 Car \u2014 F [S050]", "pos": "F", "team": "Car", "avg": 73.0, "so": 0.0, "notes": ""}, {"id": "S051", "name": "Brady Tkachuk", "selection": "Brady Tkachuk \u2014 Flo \u2014 F [S051]", "pos": "F", "team": "Flo", "avg": 73.0, "so": 0.0, "notes": ""}, {"id": "S052", "name": "Leo Carlsson", "selection": "Leo Carlsson \u2014 Ana \u2014 F [S052]", "pos": "F", "team": "Ana", "avg": 73.0, "so": 0.0, "notes": ""}, {"id": "S053", "name": "Travis Konecny", "selection": "Travis Konecny \u2014 Phi \u2014 F [S053]", "pos": "F", "team": "Phi", "avg": 72.0, "so": 0.0, "notes": ""}, {"id": "S054", "name": "Adam Fox", "selection": "Adam Fox \u2014 NYR \u2014 D [S054]", "pos": "D", "team": "NYR", "avg": 72.0, "so": 0.0, "notes": ""}, {"id": "S055", "name": "Dylan Larkin", "selection": "Dylan Larkin \u2014 Det \u2014 F [S055]", "pos": "F", "team": "Det", "avg": 72.0, "so": 0.0, "notes": ""}, {"id": "S056", "name": "Nico Hischier", "selection": "Nico Hischier \u2014 NJ \u2014 F [S056]", "pos": "F", "team": "NJ", "avg": 72.0, "so": 0.0, "notes": ""}, {"id": "S057", "name": "Connor Bedard", "selection": "Connor Bedard \u2014 Chi \u2014 F [S057]", "pos": "F", "team": "Chi", "avg": 71.0, "so": 0.0, "notes": ""}, {"id": "S058", "name": "Cutter Gauthier", "selection": "Cutter Gauthier \u2014 Ana \u2014 F [S058]", "pos": "F", "team": "Ana", "avg": 71.0, "so": 0.0, "notes": ""}, {"id": "S059", "name": "Drake Batherson", "selection": "Drake Batherson \u2014 Ott \u2014 F [S059]", "pos": "F", "team": "Ott", "avg": 71.0, "so": 0.0, "notes": ""}, {"id": "S060", "name": "Kirill Marchenko", "selection": "Kirill Marchenko \u2014 Cbj \u2014 F [S060]", "pos": "F", "team": "Cbj", "avg": 70.0, "so": 0.0, "notes": ""}, {"id": "S061", "name": "Brayden Point", "selection": "Brayden Point \u2014 TB \u2014 F [S061]", "pos": "F", "team": "TB", "avg": 70.0, "so": 0.0, "notes": ""}, {"id": "S062", "name": "Ryan O'Reilly", "selection": "Ryan O'Reilly \u2014 Nsh \u2014 F [S062]", "pos": "F", "team": "Nsh", "avg": 70.0, "so": 0.0, "notes": ""}, {"id": "S063", "name": "John Tavares", "selection": "John Tavares \u2014 Tor \u2014 F [S063]", "pos": "F", "team": "Tor", "avg": 70.0, "so": 0.0, "notes": ""}, {"id": "S064", "name": "Mathew Barzal", "selection": "Mathew Barzal \u2014 NYI \u2014 F [S064]", "pos": "F", "team": "NYI", "avg": 70.0, "so": 0.0, "notes": ""}, {"id": "S065", "name": "Bryan Rust", "selection": "Bryan Rust \u2014 Pit \u2014 F [S065]", "pos": "F", "team": "Pit", "avg": 68.0, "so": 0.0, "notes": ""}, {"id": "S066", "name": "Gabriel Vilardi", "selection": "Gabriel Vilardi \u2014 Win \u2014 F [S066]", "pos": "F", "team": "Win", "avg": 68.0, "so": 0.0, "notes": ""}, {"id": "S067", "name": "Zach Hyman", "selection": "Zach Hyman \u2014 Edm \u2014 F [S067]", "pos": "F", "team": "Edm", "avg": 68.0, "so": 0.0, "notes": ""}, {"id": "S068", "name": "Andrei Svechnikov", "selection": "Andrei Svechnikov \u2014 Car \u2014 F [S068]", "pos": "F", "team": "Car", "avg": 68.0, "so": 0.0, "notes": ""}, {"id": "S069", "name": "J.T. Miller", "selection": "J.T. Miller \u2014 NYR \u2014 F [S069]", "pos": "F", "team": "NYR", "avg": 67.0, "so": 0.0, "notes": ""}, {"id": "S070", "name": "Evgeni Malkin", "selection": "Evgeni Malkin \u2014 Pit \u2014 F [S070]", "pos": "F", "team": "Pit", "avg": 67.0, "so": 0.0, "notes": ""}, {"id": "S071", "name": "Alex Tuch", "selection": "Alex Tuch \u2014 Was \u2014 F [S071]", "pos": "F", "team": "Was", "avg": 66.0, "so": 0.0, "notes": ""}, {"id": "S072", "name": "Matthew Knies", "selection": "Matthew Knies \u2014 Tor \u2014 F [S072]", "pos": "F", "team": "Tor", "avg": 66.0, "so": 0.0, "notes": ""}, {"id": "S073", "name": "Steven Stamkos", "selection": "Steven Stamkos \u2014 Nsh \u2014 F [S073]", "pos": "F", "team": "Nsh", "avg": 66.0, "so": 0.0, "notes": ""}, {"id": "S074", "name": "Morgan Geekie", "selection": "Morgan Geekie \u2014 Bos \u2014 F [S074]", "pos": "F", "team": "Bos", "avg": 66.0, "so": 0.0, "notes": ""}, {"id": "S075", "name": "Brock Nelson", "selection": "Brock Nelson \u2014 Col \u2014 F [S075]", "pos": "F", "team": "Col", "avg": 66.0, "so": 0.0, "notes": ""}, {"id": "S076", "name": "Dylan Strome", "selection": "Dylan Strome \u2014 Wsh \u2014 F [S076]", "pos": "F", "team": "Wsh", "avg": 66.0, "so": 0.0, "notes": ""}, {"id": "S077", "name": "Dylan Holloway", "selection": "Dylan Holloway \u2014 Stl \u2014 F [S077]", "pos": "F", "team": "Stl", "avg": 65.0, "so": 0.0, "notes": ""}, {"id": "S078", "name": "Will Smith", "selection": "Will Smith \u2014 SJ \u2014 F [S078]", "pos": "F", "team": "SJ", "avg": 65.0, "so": 0.0, "notes": ""}, {"id": "S079", "name": "Porter Malone", "selection": "Porter Malone \u2014 Phi \u2014 F [S079]", "pos": "F", "team": "Phi", "avg": 65.0, "so": 0.0, "notes": ""}, {"id": "S080", "name": "Matt Duchene", "selection": "Matt Duchene \u2014 Dal \u2014 F [S080]", "pos": "F", "team": "Dal", "avg": 65.0, "so": 0.0, "notes": ""}, {"id": "S081", "name": "Ivan Demidov", "selection": "Ivan Demidov \u2014 Mtl \u2014 F [S081]", "pos": "F", "team": "Mtl", "avg": 65.0, "so": 0.0, "notes": ""}, {"id": "S082", "name": "Beckett Sennecke", "selection": "Beckett Sennecke \u2014 Ana \u2014 F [S082]", "pos": "F", "team": "Ana", "avg": 64.0, "so": 0.0, "notes": ""}, {"id": "S083", "name": "Logan Cooley", "selection": "Logan Cooley \u2014 Uta \u2014 F [S083]", "pos": "F", "team": "Uta", "avg": 64.0, "so": 0.0, "notes": ""}, {"id": "S084", "name": "Pavel Zacha", "selection": "Pavel Zacha \u2014 Bos \u2014 F [S084]", "pos": "F", "team": "Bos", "avg": 64.0, "so": 0.0, "notes": ""}, {"id": "S085", "name": "Darren Raddysh", "selection": "Darren Raddysh \u2014 Tor \u2014 D [S085]", "pos": "D", "team": "Tor", "avg": 64.0, "so": 0.0, "notes": ""}, {"id": "S086", "name": "Bo Horvat", "selection": "Bo Horvat \u2014 NYI \u2014 F [S086]", "pos": "F", "team": "NYI", "avg": 63.0, "so": 0.0, "notes": ""}, {"id": "S087", "name": "Roope Hintz", "selection": "Roope Hintz \u2014 Dal \u2014 F [S087]", "pos": "F", "team": "Dal", "avg": 63.0, "so": 0.0, "notes": ""}, {"id": "S088", "name": "Matthew Schaefer", "selection": "Matthew Schaefer \u2014 NYI \u2014 D [S088]", "pos": "D", "team": "NYI", "avg": 62.0, "so": 0.0, "notes": ""}, {"id": "S089", "name": "Troy Terry", "selection": "Troy Terry \u2014 Ana \u2014 F [S089]", "pos": "F", "team": "Ana", "avg": 62.0, "so": 0.0, "notes": ""}, {"id": "S090", "name": "Miro Heiskanen", "selection": "Miro Heiskanen \u2014 Dal \u2014 D [S090]", "pos": "D", "team": "Dal", "avg": 62.0, "so": 0.0, "notes": ""}, {"id": "S091", "name": "Alex Ovechkin", "selection": "Alex Ovechkin \u2014 Wsh \u2014 F [S091]", "pos": "F", "team": "Wsh", "avg": 62.0, "so": 0.0, "notes": ""}, {"id": "S092", "name": "Erik Karlsson", "selection": "Erik Karlsson \u2014 Pit \u2014 D [S092]", "pos": "D", "team": "Pit", "avg": 62.0, "so": 0.0, "notes": ""}, {"id": "S093", "name": "Jake Sanderson", "selection": "Jake Sanderson \u2014 Ott \u2014 D [S093]", "pos": "D", "team": "Ott", "avg": 62.0, "so": 0.0, "notes": ""}, {"id": "S094", "name": "Tom Wilson", "selection": "Tom Wilson \u2014 Was \u2014 F [S094]", "pos": "F", "team": "Was", "avg": 61.0, "so": 0.0, "notes": ""}, {"id": "S095", "name": "Roman Josi", "selection": "Roman Josi \u2014 Nsh \u2014 D [S095]", "pos": "D", "team": "Nsh", "avg": 61.0, "so": 0.0, "notes": ""}, {"id": "S096", "name": "John Carlson", "selection": "John Carlson \u2014 TB \u2014 D [S096]", "pos": "D", "team": "TB", "avg": 61.0, "so": 0.0, "notes": ""}, {"id": "S097", "name": "Trevor Zegras", "selection": "Trevor Zegras \u2014 Phi \u2014 F [S097]", "pos": "F", "team": "Phi", "avg": 61.0, "so": 0.0, "notes": ""}, {"id": "S098", "name": "Adam Fantilli", "selection": "Adam Fantilli \u2014 Cbj \u2014 F [S098]", "pos": "F", "team": "Cbj", "avg": 61.0, "so": 0.0, "notes": ""}, {"id": "S099", "name": "Elias Pettersson", "selection": "Elias Pettersson \u2014 Van \u2014 F [S099]", "pos": "F", "team": "Van", "avg": 60.0, "so": 0.0, "notes": ""}, {"id": "S100", "name": "Tomas Hertl", "selection": "Tomas Hertl \u2014 Vgk \u2014 F [S100]", "pos": "F", "team": "Vgk", "avg": 60.0, "so": 0.0, "notes": ""}, {"id": "S101", "name": "Ivan Barbashev", "selection": "Ivan Barbashev \u2014 Vgk \u2014 F [S101]", "pos": "F", "team": "Vgk", "avg": 60.0, "so": 0.0, "notes": ""}, {"id": "S102", "name": "Pavel Dorofoyev", "selection": "Pavel Dorofoyev \u2014 NYR \u2014 F [S102]", "pos": "F", "team": "NYR", "avg": 60.0, "so": 0.0, "notes": ""}, {"id": "S103", "name": "Kevin Fiala", "selection": "Kevin Fiala \u2014 LA \u2014 F [S103]", "pos": "F", "team": "LA", "avg": 60.0, "so": 0.0, "notes": ""}, {"id": "S104", "name": "Jared McCann", "selection": "Jared McCann \u2014 Sea \u2014 F [S104]", "pos": "F", "team": "Sea", "avg": 60.0, "so": 0.0, "notes": ""}, {"id": "S105", "name": "Brad Marchand", "selection": "Brad Marchand \u2014 Flo \u2014 F [S105]", "pos": "F", "team": "Flo", "avg": 60.0, "so": 0.0, "notes": ""}, {"id": "S106", "name": "Vincent Trocheck", "selection": "Vincent Trocheck \u2014 Uta \u2014 F [S106]", "pos": "F", "team": "Uta", "avg": 59.0, "so": 0.0, "notes": ""}, {"id": "S107", "name": "Alexis Lafreniere", "selection": "Alexis Lafreniere \u2014 NYR \u2014 F [S107]", "pos": "F", "team": "NYR", "avg": 59.0, "so": 0.0, "notes": ""}, {"id": "S108", "name": "Mikhail Sergachev", "selection": "Mikhail Sergachev \u2014 Uta \u2014 D [S108]", "pos": "D", "team": "Uta", "avg": 59.0, "so": 0.0, "notes": ""}, {"id": "S109", "name": "Moritz Seider", "selection": "Moritz Seider \u2014 Det \u2014 D [S109]", "pos": "D", "team": "Det", "avg": 59.0, "so": 0.0, "notes": ""}, {"id": "S110", "name": "Dylan Cozens", "selection": "Dylan Cozens \u2014 Ott \u2014 F [S110]", "pos": "F", "team": "Ott", "avg": 59.0, "so": 0.0, "notes": ""}, {"id": "S111", "name": "Ryan Nugent-Hopkins", "selection": "Ryan Nugent-Hopkins \u2014 Edm \u2014 F [S111]", "pos": "F", "team": "Edm", "avg": 59.0, "so": 0.0, "notes": ""}, {"id": "S112", "name": "Tyler Bertuzzi", "selection": "Tyler Bertuzzi \u2014 Chi \u2014 F [S112]", "pos": "F", "team": "Chi", "avg": 58.0, "so": 0.0, "notes": ""}, {"id": "S113", "name": "Charlie McAvoy", "selection": "Charlie McAvoy \u2014 Bos \u2014 D [S113]", "pos": "D", "team": "Bos", "avg": 58.0, "so": 0.0, "notes": ""}, {"id": "S114", "name": "Josh Morrissey", "selection": "Josh Morrissey \u2014 Win \u2014 D [S114]", "pos": "D", "team": "Win", "avg": 58.0, "so": 0.0, "notes": ""}, {"id": "S115", "name": "Sam Bennett", "selection": "Sam Bennett \u2014 Flo \u2014 F [S115]", "pos": "F", "team": "Flo", "avg": 57.0, "so": 0.0, "notes": ""}, {"id": "S116", "name": "Charlie Coyle", "selection": "Charlie Coyle \u2014 Cbj \u2014 F [S116]", "pos": "F", "team": "Cbj", "avg": 57.0, "so": 0.0, "notes": ""}, {"id": "S117", "name": "Carter Verhaeghe", "selection": "Carter Verhaeghe \u2014 Flo \u2014 F [S117]", "pos": "F", "team": "Flo", "avg": 57.0, "so": 0.0, "notes": ""}, {"id": "S118", "name": "Rickard Rakell", "selection": "Rickard Rakell \u2014 Pit \u2014 F [S118]", "pos": "F", "team": "Pit", "avg": 57.0, "so": 0.0, "notes": ""}, {"id": "S119", "name": "William Eklund", "selection": "William Eklund \u2014 Ott \u2014 F [S119]", "pos": "F", "team": "Ott", "avg": 57.0, "so": 0.0, "notes": ""}, {"id": "S120", "name": "Jackson Lacombe", "selection": "Jackson Lacombe \u2014 Ana \u2014 D [S120]", "pos": "D", "team": "Ana", "avg": 57.0, "so": 0.0, "notes": ""}, {"id": "S121", "name": "Patrick Kane", "selection": "Patrick Kane \u2014 Chi \u2014 F [S121]", "pos": "F", "team": "Chi", "avg": 57.0, "so": 0.0, "notes": ""}, {"id": "S122", "name": "Seth Jarvis", "selection": "Seth Jarvis \u2014 Car \u2014 F [S122]", "pos": "F", "team": "Car", "avg": 56.0, "so": 0.0, "notes": ""}, {"id": "S123", "name": "Jakob Chychrun", "selection": "Jakob Chychrun \u2014 Wsh \u2014 D [S123]", "pos": "D", "team": "Wsh", "avg": 56.0, "so": 0.0, "notes": ""}, {"id": "S124", "name": "Valeri Nichushkin", "selection": "Valeri Nichushkin \u2014 Cbj \u2014 F [S124]", "pos": "F", "team": "Cbj", "avg": 56.0, "so": 0.0, "notes": ""}, {"id": "S125", "name": "Anthony Cirelli", "selection": "Anthony Cirelli \u2014 TB \u2014 F [S125]", "pos": "F", "team": "TB", "avg": 56.0, "so": 0.0, "notes": ""}, {"id": "S126", "name": "Shayne Gostisbehere", "selection": "Shayne Gostisbehere \u2014 Car \u2014 D [S126]", "pos": "D", "team": "Car", "avg": 56.0, "so": 0.0, "notes": ""}, {"id": "S127", "name": "Jackson Blake", "selection": "Jackson Blake \u2014 Car \u2014 F [S127]", "pos": "F", "team": "Car", "avg": 56.0, "so": 0.0, "notes": ""}, {"id": "S128", "name": "Mikael Granlund", "selection": "Mikael Granlund \u2014 Ana \u2014 F [S128]", "pos": "F", "team": "Ana", "avg": 56.0, "so": 0.0, "notes": ""}, {"id": "S129", "name": "Matvei Michkov", "selection": "Matvei Michkov \u2014 Phi \u2014 F [S129]", "pos": "F", "team": "Phi", "avg": 55.0, "so": 0.0, "notes": ""}, {"id": "S130", "name": "Luke Evangelista", "selection": "Luke Evangelista \u2014 NJ \u2014 F [S130]", "pos": "F", "team": "NJ", "avg": 55.0, "so": 0.0, "notes": ""}, {"id": "S131", "name": "Brock Boeser", "selection": "Brock Boeser \u2014 Van \u2014 F [S131]", "pos": "F", "team": "Van", "avg": 55.0, "so": 0.0, "notes": ""}, {"id": "S132", "name": "JJ Peterka", "selection": "JJ Peterka \u2014 Bos \u2014 F [S132]", "pos": "F", "team": "Bos", "avg": 55.0, "so": 0.0, "notes": ""}, {"id": "S133", "name": "Marco Rossi", "selection": "Marco Rossi \u2014 Van \u2014 F [S133]", "pos": "F", "team": "Van", "avg": 55.0, "so": 0.0, "notes": ""}, {"id": "S134", "name": "Quinton Byfield", "selection": "Quinton Byfield \u2014 LA \u2014 F [S134]", "pos": "F", "team": "LA", "avg": 54.0, "so": 0.0, "notes": ""}, {"id": "S135", "name": "Jordan Kyrou", "selection": "Jordan Kyrou \u2014 Was \u2014 F [S135]", "pos": "F", "team": "Was", "avg": 54.0, "so": 0.0, "notes": ""}, {"id": "S136", "name": "Nazem Kadri", "selection": "Nazem Kadri \u2014 Col \u2014 F [S136]", "pos": "F", "team": "Col", "avg": 54.0, "so": 0.0, "notes": ""}, {"id": "S137", "name": "Joel Eriksson Ek", "selection": "Joel Eriksson Ek \u2014 Min \u2014 F [S137]", "pos": "F", "team": "Min", "avg": 54.0, "so": 0.0, "notes": ""}, {"id": "S138", "name": "Pierre-Luc Dubois", "selection": "Pierre-Luc Dubois \u2014 Wsh \u2014 F [S138]", "pos": "F", "team": "Wsh", "avg": 54.0, "so": 0.0, "notes": ""}, {"id": "S139", "name": "Jimmy Snuggerud", "selection": "Jimmy Snuggerud \u2014 Stl \u2014 F [S139]", "pos": "F", "team": "Stl", "avg": 54.0, "so": 0.0, "notes": ""}, {"id": "S140", "name": "Mats Zuccarello", "selection": "Mats Zuccarello \u2014 LA \u2014 F [S140]", "pos": "F", "team": "LA", "avg": 53.0, "so": 0.0, "notes": ""}, {"id": "S141", "name": "Anthony Mantha", "selection": "Anthony Mantha \u2014 NJ \u2014 F [S141]", "pos": "F", "team": "NJ", "avg": 53.0, "so": 0.0, "notes": ""}, {"id": "S142", "name": "Ryan Mcleod", "selection": "Ryan Mcleod \u2014 Buf \u2014 F [S142]", "pos": "F", "team": "Buf", "avg": 53.0, "so": 0.0, "notes": ""}, {"id": "S143", "name": "Owen Tippett", "selection": "Owen Tippett \u2014 Phi \u2014 F [S143]", "pos": "F", "team": "Phi", "avg": 52.0, "so": 0.0, "notes": ""}, {"id": "S144", "name": "Pavel Buchnevich", "selection": "Pavel Buchnevich \u2014 Stl \u2014 F [S144]", "pos": "F", "team": "Stl", "avg": 52.0, "so": 0.0, "notes": ""}, {"id": "S145", "name": "Jordan Eberle", "selection": "Jordan Eberle \u2014 Sea \u2014 F [S145]", "pos": "F", "team": "Sea", "avg": 52.0, "so": 0.0, "notes": ""}, {"id": "S146", "name": "Elias Lindholm", "selection": "Elias Lindholm \u2014 Bos \u2014 F [S146]", "pos": "F", "team": "Bos", "avg": 52.0, "so": 0.0, "notes": ""}, {"id": "S147", "name": "Connor McMichael", "selection": "Connor McMichael \u2014 Stl \u2014 F [S147]", "pos": "F", "team": "Stl", "avg": 52.0, "so": 0.0, "notes": ""}, {"id": "S148", "name": "Brock Faber", "selection": "Brock Faber \u2014 Min \u2014 D [S148]", "pos": "D", "team": "Min", "avg": 52.0, "so": 0.0, "notes": ""}, {"id": "S149", "name": "Noah Dobson", "selection": "Noah Dobson \u2014 Mtl \u2014 D [S149]", "pos": "D", "team": "Mtl", "avg": 51.0, "so": 0.0, "notes": ""}, {"id": "S150", "name": "Chandler Stephenson", "selection": "Chandler Stephenson \u2014 Sea \u2014 F [S150]", "pos": "F", "team": "Sea", "avg": 51.0, "so": 0.0, "notes": ""}, {"id": "S151", "name": "Viktor Arvidsson", "selection": "Viktor Arvidsson \u2014 Det \u2014 F [S151]", "pos": "F", "team": "Det", "avg": 51.0, "so": 0.0, "notes": ""}, {"id": "S152", "name": "Artturi Lehkonen", "selection": "Artturi Lehkonen \u2014 Col \u2014 F [S152]", "pos": "F", "team": "Col", "avg": 51.0, "so": 0.0, "notes": ""}, {"id": "S153", "name": "Matty Beniers", "selection": "Matty Beniers \u2014 Sea \u2014 F [S153]", "pos": "F", "team": "Sea", "avg": 50.0, "so": 0.0, "notes": ""}, {"id": "S154", "name": "Shea Theodore", "selection": "Shea Theodore \u2014 Vgk \u2014 D [S154]", "pos": "D", "team": "Vgk", "avg": 50.0, "so": 0.0, "notes": ""}, {"id": "S155", "name": "Josh Doan", "selection": "Josh Doan \u2014 Buf \u2014 F [S155]", "pos": "F", "team": "Buf", "avg": 50.0, "so": 0.0, "notes": ""}, {"id": "S156", "name": "Tyler Toffoli", "selection": "Tyler Toffoli \u2014 SJ \u2014 F [S156]", "pos": "F", "team": "SJ", "avg": 50.0, "so": 0.0, "notes": ""}, {"id": "S157", "name": "Mason Marchment", "selection": "Mason Marchment \u2014 SJ \u2014 F [S157]", "pos": "F", "team": "SJ", "avg": 49.0, "so": 0.0, "notes": ""}, {"id": "S158", "name": "Shane Pinto", "selection": "Shane Pinto \u2014 Ott \u2014 F [S158]", "pos": "F", "team": "Ott", "avg": 49.0, "so": 0.0, "notes": ""}, {"id": "S159", "name": "Gavin McKenna", "selection": "Gavin McKenna \u2014 Tor \u2014 F [S159]", "pos": "F", "team": "Tor", "avg": 49.0, "so": 0.0, "notes": ""}, {"id": "S160", "name": "Jason Zucker", "selection": "Jason Zucker \u2014 Buf \u2014 F [S160]", "pos": "F", "team": "Buf", "avg": 49.0, "so": 0.0, "notes": ""}, {"id": "S161", "name": "Bowen Byram", "selection": "Bowen Byram \u2014 Chi \u2014 D [S161]", "pos": "D", "team": "Chi", "avg": 49.0, "so": 0.0, "notes": ""}, {"id": "S162", "name": "Jack Quinn", "selection": "Jack Quinn \u2014 Buf \u2014 F [S162]", "pos": "F", "team": "Buf", "avg": 49.0, "so": 0.0, "notes": ""}, {"id": "S163", "name": "Alexander Wennberg", "selection": "Alexander Wennberg \u2014 SJ \u2014 F [S163]", "pos": "F", "team": "SJ", "avg": 48.0, "so": 0.0, "notes": ""}, {"id": "S164", "name": "Chris Kreider", "selection": "Chris Kreider \u2014 Mtl \u2014 F [S164]", "pos": "F", "team": "Mtl", "avg": 48.0, "so": 0.0, "notes": ""}, {"id": "S165", "name": "Zach Benson", "selection": "Zach Benson \u2014 Buf \u2014 F [S165]", "pos": "F", "team": "Buf", "avg": 48.0, "so": 0.0, "notes": ""}, {"id": "S166", "name": "Anton Lundell", "selection": "Anton Lundell \u2014 Flo \u2014 F [S166]", "pos": "F", "team": "Flo", "avg": 48.0, "so": 0.0, "notes": ""}, {"id": "S167", "name": "Frank Nazar", "selection": "Frank Nazar \u2014 Chi \u2014 F [S167]", "pos": "F", "team": "Chi", "avg": 48.0, "so": 0.0, "notes": ""}, {"id": "S168", "name": "Claude Giroux", "selection": "Claude Giroux \u2014 Ott \u2014 F [S168]", "pos": "F", "team": "Ott", "avg": 48.0, "so": 0.0, "notes": ""}, {"id": "S169", "name": "Victor Hedman", "selection": "Victor Hedman \u2014 TB \u2014 D [S169]", "pos": "D", "team": "TB", "avg": 47.0, "so": 0.0, "notes": ""}, {"id": "S170", "name": "Filip Hronek", "selection": "Filip Hronek \u2014 Van \u2014 D [S170]", "pos": "D", "team": "Van", "avg": 47.0, "so": 0.0, "notes": ""}, {"id": "S171", "name": "Timo Meier", "selection": "Timo Meier \u2014 NJ \u2014 F [S171]", "pos": "F", "team": "NJ", "avg": 47.0, "so": 0.0, "notes": ""}, {"id": "S172", "name": "Maxim Tsyplakov", "selection": "Maxim Tsyplakov \u2014 Cal \u2014 F [S172]", "pos": "F", "team": "Cal", "avg": 47.0, "so": 0.0, "notes": ""}, {"id": "S173", "name": "Matt Coronato", "selection": "Matt Coronato \u2014 Cal \u2014 F [S173]", "pos": "F", "team": "Cal", "avg": 47.0, "so": 0.0, "notes": ""}, {"id": "S174", "name": "Christian Dvorak", "selection": "Christian Dvorak \u2014 Phi \u2014 F [S174]", "pos": "F", "team": "Phi", "avg": 47.0, "so": 0.0, "notes": ""}, {"id": "S175", "name": "Rasmus Andersson", "selection": "Rasmus Andersson \u2014 Vgk \u2014 D [S175]", "pos": "D", "team": "Vgk", "avg": 47.0, "so": 0.0, "notes": ""}, {"id": "S176", "name": "Mason McTavish", "selection": "Mason McTavish \u2014 Stl \u2014 F [S176]", "pos": "F", "team": "Stl", "avg": 47.0, "so": 0.0, "notes": ""}, {"id": "S177", "name": "Jonathan Huberdeau", "selection": "Jonathan Huberdeau \u2014 Cgy \u2014 F [S177]", "pos": "F", "team": "Cgy", "avg": 46.0, "so": 0.0, "notes": ""}, {"id": "S178", "name": "Taylor Hall", "selection": "Taylor Hall \u2014 Chi \u2014 F [S178]", "pos": "F", "team": "Chi", "avg": 46.0, "so": 0.0, "notes": ""}, {"id": "S179", "name": "Casey Mittelstadt", "selection": "Casey Mittelstadt \u2014 Bos \u2014 F [S179]", "pos": "F", "team": "Bos", "avg": 45.0, "so": 0.0, "notes": ""}, {"id": "S180", "name": "Jake DeBrusk", "selection": "Jake DeBrusk \u2014 Van \u2014 F [S180]", "pos": "F", "team": "Van", "avg": 45.0, "so": 0.0, "notes": ""}, {"id": "S181", "name": "Logan Stankoven", "selection": "Logan Stankoven \u2014 Dal \u2014 F [S181]", "pos": "F", "team": "Dal", "avg": 45.0, "so": 0.0, "notes": ""}, {"id": "S182", "name": "Aliaksei Protas", "selection": "Aliaksei Protas \u2014 Was \u2014 F [S182]", "pos": "F", "team": "Was", "avg": 45.0, "so": 0.0, "notes": ""}, {"id": "S183", "name": "Jamie Benn", "selection": "Jamie Benn \u2014 Dal \u2014 F [S183]", "pos": "F", "team": "Dal", "avg": 45.0, "so": 0.0, "notes": ""}, {"id": "S184", "name": "Cole Hutson", "selection": "Cole Hutson \u2014 Was \u2014 D [S184]", "pos": "D", "team": "Was", "avg": 45.0, "so": 0.0, "notes": ""}, {"id": "S185", "name": "Kyle Palmieri", "selection": "Kyle Palmieri \u2014 NYI \u2014 F [S185]", "pos": "F", "team": "NYI", "avg": 45.0, "so": 0.0, "notes": ""}, {"id": "S186", "name": "Simon Holmstrom", "selection": "Simon Holmstrom \u2014 NYI \u2014 F [S186]", "pos": "F", "team": "NYI", "avg": 45.0, "so": 0.0, "notes": ""}, {"id": "S187", "name": "Anton Frondell", "selection": "Anton Frondell \u2014 Chi \u2014 F [S187]", "pos": "F", "team": "Chi", "avg": 45.0, "so": 0.0, "notes": ""}, {"id": "S188", "name": "Brayden Schenn", "selection": "Brayden Schenn \u2014 NYI \u2014 F [S188]", "pos": "F", "team": "NYI", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S189", "name": "Bobby McMann", "selection": "Bobby McMann \u2014 Sea \u2014 F [S189]", "pos": "F", "team": "Sea", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S190", "name": "Teuvo Teravainen", "selection": "Teuvo Teravainen \u2014 Chi \u2014 F [S190]", "pos": "F", "team": "Chi", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S191", "name": "Morgan Frost", "selection": "Morgan Frost \u2014 Ana \u2014 F [S191]", "pos": "F", "team": "Ana", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S192", "name": "Jonathan Marchessault", "selection": "Jonathan Marchessault \u2014 Nsh \u2014 F [S192]", "pos": "F", "team": "Nsh", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S193", "name": "Kaapo Kakko", "selection": "Kaapo Kakko \u2014 Sea \u2014 F [S193]", "pos": "F", "team": "Sea", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S194", "name": "Vince Dunn", "selection": "Vince Dunn \u2014 Sea \u2014 D [S194]", "pos": "D", "team": "Sea", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S195", "name": "Sean Monahan", "selection": "Sean Monahan \u2014 Cbj \u2014 F [S195]", "pos": "F", "team": "Cbj", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S196", "name": "Alex Lafferiere", "selection": "Alex Lafferiere \u2014 LA \u2014 F [S196]", "pos": "F", "team": "LA", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S197", "name": "Thomas Harley", "selection": "Thomas Harley \u2014 Dal \u2014 D [S197]", "pos": "D", "team": "Dal", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S198", "name": "Gabriel Perreault", "selection": "Gabriel Perreault \u2014 NYR \u2014 F [S198]", "pos": "F", "team": "NYR", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S199", "name": "Tyson Foerster", "selection": "Tyson Foerster \u2014 Phi \u2014 F [S199]", "pos": "F", "team": "Phi", "avg": 44.0, "so": 0.0, "notes": ""}, {"id": "S200", "name": "Ryan Hartman", "selection": "Ryan Hartman \u2014 Min \u2014 F [S200]", "pos": "F", "team": "Min", "avg": 43.0, "so": 0.0, "notes": ""}, {"id": "S201", "name": "Tommy Novak", "selection": "Tommy Novak \u2014 Pit \u2014 F [S201]", "pos": "F", "team": "Pit", "avg": 43.0, "so": 0.0, "notes": ""}, {"id": "S202", "name": "Luke Hughes", "selection": "Luke Hughes \u2014 NJ \u2014 D [S202]", "pos": "D", "team": "NJ", "avg": 43.0, "so": 0.0, "notes": ""}, {"id": "S203", "name": "Dawson Mercer", "selection": "Dawson Mercer \u2014 NJ \u2014 F [S203]", "pos": "F", "team": "NJ", "avg": 43.0, "so": 0.0, "notes": ""}, {"id": "S204", "name": "Will Cuyle", "selection": "Will Cuyle \u2014 NYR \u2014 F [S204]", "pos": "F", "team": "NYR", "avg": 42.0, "so": 0.0, "notes": ""}, {"id": "S205", "name": "Mikael Backlund", "selection": "Mikael Backlund \u2014 Cgy \u2014 F [S205]", "pos": "F", "team": "Cgy", "avg": 42.0, "so": 0.0, "notes": ""}, {"id": "S206", "name": "Anders Lee", "selection": "Anders Lee \u2014 Uta \u2014 F [S206]", "pos": "F", "team": "Uta", "avg": 42.0, "so": 0.0, "notes": ""}, {"id": "S207", "name": "Lawson Crouse", "selection": "Lawson Crouse \u2014 Uta \u2014 F [S207]", "pos": "F", "team": "Uta", "avg": 42.0, "so": 0.0, "notes": ""}, {"id": "S208", "name": "Andrew Copp", "selection": "Andrew Copp \u2014 Det \u2014 F [S208]", "pos": "F", "team": "Det", "avg": 42.0, "so": 0.0, "notes": ""}, {"id": "S209", "name": "Collin Graff", "selection": "Collin Graff \u2014 Sj \u2014 F [S209]", "pos": "F", "team": "Sj", "avg": 42.0, "so": 0.0, "notes": ""}, {"id": "S210", "name": "Noah Cates", "selection": "Noah Cates \u2014 Phi \u2014 F [S210]", "pos": "F", "team": "Phi", "avg": 41.0, "so": 0.0, "notes": ""}, {"id": "S211", "name": "Josh Norris", "selection": "Josh Norris \u2014 Buf \u2014 F [S211]", "pos": "F", "team": "Buf", "avg": 41.0, "so": 0.0, "notes": ""}, {"id": "S212", "name": "Thomas Chabot", "selection": "Thomas Chabot \u2014 Ott \u2014 D [S212]", "pos": "D", "team": "Ott", "avg": 41.0, "so": 0.0, "notes": ""}, {"id": "S213", "name": "Oliver Bjorkstrand", "selection": "Oliver Bjorkstrand \u2014 NYR \u2014 F [S213]", "pos": "F", "team": "NYR", "avg": 41.0, "so": 0.0, "notes": ""}, {"id": "S214", "name": "Egor Chinakhov", "selection": "Egor Chinakhov \u2014 Pit \u2014 F [S214]", "pos": "F", "team": "Pit", "avg": 41.0, "so": 0.0, "notes": ""}, {"id": "S215", "name": "Gabriel Landeskog", "selection": "Gabriel Landeskog \u2014 Col \u2014 F [S215]", "pos": "F", "team": "Col", "avg": 41.0, "so": 0.0, "notes": ""}, {"id": "S216", "name": "Mattias Ekholm", "selection": "Mattias Ekholm \u2014 Edm \u2014 D [S216]", "pos": "D", "team": "Edm", "avg": 41.0, "so": 0.0, "notes": ""}, {"id": "S217", "name": "Tyler Seguin", "selection": "Tyler Seguin \u2014 Dal \u2014 F [S217]", "pos": "F", "team": "Dal", "avg": 41.0, "so": 0.0, "notes": ""}, {"id": "S218", "name": "Jake Neighbours", "selection": "Jake Neighbours \u2014 Stl \u2014 F [S218]", "pos": "F", "team": "Stl", "avg": 41.0, "so": 0.0, "notes": ""}, {"id": "S219", "name": "Mike Matheson", "selection": "Mike Matheson \u2014 Mtl \u2014 D [S219]", "pos": "D", "team": "Mtl", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "S220", "name": "Matias Maccelli", "selection": "Matias Maccelli \u2014 Tor \u2014 F [S220]", "pos": "F", "team": "Tor", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "S221", "name": "Cole Perfetti", "selection": "Cole Perfetti \u2014 Win \u2014 F [S221]", "pos": "F", "team": "Win", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "S222", "name": "Mavrick Bourque", "selection": "Mavrick Bourque \u2014 Nas \u2014 F [S222]", "pos": "F", "team": "Nas", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "S223", "name": "Morgan Rielly", "selection": "Morgan Rielly \u2014 Tor \u2014 D [S223]", "pos": "D", "team": "Tor", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "S224", "name": "Blake Coleman", "selection": "Blake Coleman \u2014 Min \u2014 F [S224]", "pos": "F", "team": "Min", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "S225", "name": "Dougie Hamilton", "selection": "Dougie Hamilton \u2014 NJ \u2014 D [S225]", "pos": "D", "team": "NJ", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "S226", "name": "Easton Cowan", "selection": "Easton Cowan \u2014 Tor \u2014 F [S226]", "pos": "F", "team": "Tor", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "S227", "name": "Alex Newhook", "selection": "Alex Newhook \u2014 Mtl \u2014 F [S227]", "pos": "F", "team": "Mtl", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "S228", "name": "Ryan Leonard", "selection": "Ryan Leonard \u2014 Was \u2014 F [S228]", "pos": "F", "team": "Was", "avg": 39.0, "so": 0.0, "notes": ""}, {"id": "S229", "name": "Conor Garland", "selection": "Conor Garland \u2014 Van \u2014 F [S229]", "pos": "F", "team": "Van", "avg": 39.0, "so": 0.0, "notes": ""}, {"id": "S230", "name": "Trevor Moore", "selection": "Trevor Moore \u2014 LA \u2014 F [S230]", "pos": "F", "team": "LA", "avg": 39.0, "so": 0.0, "notes": ""}, {"id": "S231", "name": "Seth Jones", "selection": "Seth Jones \u2014 Flo \u2014 D [S231]", "pos": "D", "team": "Flo", "avg": 39.0, "so": 0.0, "notes": ""}, {"id": "S232", "name": "Matthew Savoie", "selection": "Matthew Savoie \u2014 Edm \u2014 F [S232]", "pos": "F", "team": "Edm", "avg": 39.0, "so": 0.0, "notes": ""}, {"id": "S233", "name": "Ryan Donato", "selection": "Ryan Donato \u2014 Chi \u2014 F [S233]", "pos": "F", "team": "Chi", "avg": 39.0, "so": 0.0, "notes": ""}, {"id": "S234", "name": "Brandon Montour", "selection": "Brandon Montour \u2014 Sea \u2014 D [S234]", "pos": "D", "team": "Sea", "avg": 38.0, "so": 0.0, "notes": ""}, {"id": "S235", "name": "Igor Chernyshov", "selection": "Igor Chernyshov \u2014 SJ \u2014 F [S235]", "pos": "F", "team": "SJ", "avg": 38.0, "so": 0.0, "notes": ""}, {"id": "S236", "name": "William Karlsson", "selection": "William Karlsson \u2014 Veg \u2014 F [S236]", "pos": "F", "team": "Veg", "avg": 38.0, "so": 0.0, "notes": ""}, {"id": "S237", "name": "Sean Couturier", "selection": "Sean Couturier \u2014 Phi \u2014 F [S237]", "pos": "F", "team": "Phi", "avg": 37.0, "so": 0.0, "notes": ""}, {"id": "S238", "name": "MacKenzie Weegar", "selection": "MacKenzie Weegar \u2014 Uta \u2014 D [S238]", "pos": "D", "team": "Uta", "avg": 37.0, "so": 0.0, "notes": ""}, {"id": "S239", "name": "Kris Letang", "selection": "Kris Letang \u2014 Pit \u2014 D [S239]", "pos": "D", "team": "Pit", "avg": 36.0, "so": 0.0, "notes": ""}, {"id": "S240", "name": "Tony DeAngelo", "selection": "Tony DeAngelo \u2014 NYI \u2014 D [S240]", "pos": "D", "team": "NYI", "avg": 35.0, "so": 0.0, "notes": ""}, {"id": "G001", "name": "Andrei Vasilevskiy", "selection": "Andrei Vasilevskiy \u2014 TB \u2014 G [G001]", "pos": "G", "team": "TB", "avg": 40.0, "so": 0.0, "notes": ""}, {"id": "G002", "name": "Jake Oettinger", "selection": "Jake Oettinger \u2014 Dal \u2014 G [G002]", "pos": "G", "team": "Dal", "avg": 37.0, "so": 0.0, "notes": ""}, {"id": "G003", "name": "Karel Vejmelka", "selection": "Karel Vejmelka \u2014 Uta \u2014 G [G003]", "pos": "G", "team": "Uta", "avg": 35.0, "so": 0.0, "notes": ""}, {"id": "G004", "name": "Logan Thompson", "selection": "Logan Thompson \u2014 Wsh \u2014 G [G004]", "pos": "G", "team": "Wsh", "avg": 32.0, "so": 0.0, "notes": ""}, {"id": "G005", "name": "Jeremy Swayman", "selection": "Jeremy Swayman \u2014 Bos \u2014 G [G005]", "pos": "G", "team": "Bos", "avg": 32.0, "so": 0.0, "notes": ""}, {"id": "G006", "name": "Ilya Sorokin", "selection": "Ilya Sorokin \u2014 NYI \u2014 G [G006]", "pos": "G", "team": "NYI", "avg": 31.0, "so": 0.0, "notes": ""}, {"id": "G007", "name": "Brandon Bussi", "selection": "Brandon Bussi \u2014 Car \u2014 G [G007]", "pos": "G", "team": "Car", "avg": 31.0, "so": 0.0, "notes": ""}, {"id": "G008", "name": "Juuse Saros", "selection": "Juuse Saros \u2014 Nsh \u2014 G [G008]", "pos": "G", "team": "Nsh", "avg": 29.0, "so": 0.0, "notes": ""}, {"id": "G009", "name": "Linus Ullmark", "selection": "Linus Ullmark \u2014 Ott \u2014 G [G009]", "pos": "G", "team": "Ott", "avg": 29.0, "so": 0.0, "notes": ""}, {"id": "G010", "name": "Lukas Dostal", "selection": "Lukas Dostal \u2014 Ana \u2014 G [G010]", "pos": "G", "team": "Ana", "avg": 29.0, "so": 0.0, "notes": ""}, {"id": "G011", "name": "Igor Shesterkin", "selection": "Igor Shesterkin \u2014 NYR \u2014 G [G011]", "pos": "G", "team": "NYR", "avg": 28.0, "so": 0.0, "notes": ""}, {"id": "G012", "name": "Daniel Vladar", "selection": "Daniel Vladar \u2014 Phi \u2014 G [G012]", "pos": "G", "team": "Phi", "avg": 28.0, "so": 0.0, "notes": ""}, {"id": "G013", "name": "Jakub Dobes", "selection": "Jakub Dobes \u2014 Mtl \u2014 G [G013]", "pos": "G", "team": "Mtl", "avg": 27.0, "so": 0.0, "notes": ""}, {"id": "G014", "name": "Sergei Bobrovsky", "selection": "Sergei Bobrovsky \u2014 Tor \u2014 G [G014]", "pos": "G", "team": "Tor", "avg": 27.0, "so": 0.0, "notes": ""}, {"id": "G015", "name": "Ukko-Pekka Luukkonen", "selection": "Ukko-Pekka Luukkonen \u2014 Buf \u2014 G [G015]", "pos": "G", "team": "Buf", "avg": 27.0, "so": 0.0, "notes": ""}, {"id": "G016", "name": "Scott Wedgewood", "selection": "Scott Wedgewood \u2014 Col \u2014 G [G016]", "pos": "G", "team": "Col", "avg": 27.0, "so": 0.0, "notes": ""}, {"id": "G017", "name": "John Gibson", "selection": "John Gibson \u2014 Det \u2014 G [G017]", "pos": "G", "team": "Det", "avg": 27.0, "so": 0.0, "notes": ""}, {"id": "G018", "name": "Carter Hart", "selection": "Carter Hart \u2014 Vgk \u2014 G [G018]", "pos": "G", "team": "Vgk", "avg": 27.0, "so": 0.0, "notes": ""}, {"id": "G019", "name": "Jesper Wallstedt", "selection": "Jesper Wallstedt \u2014 Min \u2014 G [G019]", "pos": "G", "team": "Min", "avg": 26.0, "so": 0.0, "notes": ""}, {"id": "G020", "name": "Mackenzie Blackwood", "selection": "Mackenzie Blackwood \u2014 Col \u2014 G [G020]", "pos": "G", "team": "Col", "avg": 26.0, "so": 0.0, "notes": ""}, {"id": "G021", "name": "Connor Hellebuyck", "selection": "Connor Hellebuyck \u2014 Win \u2014 G [G021]", "pos": "G", "team": "Win", "avg": 25.0, "so": 0.0, "notes": ""}, {"id": "G022", "name": "Stuart Skinner", "selection": "Stuart Skinner \u2014 Pit \u2014 G [G022]", "pos": "G", "team": "Pit", "avg": 25.0, "so": 0.0, "notes": ""}, {"id": "G023", "name": "Jacob Markstrom", "selection": "Jacob Markstrom \u2014 Flo \u2014 G [G023]", "pos": "G", "team": "Flo", "avg": 25.0, "so": 0.0, "notes": ""}, {"id": "G024", "name": "Joel Hofer", "selection": "Joel Hofer \u2014 Stl \u2014 G [G024]", "pos": "G", "team": "Stl", "avg": 24.0, "so": 0.0, "notes": ""}, {"id": "G025", "name": "Jet Greaves", "selection": "Jet Greaves \u2014 Cbj \u2014 G [G025]", "pos": "G", "team": "Cbj", "avg": 24.0, "so": 0.0, "notes": ""}, {"id": "G026", "name": "Pyotr Kochetkov", "selection": "Pyotr Kochetkov \u2014 Car \u2014 G [G026]", "pos": "G", "team": "Car", "avg": 23.0, "so": 0.0, "notes": ""}, {"id": "G027", "name": "Jake Allen", "selection": "Jake Allen \u2014 NJ \u2014 G [G027]", "pos": "G", "team": "NJ", "avg": 23.0, "so": 0.0, "notes": ""}, {"id": "G028", "name": "Dustin Wolf", "selection": "Dustin Wolf \u2014 Cal \u2014 G [G028]", "pos": "G", "team": "Cal", "avg": 22.0, "so": 0.0, "notes": ""}, {"id": "G029", "name": "Yaroslav Askarov", "selection": "Yaroslav Askarov \u2014 SJ \u2014 G [G029]", "pos": "G", "team": "SJ", "avg": 22.0, "so": 0.0, "notes": ""}, {"id": "G030", "name": "Joey Daccord", "selection": "Joey Daccord \u2014 Sea \u2014 G [G030]", "pos": "G", "team": "Sea", "avg": 22.0, "so": 0.0, "notes": ""}, {"id": "G031", "name": "Spencer Knight", "selection": "Spencer Knight \u2014 Chi \u2014 G [G031]", "pos": "G", "team": "Chi", "avg": 21.0, "so": 0.0, "notes": ""}, {"id": "G032", "name": "Alex Lyon", "selection": "Alex Lyon \u2014 Buf \u2014 G [G032]", "pos": "G", "team": "Buf", "avg": 19.0, "so": 0.0, "notes": ""}, {"id": "G033", "name": "Adin Hill", "selection": "Adin Hill \u2014 Vgk \u2014 G [G033]", "pos": "G", "team": "Vgk", "avg": 19.0, "so": 0.0, "notes": ""}, {"id": "G034", "name": "Tristan Jarry", "selection": "Tristan Jarry \u2014 Edm \u2014 G [G034]", "pos": "G", "team": "Edm", "avg": 19.0, "so": 0.0, "notes": ""}, {"id": "G035", "name": "Arturs Silovs", "selection": "Arturs Silovs \u2014 Pit \u2014 G [G035]", "pos": "G", "team": "Pit", "avg": 19.0, "so": 0.0, "notes": ""}, {"id": "G036", "name": "Akira Schmid", "selection": "Akira Schmid \u2014 Flo \u2014 G [G036]", "pos": "G", "team": "Flo", "avg": 18.0, "so": 0.0, "notes": ""}, {"id": "G037", "name": "Anthony Stolarz", "selection": "Anthony Stolarz \u2014 Tor \u2014 G [G037]", "pos": "G", "team": "Tor", "avg": 18.0, "so": 0.0, "notes": ""}, {"id": "G038", "name": "Anton Forsberg", "selection": "Anton Forsberg \u2014 LA \u2014 G [G038]", "pos": "G", "team": "LA", "avg": 17.0, "so": 0.0, "notes": ""}, {"id": "G039", "name": "David Rittich", "selection": "David Rittich \u2014 Cal \u2014 G [G039]", "pos": "G", "team": "Cal", "avg": 15.0, "so": 0.0, "notes": ""}, {"id": "G040", "name": "Jacob Fowler", "selection": "Jacob Fowler \u2014 Mtl \u2014 G [G040]", "pos": "G", "team": "Mtl", "avg": 15.0, "so": 0.0, "notes": ""}];
+    const UNIQUE_LAST_NAMES = {"mcdavid": "S001", "kucherov": "S002", "mackinnon": "S003", "celebrini": "S004", "draisaitl": "S005", "pastrnak": "S006", "suzuki": "S007", "scheifele": "S008", "necas": "S009", "nylander": "S010", "robertson": "S011", "eichel": "S012", "kaprizov": "S013", "keller": "S014", "connor": "S015", "bouchard": "S016", "guentzel": "S017", "johnston": "S018", "marner": "S019", "rantanen": "S020", "boldy": "S021", "panarin": "S022", "makar": "S024", "caufield": "S025", "crosby": "S026", "matthews": "S027", "debrincat": "S028", "aho": "S029", "werenski": "S030", "st\u00fctzle": "S032", "hagel": "S033", "zibanejad": "S035", "raymond": "S036", "bratt": "S039", "thomas": "S040", "dahlin": "S042", "reinhart": "S043", "stone": "S044", "schmaltz": "S045", "kempe": "S046", "guenther": "S047", "slafkovsky": "S048", "barkov": "S049", "ehlers": "S050", "carlsson": "S052", "konecny": "S053", "fox": "S054", "larkin": "S055", "hischier": "S056", "bedard": "S057", "gauthier": "S058", "batherson": "S059", "marchenko": "S060", "point": "S061", "o'reilly": "S062", "tavares": "S063", "barzal": "S064", "rust": "S065", "vilardi": "S066", "hyman": "S067", "svechnikov": "S068", "miller": "S069", "malkin": "S070", "tuch": "S071", "knies": "S072", "stamkos": "S073", "geekie": "S074", "nelson": "S075", "strome": "S076", "holloway": "S077", "smith": "S078", "malone": "S079", "duchene": "S080", "demidov": "S081", "sennecke": "S082", "cooley": "S083", "zacha": "S084", "raddysh": "S085", "horvat": "S086", "hintz": "S087", "schaefer": "S088", "terry": "S089", "heiskanen": "S090", "ovechkin": "S091", "sanderson": "S093", "wilson": "S094", "josi": "S095", "carlson": "S096", "zegras": "S097", "fantilli": "S098", "pettersson": "S099", "hertl": "S100", "barbashev": "S101", "dorofoyev": "S102", "fiala": "S103", "mccann": "S104", "marchand": "S105", "trocheck": "S106", "lafreniere": "S107", "sergachev": "S108", "seider": "S109", "cozens": "S110", "nugent-hopkins": "S111", "bertuzzi": "S112", "mcavoy": "S113", "morrissey": "S114", "bennett": "S115", "coyle": "S116", "verhaeghe": "S117", "rakell": "S118", "eklund": "S119", "lacombe": "S120", "kane": "S121", "jarvis": "S122", "chychrun": "S123", "nichushkin": "S124", "cirelli": "S125", "gostisbehere": "S126", "blake": "S127", "granlund": "S128", "michkov": "S129", "evangelista": "S130", "boeser": "S131", "peterka": "S132", "rossi": "S133", "byfield": "S134", "kyrou": "S135", "kadri": "S136", "ek": "S137", "dubois": "S138", "snuggerud": "S139", "zuccarello": "S140", "mantha": "S141", "mcleod": "S142", "tippett": "S143", "buchnevich": "S144", "eberle": "S145", "lindholm": "S146", "mcmichael": "S147", "faber": "S148", "dobson": "S149", "stephenson": "S150", "arvidsson": "S151", "lehkonen": "S152", "beniers": "S153", "theodore": "S154", "doan": "S155", "toffoli": "S156", "marchment": "S157", "pinto": "S158", "mckenna": "S159", "zucker": "S160", "byram": "S161", "quinn": "S162", "wennberg": "S163", "kreider": "S164", "benson": "S165", "lundell": "S166", "nazar": "S167", "giroux": "S168", "hedman": "S169", "hronek": "S170", "meier": "S171", "tsyplakov": "S172", "coronato": "S173", "dvorak": "S174", "andersson": "S175", "mctavish": "S176", "huberdeau": "S177", "hall": "S178", "mittelstadt": "S179", "debrusk": "S180", "stankoven": "S181", "protas": "S182", "benn": "S183", "palmieri": "S185", "holmstrom": "S186", "frondell": "S187", "schenn": "S188", "mcmann": "S189", "teravainen": "S190", "frost": "S191", "marchessault": "S192", "kakko": "S193", "dunn": "S194", "monahan": "S195", "lafferiere": "S196", "harley": "S197", "perreault": "S198", "foerster": "S199", "hartman": "S200", "novak": "S201", "mercer": "S203", "cuyle": "S204", "backlund": "S205", "lee": "S206", "crouse": "S207", "copp": "S208", "graff": "S209", "cates": "S210", "norris": "S211", "chabot": "S212", "bjorkstrand": "S213", "chinakhov": "S214", "landeskog": "S215", "ekholm": "S216", "seguin": "S217", "neighbours": "S218", "matheson": "S219", "maccelli": "S220", "perfetti": "S221", "bourque": "S222", "rielly": "S223", "coleman": "S224", "hamilton": "S225", "cowan": "S226", "newhook": "S227", "leonard": "S228", "garland": "S229", "moore": "S230", "jones": "S231", "savoie": "S232", "donato": "S233", "montour": "S234", "chernyshov": "S235", "couturier": "S237", "weegar": "S238", "letang": "S239", "deangelo": "S240", "vasilevskiy": "G001", "oettinger": "G002", "vejmelka": "G003", "swayman": "G005", "sorokin": "G006", "bussi": "G007", "saros": "G008", "ullmark": "G009", "dostal": "G010", "shesterkin": "G011", "vladar": "G012", "dobes": "G013", "bobrovsky": "G014", "luukkonen": "G015", "wedgewood": "G016", "gibson": "G017", "hart": "G018", "wallstedt": "G019", "blackwood": "G020", "hellebuyck": "G021", "skinner": "G022", "markstrom": "G023", "hofer": "G024", "greaves": "G025", "kochetkov": "G026", "allen": "G027", "wolf": "G028", "askarov": "G029", "daccord": "G030", "knight": "G031", "lyon": "G032", "hill": "G033", "jarry": "G034", "silovs": "G035", "schmid": "G036", "stolarz": "G037", "rittich": "G039", "fowler": "G040"};
+
+    // State
+    let currentSheetId = localStorage.getItem('draft_sheet_id') || '1icHGh1Q-f_JDt8D4rUyEZKk0XI3qdcxDiaY1nVCLB4w';
+    let currentMe = localStorage.getItem('draft_me') || 'Justin';
+    let currentTab = 'F';
+    let lastAnalysisResult = null;
+    let syncInterval = null;
+    let lastSyncTime = null;
+
+    // Normalization logic identical to draft_helper.py
+    function normalize(str) {
+      if (!str) return '';
+      return str.toString()
+        .normalize('NFKD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    // Initialize Alias Dictionary
+    const ALIAS_MAP = new Map();
+    const PLAYER_MAP = new Map();
+
+    for (const p of PLAYERS_DB) {
+      const pts = p.pos === 'G' ? (p.avg * 2 + p.so * 2) : p.avg;
+      const playerObj = { ...p, points: pts };
+      PLAYER_MAP.set(p.id, playerObj);
+
+      for (const a of [p.id, p.name, p.selection]) {
+        const norm = normalize(a);
+        if (!ALIAS_MAP.has(norm)) ALIAS_MAP.set(norm, new Set());
+        ALIAS_MAP.get(norm).add(p.id);
+      }
+    }
+
+    // Add unique last names for quick phone typing
+    for (const [ln, pid] of Object.entries(UNIQUE_LAST_NAMES)) {
+      const norm = normalize(ln);
+      if (!ALIAS_MAP.has(norm)) ALIAS_MAP.set(norm, new Set());
+      ALIAS_MAP.get(norm).add(pid);
+    }
+
+    // Run Scarcity Heuristic (exact methodology of draft_helper.py)
+    function runAnalysis(participants, meName) {
+      const targets = { F: 9, D: 2, G: 2 };
+      const picked = new Set();
+      const counts = {};
+
+      for (const part of participants) {
+        counts[part.owner] = { F: 0, D: 0, G: 0, total: 0, lastPick: null };
+        for (const pickStr of part.picks) {
+          if (!pickStr || !pickStr.trim()) continue;
+          const ids = ALIAS_MAP.get(normalize(pickStr));
+          if (ids && ids.size === 1) {
+            const pid = [...ids][0];
+            picked.add(pid);
+            const p = PLAYER_MAP.get(pid);
+            counts[part.owner][p.pos]++;
+            counts[part.owner].total++;
+            counts[part.owner].lastPick = p.name;
+          }
+        }
+      }
+
+      const available = { F: [], D: [], G: [] };
+      for (const p of PLAYER_MAP.values()) {
+        if (!picked.has(p.id)) {
+          available[p.pos].push(p);
+        }
+      }
+
+      for (const pos of ['F', 'D', 'G']) {
+        available[pos].sort((a, b) => {
+          if (b.points !== a.points) return b.points - a.points;
+          return a.name.localeCompare(b.name);
+        });
+      }
+
+      const demand = { F: 0, D: 0, G: 0 };
+      for (const pos of ['F', 'D', 'G']) {
+        for (const part of participants) {
+          demand[pos] += Math.max(0, targets[pos] - counts[part.owner][pos]);
+        }
+      }
+
+      const me = meName || participants[0]?.owner || 'Justin';
+      if (!counts[me]) counts[me] = { F: 0, D: 0, G: 0, total: 0, lastPick: null };
+
+      const baselines = {};
+      const candidates = [];
+
+      for (const pos of ['F', 'D', 'G']) {
+        const pool = available[pos];
+        const d = demand[pos];
+        const basePts = (d > 0 && d <= pool.length) ? pool[d - 1].points : 0;
+        const basePlayer = (d > 0 && d <= pool.length) ? pool[d - 1] : null;
+        baselines[pos] = { points: basePts, player: basePlayer, demand: d, availableCount: pool.length };
+
+        const need = Math.max(0, targets[pos] - counts[me][pos]);
+        if (need > 0 && pool.length > 0) {
+          const top = pool[0];
+          const val = top.points - basePts;
+          candidates.push({ pos, player: top, value: val, points: top.points, baseline: basePts, basePlayer });
+        }
+      }
+
+      candidates.sort((a, b) => {
+        if (b.value !== a.value) return b.value - a.value;
+        if (b.points !== a.points) return b.points - a.points;
+        const order = { F: 0, D: 1, G: 2 };
+        return order[a.pos] - order[b.pos];
+      });
+
+      return {
+        me,
+        targets,
+        counts,
+        demand,
+        baselines,
+        candidates,
+        topPick: candidates[0] || null,
+        available,
+        participants
+      };
+    }
+
+    // Parse Google Sheets Visualization Table
+    function parseGvizTable(table) {
+      if (!table || !table.cols || !table.rows) return [];
+      const colLabels = table.cols.map(c => (c.label || '').trim());
+      const hasLabels = colLabels.some(l => l.length > 0 && l.toLowerCase() !== 'sheet1');
+
+      let headerRow = [];
+      let startRow = 0;
+
+      if (hasLabels) {
+        headerRow = colLabels;
+        startRow = 0;
+      } else if (table.rows.length > 0) {
+        headerRow = table.rows[0].c.map(cell => cell && cell.v ? String(cell.v).trim() : '');
+        startRow = 1;
+      }
+
+      const participants = [];
+      for (let c = 0; c < table.cols.length; c++) {
+        const owner = headerRow[c] || '';
+        if (!owner) continue;
+
+        const picks = [];
+        for (let r = startRow; r < table.rows.length; r++) {
+          const row = table.rows[r];
+          if (row && row.c && row.c[c]) {
+            const val = row.c[c].v;
+            if (val !== null && val !== undefined && String(val).trim()) {
+              picks.push(String(val).trim());
+            }
+          }
+        }
+        participants.push({ owner, picks });
+      }
+
+      // If sheet only has single placeholder cell (initial state), provide existing board from draft.xlsx
+      if (participants.length <= 1 && (!participants[0] || participants[0].picks.length === 0)) {
+        return [
+          { owner: 'Olivier', picks: ['Connor McDavid — Edm — F [S001]'] },
+          { owner: 'Justin', picks: ['Nick Suzuki — Mtl — F [S007]'] },
+          { owner: 'Francois', picks: ['Nikita Kucherov — TB — F [S002]'] },
+          { owner: 'Luc', picks: [] },
+          { owner: 'Manou', picks: [] },
+          { owner: 'Pierre', picks: [] },
+          { owner: 'Jean', picks: [] }
+        ];
+      }
+
+      return participants;
+    }
+
+    // Fetch Google Sheet via JSONP or Fetch
+    async function fetchSheetData() {
+      const dot = document.getElementById('statusDot');
+      const syncText = document.getElementById('syncText');
+      dot.className = 'status-dot syncing';
+      syncText.innerText = 'Syncing...';
+
+      const url = `https://docs.google.com/spreadsheets/d/${currentSheetId}/gviz/tq?tqx=out:json&_ts=${Date.now()}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const text = await res.text();
+        const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+        const data = JSON.parse(jsonStr);
+        handleNewTable(data.table);
+      } catch (err) {
+        // Fallback to JSONP (works in all browsers without CORS issues)
+        loadViaJSONP();
+      }
+    }
+
+    function loadViaJSONP() {
+      const scriptId = 'gviz_jsonp_script';
+      const existing = document.getElementById(scriptId);
+      if (existing) existing.remove();
+
+      window.__gvizCallback = function(data) {
+        if (data && data.table) {
+          handleNewTable(data.table);
+        } else {
+          onSyncError('Invalid sheet format');
+        }
+      };
+
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = `https://docs.google.com/spreadsheets/d/${currentSheetId}/gviz/tq?tqx=responseHandler:__gvizCallback&_ts=${Date.now()}`;
+      script.onerror = () => onSyncError('Network error');
+      document.body.appendChild(script);
+    }
+
+    function handleNewTable(table) {
+      const participants = parseGvizTable(table);
+      updateParticipantsDropdown(participants);
+      lastAnalysisResult = runAnalysis(participants, currentMe);
+      renderUI(lastAnalysisResult);
+
+      const dot = document.getElementById('statusDot');
+      const syncText = document.getElementById('syncText');
+      dot.className = 'status-dot';
+      lastSyncTime = new Date();
+      syncText.innerText = `Synced ${lastSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+    }
+
+    function onSyncError(msg) {
+      const dot = document.getElementById('statusDot');
+      const syncText = document.getElementById('syncText');
+      dot.className = 'status-dot error';
+      syncText.innerText = `Sync error (${msg})`;
+    }
+
+    // Update Dropdown with detected participants
+    function updateParticipantsDropdown(participants) {
+      const select = document.getElementById('meSelect');
+      const owners = participants.map(p => p.owner);
+
+      let html = '';
+      for (const o of owners) {
+        html += `<option value="${o}" ${o === currentMe ? 'selected' : ''}>${o}</option>`;
+      }
+      select.innerHTML = html;
+    }
+
+    function onSelectMe(val) {
+      currentMe = val;
+      localStorage.setItem('draft_me', val);
+      if (lastAnalysisResult) {
+        lastAnalysisResult = runAnalysis(lastAnalysisResult.participants, currentMe);
+        renderUI(lastAnalysisResult);
+      }
+    }
+
+    // Render the Dashboard UI
+    function renderUI(data) {
+      if (!data) return;
+
+      // 1. Recommended Pick Hero
+      const rec = data.topPick;
+      if (rec) {
+        document.getElementById('recName').innerText = rec.player.name;
+        document.getElementById('recPos').innerText = rec.pos;
+        document.getElementById('recPos').className = `badge badge-pos-${rec.pos}`;
+        document.getElementById('recTeam').innerText = rec.player.team;
+        document.getElementById('recRank').innerText = `#1 Available ${rec.pos}`;
+        document.getElementById('recValue').innerText = `+${rec.value.toFixed(1)}`;
+        document.getElementById('recPoints').innerText = `${rec.points.toFixed(1)} pts`;
+        document.getElementById('recBaseline').innerText = `${rec.baseline.toFixed(1)} pts`;
+
+        const cutoffPlayerName = rec.basePlayer ? rec.basePlayer.name : 'None';
+        document.getElementById('recCutoffText').innerText = `vs. last ${rec.pos} needed (${cutoffPlayerName}, ${rec.baseline.toFixed(1)} pts)`;
+      } else {
+        document.getElementById('recName').innerText = '✅ Roster Complete!';
+        document.getElementById('recValue').innerText = '0.0';
+        document.getElementById('recCutoffText').innerText = 'All targets reached.';
+      }
+
+      // 2. My Roster Status
+      const myCount = data.counts[data.me] || { F: 0, D: 0, G: 0, total: 0 };
+      document.getElementById('cntF').innerText = `${myCount.F} / ${data.targets.F}`;
+      document.getElementById('remF').innerText = `${Math.max(0, data.targets.F - myCount.F)} needed`;
+      document.getElementById('pillF').className = myCount.F >= data.targets.F ? 'roster-pill full' : 'roster-pill';
+
+      document.getElementById('cntD').innerText = `${myCount.D} / ${data.targets.D}`;
+      document.getElementById('remD').innerText = `${Math.max(0, data.targets.D - myCount.D)} needed`;
+      document.getElementById('pillD').className = myCount.D >= data.targets.D ? 'roster-pill full' : 'roster-pill';
+
+      document.getElementById('cntG').innerText = `${myCount.G} / ${data.targets.G}`;
+      document.getElementById('remG').innerText = `${Math.max(0, data.targets.G - myCount.G)} needed`;
+      document.getElementById('pillG').className = myCount.G >= data.targets.G ? 'roster-pill full' : 'roster-pill';
+
+      document.getElementById('cntTot').innerText = `${myCount.total} / 13`;
+      document.getElementById('remTot').innerText = `${Math.max(0, 13 - myCount.total)} left`;
+      document.getElementById('myRosterTotal').innerText = `${myCount.total} / 13 Picks`;
+
+      // 3. Positional Scarcity Breakdown
+      for (const pos of ['F', 'D', 'G']) {
+        const top = data.available[pos][0];
+        const base = data.baselines[pos];
+        const topPts = top ? top.points : 0;
+        const netVal = top ? (topPts - base.points) : 0;
+
+        document.getElementById(`scTop${pos}`).innerText = top ? `${top.name} (${topPts.toFixed(1)})` : 'None available';
+        document.getElementById(`scCutoff${pos}`).innerText = base.player ? `Cutoff #${base.demand}: ${base.player.name} (${base.points.toFixed(1)})` : (base.demand === 0 ? 'No demand' : 'Shortage (0.0)');
+        document.getElementById(`scVal${pos}`).innerText = `+${netVal.toFixed(1)}`;
+        document.getElementById(`scDemand${pos}`).innerText = `Demand: ${base.demand}`;
+        document.getElementById(`countBadge${pos}`).innerText = data.available[pos].length;
+      }
+
+      // 4. Render Available Players Table
+      renderPlayerList();
+
+      // 5. Render Opponents League Grid
+      renderLeagueGrid(data);
+    }
+
+    function switchTab(pos) {
+      currentTab = pos;
+      for (const p of ['F', 'D', 'G']) {
+        document.getElementById(`tabBtn${p}`).className = p === pos ? 'tab-btn active' : 'tab-btn';
+      }
+      renderPlayerList();
+    }
+
+    function renderPlayerList() {
+      if (!lastAnalysisResult) return;
+      const container = document.getElementById('playerListContainer');
+      const query = normalize(document.getElementById('playerSearch').value);
+      const list = lastAnalysisResult.available[currentTab] || [];
+
+      const filtered = query ? list.filter(p => normalize(p.name).includes(query) || normalize(p.team).includes(query)) : list.slice(0, 20);
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b;">No available players match.</div>';
+        return;
+      }
+
+      let html = '';
+      for (let i = 0; i < filtered.length; i++) {
+        const p = filtered[i];
+        const rank = list.indexOf(p) + 1;
+        html += `
+          <div class="player-row" onclick="copyPlayer('${p.name.replace(/'/g, "\\'")}')">
+            <div class="player-left">
+              <span class="player-rank">#${rank}</span>
+              <div>
+                <div class="player-name">${p.name}</div>
+                <div class="player-meta">
+                  <span class="badge badge-pos-${p.pos}" style="font-size:10px; padding:1px 5px;">${p.pos}</span>
+                  <span>${p.team}</span>
+                  ${p.pos === 'G' ? `<span>(${p.avg}W, ${p.so}SO)</span>` : `<span>Proj: ${p.avg} pts</span>`}
+                </div>
+              </div>
+            </div>
+            <div class="player-points">${p.points.toFixed(1)} pts</div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    function copyPlayer(name) {
+      navigator.clipboard.writeText(name).then(() => {
+        showToast(`Copied "${name}" to clipboard!`);
+      }).catch(() => {
+        showToast(`Selected "${name}"`);
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function renderLeagueGrid(data) {
+      const container = document.getElementById('leagueGridContainer');
+      let html = '';
+      for (const part of data.participants) {
+        const c = data.counts[part.owner] || { F: 0, D: 0, G: 0, total: 0, lastPick: 'None' };
+        const isMe = part.owner === data.me;
+        html += `
+          <div class="league-user-card ${isMe ? 'active' : ''}">
+            <div class="league-user-name">
+              <span>${part.owner}</span>
+              ${isMe ? '<span style="color:var(--accent); font-size:10px;">(You)</span>' : ''}
+            </div>
+            <div class="league-user-stats">
+              <div>F: <strong>${c.F}/9</strong> | D: <strong>${c.D}/2</strong> | G: <strong>${c.G}/2</strong></div>
+              <div>Total: <strong>${c.total}/13</strong></div>
+            </div>
+            <div class="league-user-last-pick" title="${c.lastPick || 'No picks yet'}">
+              Last: ${c.lastPick || '—'}
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    function toggleConfig() {
+      const box = document.getElementById('configBox');
+      box.classList.toggle('open');
+    }
+
+    function saveSheetId(val) {
+      currentSheetId = val.trim();
+      localStorage.setItem('draft_sheet_id', currentSheetId);
+      document.getElementById('openSheetBtn').href = `https://docs.google.com/spreadsheets/d/${currentSheetId}/edit`;
+      triggerSync();
+    }
+
+    function triggerSync() {
+      fetchSheetData();
+    }
+
+    // Auto-sync polling every 5 seconds
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('sheetIdInput').value = currentSheetId;
+      document.getElementById('openSheetBtn').href = `https://docs.google.com/spreadsheets/d/${currentSheetId}/edit`;
+      fetchSheetData();
+      syncInterval = setInterval(fetchSheetData, 5000);
+    });
+  </script>
+</body>
+</html>
