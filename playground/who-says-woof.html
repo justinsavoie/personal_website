@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Who Says Woof? — Animaux en anglais</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #fef08a 0%, #fef9c3 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: manipulation;
+  overflow: hidden;
+  user-select: none;
+}
+.app {
+  width: 100%;
+  max-width: 430px;
+  height: 100vh;
+  max-height: 880px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.nav-link {
+  color: #854d0e;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 15px;
+  background: white;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.score {
+  font-size: 20px;
+  font-weight: 900;
+  color: #a16207;
+  background: white;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.repeat-btn {
+  background: #ca8a04;
+  color: white;
+  border: none;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(202, 138, 4, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.repeat-btn:active { transform: scale(0.96); }
+
+.prompt-card {
+  background: white;
+  border-radius: 20px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+.prompt-sound {
+  font-size: 28px;
+  font-weight: 900;
+  color: #b45309;
+}
+.prompt-question {
+  font-size: 19px;
+  font-weight: 800;
+  color: #334155;
+  margin-top: 4px;
+}
+
+.cards-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 8px 0;
+}
+
+.animal-card {
+  background: white;
+  border: 3px solid #fde047;
+  border-radius: 22px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.07);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s;
+  outline: none;
+  text-align: left;
+}
+.animal-card:active {
+  transform: scale(0.96);
+}
+.animal-card.correct {
+  border-color: #22c55e;
+  background: #f0fdf4;
+  animation: happyJump 0.6s ease;
+}
+@keyframes happyJump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08) rotate(-2deg); }
+  80% { transform: scale(1.04) rotate(2deg); }
+  100% { transform: scale(1); }
+}
+
+.animal-card.wobble {
+  animation: cardWobble 0.5s ease;
+  border-color: #f97316;
+}
+@keyframes cardWobble {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px) rotate(-3deg); }
+  50% { transform: translateX(10px) rotate(3deg); }
+  75% { transform: translateX(-6px); }
+}
+
+.animal-emoji {
+  font-size: 52px;
+  line-height: 1;
+}
+.animal-info {
+  display: flex;
+  flex-direction: column;
+}
+.animal-name {
+  font-size: 24px;
+  font-weight: 900;
+  color: #1e293b;
+}
+.animal-sound-hint {
+  font-size: 15px;
+  font-weight: 700;
+  color: #854d0e;
+}
+
+.feedback-msg {
+  text-align: center;
+  min-height: 28px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #854d0e;
+  margin-bottom: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top-bar">
+    <a class="nav-link" href="jeux-enfants.html">← Jeux</a>
+    <div class="score">⭐ <span id="scoreText">0</span></div>
+    <button class="repeat-btn" id="repeatBtn">🔊 Listen</button>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-sound" id="promptSound">...</div>
+    <div class="prompt-question" id="promptQuestion">Who says that?</div>
+  </div>
+
+  <div class="cards-container" id="cardsContainer">
+    <!-- 3 Big Animal Cards -->
+  </div>
+
+  <div class="feedback-msg" id="feedbackMsg">Tap an animal!</div>
+</div>
+
+<script>
+const ANIMALS = [
+  { id: 'dog', nameEn: 'Dog', soundEn: 'Woof woof!', emoji: '🐶' },
+  { id: 'cat', nameEn: 'Cat', soundEn: 'Meow meow!', emoji: '🐱' },
+  { id: 'cow', nameEn: 'Cow', soundEn: 'Moo moo!', emoji: '🐮' },
+  { id: 'duck', nameEn: 'Duck', soundEn: 'Quack quack!', emoji: '🦆' },
+  { id: 'pig', nameEn: 'Pig', soundEn: 'Oink oink!', emoji: '🐷' },
+  { id: 'sheep', nameEn: 'Sheep', soundEn: 'Baa baa!', emoji: '🐑' },
+  { id: 'rooster', nameEn: 'Rooster', soundEn: 'Cock-a-doodle-doo!', emoji: '🐓' },
+  { id: 'lion', nameEn: 'Lion', soundEn: 'Roar!', emoji: '🦁' },
+  { id: 'frog', nameEn: 'Frog', soundEn: 'Ribbit ribbit!', emoji: '🐸' },
+  { id: 'horse', nameEn: 'Horse', soundEn: 'Neigh neigh!', emoji: '🐴' }
+];
+
+let targetAnimal = null;
+let score = 0;
+let lock = false;
+let voices = [];
+
+function loadVoices() {
+  if ('speechSynthesis' in window) {
+    voices = speechSynthesis.getVoices();
+  }
+}
+if ('speechSynthesis' in window) {
+  speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+}
+
+function speak(text, lang = "en-US") {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const v = voices.find(vo => vo.lang.startsWith(lang.slice(0, 2)));
+  if (v) utter.voice = v;
+  utter.lang = lang;
+  utter.rate = 0.88;
+  utter.pitch = 1.05;
+  speechSynthesis.speak(utter);
+}
+
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playWinSound() {
+  try {
+    const ctx = getAudioCtx();
+    [440, 554, 659, 880].forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = f;
+      const t = ctx.currentTime + i * 0.08;
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.18);
+    });
+  } catch (e) {}
+}
+
+function playBoingSound() {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, ctx.currentTime);
+    osc.frequency.setValueAtTime(220, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+  } catch (e) {}
+}
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function nextRound() {
+  lock = false;
+  const pool = shuffle(ANIMALS).slice(0, 3);
+  targetAnimal = pool[Math.floor(Math.random() * pool.length)];
+
+  document.getElementById("promptSound").textContent = targetAnimal.soundEn;
+  document.getElementById("promptQuestion").textContent = `Who says ${targetAnimal.soundEn}?`;
+  document.getElementById("feedbackMsg").textContent = `Find the ${targetAnimal.nameEn}!`;
+
+  const container = document.getElementById("cardsContainer");
+  container.innerHTML = "";
+
+  pool.forEach(animal => {
+    const card = document.createElement("button");
+    card.className = "animal-card";
+    card.innerHTML = `
+      <div class="animal-emoji">${animal.emoji}</div>
+      <div class="animal-info">
+        <div class="animal-name">${animal.nameEn}</div>
+        <div class="animal-sound-hint">${animal.soundEn}</div>
+      </div>
+    `;
+    card.onclick = () => handleTap(animal, card);
+    container.appendChild(card);
+  });
+
+  speak(`${targetAnimal.soundEn} Who says that? Where is the ${targetAnimal.nameEn}?`);
+}
+
+function handleTap(animal, card) {
+  if (lock) return;
+
+  if (animal.id === targetAnimal.id) {
+    lock = true;
+    score++;
+    document.getElementById("scoreText").textContent = score;
+
+    playWinSound();
+    card.classList.add("correct");
+
+    const feedbackMsg = document.getElementById("feedbackMsg");
+    const praise = ["Awesome!", "Great job!", "Yes!", "Super!"][Math.floor(Math.random() * 4)];
+    feedbackMsg.textContent = `Yes! The ${animal.nameEn} says ${animal.soundEn} ⭐`;
+
+    speak(`Yes! The ${animal.nameEn} says ${animal.soundEn} ${praise}!`);
+
+    setTimeout(() => {
+      nextRound();
+    }, 1300);
+  } else {
+    playBoingSound();
+    card.classList.remove("wobble");
+    void card.offsetWidth;
+    card.classList.add("wobble");
+
+    const feedbackMsg = document.getElementById("feedbackMsg");
+    feedbackMsg.textContent = `The ${animal.nameEn} says ${animal.soundEn}`;
+
+    speak(`The ${animal.nameEn} says ${animal.soundEn} Where is the ${targetAnimal.nameEn}?`);
+  }
+}
+
+document.getElementById("repeatBtn").onclick = () => {
+  if (targetAnimal) {
+    speak(`${targetAnimal.soundEn} Where is the ${targetAnimal.nameEn}?`);
+  }
+};
+
+window.onload = () => {
+  nextRound();
+};
+</script>
+</body>
+</html>
