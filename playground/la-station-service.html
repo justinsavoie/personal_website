@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La station-service</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui, -apple-system, sans-serif;
+  min-height:100vh;
+  background:linear-gradient(180deg, #dbeafe 0%, #eff6ff 55%, #e2e8f0 100%);
+  color:#0f172a;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:900;
+  font-size:16px;
+  color:#1e3a8a;
+  background:white;
+  padding:8px 12px;
+  border-radius:14px;
+  box-shadow:0 3px 8px rgba(15,23,42,0.08);
+}
+
+.level-btn{
+  border:2px solid #bfdbfe;
+  background:#eff6ff;
+  color:#1d4ed8;
+  font-weight:900;
+  font-size:14px;
+  padding:4px 10px;
+  border-radius:10px;
+  cursor:pointer;
+}
+.level-btn:active{ transform:scale(0.96); }
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow:0 6px 18px rgba(15,23,42,0.12);
+}
+
+/* Scene: vehicle + fuel tank gauge */
+.station-scene{
+  background:linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 68%, #64748b 68%, #475569 100%);
+  border-radius:16px;
+  padding:10px 12px 8px;
+  position:relative;
+  overflow:hidden;
+  border:2px solid #bae6fd;
+}
+
+.scene-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.vehicle-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transition:transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
+.vehicle-wrap.drive-in{
+  animation:driveIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.vehicle-wrap.drive-out{
+  transform:translateX(260px);
+  opacity:0;
+}
+
+@keyframes driveIn{
+  from{ transform:translateX(-180px); opacity:0; }
+  to{ transform:translateX(0); opacity:1; }
+}
+
+.vehicle-emoji{
+  font-size:50px;
+  line-height:1;
+  /* Flip horizontally so vehicle faces right (toward the exit) */
+  display:inline-block;
+  transform:scaleX(-1);
+  filter:drop-shadow(0 4px 4px rgba(0,0,0,0.18));
+}
+
+.pump-icon{
+  font-size:38px;
+  line-height:1;
+}
+
+.tank-box{
+  flex:1;
+  background:rgba(255,255,255,0.92);
+  border-radius:12px;
+  padding:6px 10px;
+  border:2px solid #cbd5e1;
+}
+
+.tank-header{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  font-weight:800;
+  color:#334155;
+  margin-bottom:4px;
+}
+
+.tank-bar-bg{
+  width:100%;
+  height:14px;
+  background:#e2e8f0;
+  border-radius:999px;
+  overflow:hidden;
+  position:relative;
+}
+
+.tank-bar-fill{
+  height:100%;
+  width:20%;
+  background:linear-gradient(90deg, #3b82f6, #22c55e);
+  border-radius:999px;
+  transition:width 0.2s ease, background 0.2s ease;
+}
+.tank-bar-fill.exact{
+  background:linear-gradient(90deg, #16a34a, #22c55e);
+}
+.tank-bar-fill.over{
+  background:linear-gradient(90deg, #f97316, #dc2626);
+}
+
+.task{
+  text-align:center;
+  font-size:16px;
+  font-weight:900;
+  color:#1e293b;
+  min-height:22px;
+}
+
+/* Digital Gas Pump Odometer */
+.pump-screen{
+  background:#0f172a;
+  border:4px solid #334155;
+  border-radius:18px;
+  padding:10px 10px 8px;
+  color:white;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  box-shadow:inset 0 3px 10px rgba(0,0,0,0.6);
+}
+
+.target-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#1e293b;
+  padding:6px 10px;
+  border-radius:12px;
+  border:1px solid #475569;
+}
+
+.target-label{
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:#94a3b8;
+}
+
+.target-value{
+  font-size:24px;
+  font-weight:900;
+  color:#4ade80;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:0.03em;
+}
+
+/* 4-column Odometer Drums */
+.odometer-Label{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:11px;
+  font-weight:800;
+  color:#cbd5e1;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  padding:0 2px;
+}
+
+.odometer-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr auto 1fr 1fr auto;
+  align-items:center;
+  gap:5px;
+}
+
+.drum{
+  background:#1e293b;
+  border:3px solid var(--col-border, #64748b);
+  border-radius:12px;
+  padding:6px 2px 4px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  transition:transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.drum.d0{ --col-border:#a855f7; }
+.drum.d1{ --col-border:#3b82f6; }
+.drum.d2{ --col-border:#10b981; }
+.drum.d3{ --col-border:#f59e0b; }
+
+.drum.match{
+  background:#14532d;
+  border-color:#4ade80;
+}
+
+.drum.roll{
+  animation:drumRoll 0.22s ease;
+}
+
+@keyframes drumRoll{
+  0%{ transform:translateY(0) scale(1); }
+  45%{ transform:translateY(-5px) scale(1.07); }
+  100%{ transform:translateY(0) scale(1); }
+}
+
+.drum-place{
+  font-size:10px;
+  font-weight:800;
+  color:#cbd5e1;
+  text-transform:uppercase;
+}
+
+.drum-digit{
+  font-size:34px;
+  font-weight:900;
+  line-height:1.05;
+  font-variant-numeric:tabular-nums;
+  color:#f8fafc;
+}
+
+.drum-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  margin-top:3px;
+  background:#475569;
+  transition:background 0.2s ease, transform 0.2s ease;
+}
+.drum.match .drum-dot{
+  background:#4ade80;
+  transform:scale(1.25);
+}
+
+.odo-sep{
+  font-size:32px;
+  font-weight:900;
+  color:#f8fafc;
+  padding:0 1px;
+  align-self:end;
+  margin-bottom:8px;
+}
+
+.odo-unit{
+  font-size:24px;
+  font-weight:900;
+  color:#94a3b8;
+  padding-left:2px;
+}
+
+.pump-subbar{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  font-weight:800;
+  color:#cbd5e1;
+  background:#1e293b;
+  padding:5px 10px;
+  border-radius:10px;
+  font-variant-numeric:tabular-nums;
+}
+
+.added-badge{
+  color:#38bdf8;
+}
+.added-badge.over{
+  color:#f87171;
+}
+
+/* Controls: 4 columns aligned with drums */
+.nozzles-grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:8px;
+}
+
+.nozzle-col{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.pump-btn{
+  border:none;
+  border-radius:14px;
+  padding:10px 4px;
+  min-height:64px;
+  font-weight:900;
+  color:white;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  box-shadow:0 4px 0 rgba(0,0,0,0.22);
+  transition:transform 0.08s ease;
+}
+.pump-btn:active{
+  transform:translateY(2px);
+  box-shadow:0 2px 0 rgba(0,0,0,0.22);
+}
+
+.pump-btn .main-lbl{
+  font-size:18px;
+  line-height:1.1;
+}
+.pump-btn .sub-lbl{
+  font-size:11px;
+  opacity:0.9;
+  font-weight:700;
+}
+
+.p-d0{ background:#9333ea; }
+.p-d1{ background:#2563eb; }
+.p-d2{ background:#059669; }
+.p-d3{ background:#d97706; }
+
+.siphon-btn{
+  border:2px solid #cbd5e1;
+  border-radius:11px;
+  background:#f8fafc;
+  color:#475569;
+  font-weight:900;
+  font-size:14px;
+  min-height:40px;
+  padding:4px 2px;
+  cursor:pointer;
+  box-shadow:0 2px 0 rgba(0,0,0,0.08);
+}
+.siphon-btn:active{
+  transform:translateY(1px);
+  box-shadow:none;
+}
+.siphon-btn:disabled, .pump-btn:disabled{
+  opacity:0.4;
+  cursor:default;
+  transform:none;
+}
+
+.message{
+  text-align:center;
+  font-weight:900;
+  font-size:15px;
+  min-height:22px;
+  color:#1e293b;
+}
+.message.good{ color:#15803d; }
+.message.hint{ color:#b45309; }
+
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.btn{
+  border:none;
+  border-radius:14px;
+  font-weight:900;
+  font-size:16px;
+  padding:12px 10px;
+  cursor:pointer;
+  color:white;
+  box-shadow:0 4px 0 rgba(0,0,0,0.18);
+}
+.btn:active{ transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,0.18); }
+
+.btn-validate{
+  grid-column:1 / -1;
+  background:#16a34a;
+  font-size:20px;
+  padding:14px;
+}
+.btn-validate.ready{
+  background:#15803d;
+  animation:pulseReady 1s infinite alternate;
+}
+
+@keyframes pulseReady{
+  from{ transform:scale(1); }
+  to{ transform:scale(1.02); }
+}
+
+.btn-repeat{ background:#2563eb; }
+.btn-reset{ background:#64748b; }
+
+@media (max-width:380px){
+  .drum-digit{ font-size:28px; }
+  .pump-btn .main-lbl{ font-size:16px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <button class="level-btn" id="levelBtn" title="Changer de niveau">⛽ Niveau <span id="level">1</span></button>
+    <div>✅ <span id="hits">0</span></div>
+    <div>🔥 <span id="streak">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="station-scene">
+      <div class="scene-row">
+        <div class="vehicle-wrap" id="vehicleWrap">
+          <span class="vehicle-emoji" id="vehicleEmoji">🚗</span>
+        </div>
+        <div class="tank-box">
+          <div class="tank-header">
+            <span id="vehicleName">La voiture rouge</span>
+            <span id="tankStatus">En attente</span>
+          </div>
+          <div class="tank-bar-bg">
+            <div class="tank-bar-fill" id="tankFill"></div>
+          </div>
+        </div>
+        <span class="pump-icon" aria-hidden="true">⛽</span>
+      </div>
+    </div>
+
+    <div class="task" id="task">Monte le compteur jusqu'à 54,56 $ !</div>
+
+    <div class="pump-screen">
+      <div class="target-row">
+        <span class="target-label">🎯 Objectif à atteindre</span>
+        <span class="target-value" id="targetDisplay">54,56 $</span>
+      </div>
+
+      <div class="odometer-Label">
+        <span>Compteur en direct</span>
+        <span id="levelHint">Sans retenue</span>
+      </div>
+
+      <div class="odometer-grid" id="odometerGrid">
+        <div class="drum d0" id="drum0">
+          <span class="drum-place">10 $</span>
+          <span class="drum-digit" id="digit0">1</span>
+          <span class="drum-dot"></span>
+        </div>
+        <div class="drum d1" id="drum1">
+          <span class="drum-place">1 $</span>
+          <span class="drum-digit" id="digit1">0</span>
+          <span class="drum-dot"></span>
+        </div>
+        <div class="odo-sep">,</div>
+        <div class="drum d2" id="drum2">
+          <span class="drum-place">10 ¢</span>
+          <span class="drum-digit" id="digit2">1</span>
+          <span class="drum-dot"></span>
+        </div>
+        <div class="drum d3" id="drum3">
+          <span class="drum-place">1 ¢</span>
+          <span class="drum-digit" id="digit3">1</span>
+          <span class="drum-dot"></span>
+        </div>
+        <div class="odo-unit">$</div>
+      </div>
+
+      <div class="pump-subbar">
+        <span>Départ : <strong id="startDisplay">10,11 $</strong></span>
+        <span class="added-badge" id="addedDisplay">Ajouté : + 0,00 $</span>
+      </div>
+    </div>
+
+    <div class="nozzles-grid">
+      <div class="nozzle-col">
+        <button class="pump-btn p-d0" id="plus1000" data-delta="1000">
+          <span class="main-lbl">+10 $</span>
+          <span class="sub-lbl">Dizaines</span>
+        </button>
+        <button class="siphon-btn" id="minus1000" data-delta="-1000">−10 $</button>
+      </div>
+      <div class="nozzle-col">
+        <button class="pump-btn p-d1" id="plus100" data-delta="100">
+          <span class="main-lbl">+1 $</span>
+          <span class="sub-lbl">Unités</span>
+        </button>
+        <button class="siphon-btn" id="minus100" data-delta="-100">−1 $</button>
+      </div>
+      <div class="nozzle-col">
+        <button class="pump-btn p-d2" id="plus10" data-delta="10">
+          <span class="main-lbl">+10 ¢</span>
+          <span class="sub-lbl">0,10 $</span>
+        </button>
+        <button class="siphon-btn" id="minus10" data-delta="-10">−10 ¢</button>
+      </div>
+      <div class="nozzle-col">
+        <button class="pump-btn p-d3" id="plus1" data-delta="1">
+          <span class="main-lbl">+1 ¢</span>
+          <span class="sub-lbl">0,01 $</span>
+        </button>
+        <button class="siphon-btn" id="minus1" data-delta="-1">−1 ¢</button>
+      </div>
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <div class="actions">
+      <button class="btn btn-validate" id="validate">En route ! 🚦</button>
+      <button class="btn btn-repeat" id="repeat">🔊 Écouter</button>
+      <button class="btn btn-reset" id="reset">🔄 Départ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const VEHICLES = [
+  ["🚗", "La voiture rouge"],
+  ["🚕", "Le taxi jaune"],
+  ["🚙", "Le VUS bleu"],
+  ["🏎️", "La voiture de course"],
+  ["🚌", "L'autobus scolaire"],
+  ["🚒", "Le camion de pompier"],
+  ["🚑", "L'ambulance"],
+  ["🚓", "La voiture de police"],
+  ["🛻", "La camionnette"],
+  ["🚚", "Le camion de livraison"],
+  ["🚜", "Le tracteur"]
+];
+
+const LEVEL_NAMES = {
+  1: "Sans retenue",
+  2: "Retenue sur les sous",
+  3: "Toutes les retenues"
+};
+
+const MAX_CENTS = 9999; // 99,99 $
+
+const levelEl = document.getElementById("level");
+const levelHintEl = document.getElementById("levelHint");
+const hitsEl = document.getElementById("hits");
+const streakEl = document.getElementById("streak");
+const vehicleWrapEl = document.getElementById("vehicleWrap");
+const vehicleEmojiEl = document.getElementById("vehicleEmoji");
+const vehicleNameEl = document.getElementById("vehicleName");
+const tankStatusEl = document.getElementById("tankStatus");
+const tankFillEl = document.getElementById("tankFill");
+const taskEl = document.getElementById("task");
+const targetDisplayEl = document.getElementById("targetDisplay");
+const startDisplayEl = document.getElementById("startDisplay");
+const addedDisplayEl = document.getElementById("addedDisplay");
+const messageEl = document.getElementById("message");
+const validateBtn = document.getElementById("validate");
+
+const drumEls = [
+  document.getElementById("drum0"),
+  document.getElementById("drum1"),
+  document.getElementById("drum2"),
+  document.getElementById("drum3")
+];
+const digitEls = [
+  document.getElementById("digit0"),
+  document.getElementById("digit1"),
+  document.getElementById("digit2"),
+  document.getElementById("digit3")
+];
+
+let hits = 0;
+let streak = 0;
+let level = 1;
+let manualLevel = false;
+let lock = false;
+let isFirstRound = true;
+let round = null;
+let audioCtx = null;
+let voices = [];
+
+function loadVoices(){
+  if(typeof speechSynthesis === "undefined") return;
+  voices = speechSynthesis.getVoices();
+}
+if(typeof speechSynthesis !== "undefined"){
+  speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+}
+
+function speak(text){
+  if(typeof speechSynthesis === "undefined") return;
+  try{
+    speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    const frVoice = voices.find(v => v.lang && v.lang.startsWith("fr"));
+    if(frVoice) utter.voice = frVoice;
+    utter.lang = "fr-FR";
+    utter.rate = 0.92;
+    speechSynthesis.speak(utter);
+  }catch(e){}
+}
+
+function randInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pick(arr){
+  return arr[randInt(0, arr.length - 1)];
+}
+
+function getAudioContext(){
+  if(!audioCtx && typeof window !== "undefined"){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(Ctx) audioCtx = new Ctx();
+  }
+  return audioCtx;
+}
+
+function playNotes(notes, type, duration, stepMs){
+  try{
+    const ctx = getAudioContext();
+    if(!ctx) return;
+    if(ctx.state === "suspended") ctx.resume();
+    notes.forEach((f, i) => {
+      setTimeout(() => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type || "sine";
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.11, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + duration + 0.03);
+      }, i * (stepMs || 75));
+    });
+  }catch(e){}
+}
+
+function sfxPump(delta){
+  const abs = Math.abs(delta);
+  const base = abs === 1000 ? 220 : abs === 100 ? 330 : abs === 10 ? 495 : 660;
+  const freq = delta > 0 ? base : base * 0.82;
+  playNotes([freq], delta > 0 ? "triangle" : "sine", 0.09, 0);
+}
+
+function sfxCarry(){
+  playNotes([587.33, 880], "triangle", 0.14, 55);
+}
+
+function sfxWin(){
+  playNotes([523.25, 659.25, 783.99, 1046.5], "sine", 0.22, 80);
+}
+
+function sfxHint(){
+  playNotes([260, 220], "sawtooth", 0.18, 90);
+}
+
+// Always format in Québec gas-pump format: "10,11 $" or "0,45 $"
+function formatPumpMoney(cents){
+  const sign = cents < 0 ? "- " : "";
+  const abs = Math.abs(cents);
+  const d = Math.floor(abs / 100);
+  const c = abs % 100;
+  return `${sign}${d},${String(c).padStart(2, "0")} $`;
+}
+
+// Friendly difference format ("4,20 $" or "45 ¢" when under 1 $)
+function formatDiffMoney(cents){
+  const abs = Math.abs(cents);
+  if(abs < 100) return `${abs} ¢`;
+  return formatPumpMoney(abs);
+}
+
+function speakMoney(cents){
+  const abs = Math.abs(cents);
+  const d = Math.floor(abs / 100);
+  const c = abs % 100;
+  if(d === 0) return `${c} ${c > 1 ? "sous" : "sou"}`;
+  const dollars = `${d} ${d > 1 ? "dollars" : "dollar"}`;
+  if(c === 0) return dollars;
+  return `${dollars} et ${c} ${c > 1 ? "sous" : "sou"}`;
+}
+
+// Convert integer cents (0..9999) into 4 digits [tensDollars, unitDollars, dimes, cents]
+function centsToDigits(cents){
+  const clamped = Math.max(0, Math.min(MAX_CENTS, cents));
+  const s = String(clamped).padStart(4, "0");
+  return [Number(s[0]), Number(s[1]), Number(s[2]), Number(s[3])];
+}
+
+function digitsToCents(d0, d1, d2, d3){
+  return d0 * 1000 + d1 * 100 + d2 * 10 + d3;
+}
+
+function generateRoundForLevel(lvl){
+  // Very first round of the session uses the classic 10,11 $ -> 54,56 $ example!
+  if(isFirstRound && lvl === 1){
+    isFirstRound = false;
+    return { start: 1011, target: 5456 };
+  }
+  isFirstRound = false;
+
+  if(lvl === 1){
+    // No carrying required: each target digit >= start digit, and total increase is meaningful
+    const s0 = randInt(1, 5);
+    const s1 = randInt(0, 5);
+    const s2 = randInt(0, 5);
+    const s3 = randInt(0, 5);
+
+    const t0 = randInt(s0 + 1, Math.min(9, s0 + 5));
+    const t1 = randInt(s1 + 1, Math.min(9, s1 + 5));
+    const t2 = randInt(s2 + 1, Math.min(9, s2 + 5));
+    const t3 = randInt(s3 + 1, Math.min(9, s3 + 5));
+
+    return {
+      start: digitsToCents(s0, s1, s2, s3),
+      target: digitsToCents(t0, t1, t2, t3)
+    };
+  }
+
+  if(lvl === 2){
+    // Carrying on the cents/dimes into dollars (start cents > target cents)
+    const s0 = randInt(1, 6);
+    const s1 = randInt(1, 6);
+    const s2 = randInt(6, 9);
+    const s3 = randInt(4, 9);
+
+    const t0 = randInt(s0 + 1, Math.min(9, s0 + 3));
+    const t1 = randInt(s1 + 2, 9);
+    const t2 = randInt(0, 4);
+    const t3 = randInt(0, 5);
+
+    return {
+      start: digitsToCents(s0, s1, s2, s3),
+      target: digitsToCents(t0, t1, t2, t3)
+    };
+  }
+
+  // Level 3: Full carrying across cents AND unit dollars into ten-dollars
+  const s0 = randInt(1, 6);
+  const s1 = randInt(6, 9);
+  const s2 = randInt(5, 9);
+  const s3 = randInt(5, 9);
+
+  const t0 = randInt(s0 + 2, 9);
+  const t1 = randInt(0, 4);
+  const t2 = randInt(0, 4);
+  const t3 = randInt(0, 4);
+
+  return {
+    start: digitsToCents(s0, s1, s2, s3),
+    target: digitsToCents(t0, t1, t2, t3)
+  };
+}
+
+function updateAutoLevel(){
+  if(manualLevel) return;
+  if(hits >= 8) level = 3;
+  else if(hits >= 4) level = 2;
+  else level = 1;
+}
+
+function newRound(){
+  lock = false;
+  updateAutoLevel();
+
+  const [emoji, name] = pick(VEHICLES);
+  const { start, target } = generateRoundForLevel(level);
+
+  round = {
+    emoji,
+    name,
+    start,
+    current: start,
+    target,
+    smallTapStreak: 0
+  };
+
+  levelEl.textContent = level;
+  levelHintEl.textContent = LEVEL_NAMES[level];
+  vehicleEmojiEl.textContent = emoji;
+  vehicleNameEl.textContent = name;
+
+  vehicleWrapEl.classList.remove("drive-out", "drive-in");
+  void vehicleWrapEl.offsetWidth;
+  vehicleWrapEl.classList.add("drive-in");
+
+  targetDisplayEl.textContent = formatPumpMoney(target);
+  startDisplayEl.textContent = formatPumpMoney(start);
+  taskEl.textContent = `Monte de ${formatPumpMoney(start)} jusqu'à ${formatPumpMoney(target)} !`;
+
+  setMessage("", "");
+  renderOdometer(null);
+
+  setTimeout(() => {
+    if(round) speak(taskSpeech());
+  }, 280);
+}
+
+function taskSpeech(){
+  return `Le compteur est à ${speakMoney(round.start)}. Monte l'essence jusqu'à ${speakMoney(round.target)}.`;
+}
+
+function setMessage(text, kind){
+  messageEl.textContent = text;
+  messageEl.className = "message" + (kind ? ` ${kind}` : "");
+}
+
+function renderOdometer(prevCents){
+  const curDigits = centsToDigits(round.current);
+  const tgtDigits = centsToDigits(round.target);
+  const prevDigits = prevCents !== null ? centsToDigits(prevCents) : null;
+
+  for(let i = 0; i < 4; i++){
+    digitEls[i].textContent = curDigits[i];
+    drumEls[i].classList.toggle("match", curDigits[i] === tgtDigits[i]);
+
+    if(prevDigits && prevDigits[i] !== curDigits[i]){
+      drumEls[i].classList.remove("roll");
+      void drumEls[i].offsetWidth;
+      drumEls[i].classList.add("roll");
+    }
+  }
+
+  // Update Added counter
+  const diffFromStart = round.current - round.start;
+  const sign = diffFromStart >= 0 ? "+ " : "− ";
+  addedDisplayEl.textContent = `Ajouté : ${sign}${formatPumpMoney(Math.abs(diffFromStart))}`;
+  addedDisplayEl.classList.toggle("over", round.current > round.target);
+
+  // Update fuel tank bar
+  const totalNeeded = Math.max(1, round.target - round.start);
+  const currentAdded = round.current - round.start;
+  // Base 18% fuel at start, 100% at target
+  let pct = 18 + (currentAdded / totalNeeded) * 82;
+  pct = Math.max(5, Math.min(100, pct));
+  tankFillEl.style.width = `${pct}%`;
+  tankFillEl.classList.toggle("exact", round.current === round.target);
+  tankFillEl.classList.toggle("over", round.current > round.target);
+
+  if(round.current === round.target){
+    tankStatusEl.textContent = "Prêt ! ✅";
+    validateBtn.classList.add("ready");
+  } else if(round.current > round.target){
+    tankStatusEl.textContent = "Trop plein !";
+    validateBtn.classList.remove("ready");
+  } else {
+    tankStatusEl.textContent = "En remplissage...";
+    validateBtn.classList.remove("ready");
+  }
+
+  // Disable buttons that would go out of [0, 9999]
+  document.querySelectorAll("[data-delta]").forEach(btn => {
+    const d = Number(btn.dataset.delta);
+    btn.disabled = lock || (round.current + d < 0) || (round.current + d > MAX_CENTS);
+  });
+}
+
+function applyPump(delta){
+  if(lock || !round) return;
+  const next = round.current + delta;
+  if(next < 0 || next > MAX_CENTS) return;
+
+  const prev = round.current;
+  const prevDigits = centsToDigits(prev);
+  round.current = next;
+  const nextDigits = centsToDigits(next);
+
+  // Check if a carry/borrow rolled a higher place-value drum
+  const changedCount = prevDigits.filter((d, i) => d !== nextDigits[i]).length;
+  if(changedCount > 1){
+    sfxCarry();
+  } else {
+    sfxPump(delta);
+  }
+
+  renderOdometer(prev);
+
+  // Friendly non-punishing coaching if child mashes small jets many times when a 10x jet fits
+  const remaining = round.target - round.current;
+  if(delta > 0 && delta < 1000 && remaining >= delta * 10){
+    round.smallTapStreak++;
+    if(round.smallTapStreak >= 10){
+      const biggerLabel = delta === 1 ? "+10 ¢" : delta === 10 ? "+1 $" : "+10 $";
+      setMessage(`💡 Astuce : utilise le bouton ${biggerLabel} pour aller plus vite !`, "hint");
+      round.smallTapStreak = 0;
+      return;
+    }
+  } else {
+    round.smallTapStreak = 0;
+  }
+
+  if(round.current === round.target){
+    setMessage("C'est exact ! Appuie sur « En route ! 🚦 »", "good");
+  } else {
+    setMessage("", "");
+  }
+}
+
+function validate(){
+  if(lock || !round) return;
+
+  if(round.current === round.target){
+    lock = true;
+    hits++;
+    streak++;
+    hitsEl.textContent = hits;
+    streakEl.textContent = streak;
+
+    const added = round.target - round.start;
+    sfxWin();
+    setMessage(`Bravo ! + ${formatPumpMoney(added)} ajouté (${formatPumpMoney(round.target)}) 🎉`, "good");
+    speak(`Parfait ! ${speakMoney(round.target)} pile. Bonne route !`);
+
+    vehicleWrapEl.classList.remove("drive-in");
+    vehicleWrapEl.classList.add("drive-out");
+
+    renderOdometer(null);
+    setTimeout(newRound, 2100);
+  } else if(round.current < round.target){
+    const missing = round.target - round.current;
+    sfxHint();
+    setMessage(`Il manque encore ${formatDiffMoney(missing)} ! Continue de pomper.`, "hint");
+    speak(`Il manque encore ${speakMoney(missing)}.`);
+  } else {
+    const extra = round.current - round.target;
+    sfxHint();
+    setMessage(`Il y a ${formatDiffMoney(extra)} en trop ! Utilise les boutons moins.`, "hint");
+    speak(`C'est trop ! Enlève ${speakMoney(extra)}.`);
+  }
+}
+
+document.querySelectorAll("[data-delta]").forEach(btn => {
+  btn.onclick = () => applyPump(Number(btn.dataset.delta));
+});
+
+validateBtn.onclick = validate;
+
+document.getElementById("repeat").onclick = () => {
+  if(round) speak(taskSpeech());
+};
+
+document.getElementById("reset").onclick = () => {
+  if(lock || !round) return;
+  const prev = round.current;
+  round.current = round.start;
+  round.smallTapStreak = 0;
+  sfxPump(-10);
+  setMessage("Compteur remis au départ.", "");
+  renderOdometer(prev);
+};
+
+document.getElementById("levelBtn").onclick = () => {
+  if(lock) return;
+  manualLevel = true;
+  level = (level % 3) + 1;
+  newRound();
+};
+
+newRound();
+</script>
+</body>
+</html>
