@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le garage des secours</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:#eaf3f8;color:#183449;font-family:system-ui,-apple-system,sans-serif;touch-action:manipulation}button,a,input,select{font:inherit}button{cursor:pointer;touch-action:manipulation}button:focus-visible,a:focus-visible{outline:4px solid #d97706;outline-offset:3px}button:disabled{cursor:default;opacity:.4}button:active:not(:disabled){transform:translateY(2px)}[hidden]{display:none!important}.app{max-width:430px;margin:auto;padding:12px 14px 24px}.top{display:flex;align-items:center;justify-content:space-between;gap:8px}.top a{color:#37566c;text-decoration:none;font-size:14px;font-weight:700;padding:12px 0}.settings{border:1px solid #b9cdd9;background:transparent;color:#37566c;border-radius:12px;min-height:44px;padding:8px 12px}h1{font-size:25px;letter-spacing:-.8px;margin:12px 0 4px}p{line-height:1.5}.eyebrow{font-size:11px;font-weight:850;letter-spacing:2px;color:#547387;text-transform:uppercase;margin:15px 0 0}.intro{color:#547387;font-size:15px;margin:6px 0 18px}.choices{display:grid;gap:12px}.choice{border:2px solid white;border-radius:20px;background:white;display:flex;align-items:center;text-align:left;gap:16px;padding:18px;box-shadow:0 5px 12px #18344909;color:#183449}.choice .portrait{background:var(--pale);border:3px solid var(--color);border-radius:50%;padding:9px;font-size:34px}.choice strong{display:block;font-size:21px}.choice small{display:block;font-size:14px;color:#547387;margin-top:3px}.choice .truck{font-size:42px;margin-left:auto}.card{border-radius:24px;background:#fff;padding:14px;box-shadow:0 6px 20px #1834490c;margin-top:12px}.crew{display:flex;align-items:center;gap:10px;font-weight:850;font-size:18px}.badge{display:grid;place-items:center;background:var(--pale);border:2px solid var(--color);width:46px;height:46px;border-radius:50%;font-size:27px}.crew small{font-size:12px;font-weight:650;color:#547387;display:block;margin-top:2px}.stage{height:150px;position:relative;border-radius:16px;overflow:hidden;margin:12px 0;background:linear-gradient(#dbedf7 0 70%,#8299a5 70% 74%,#506673 74%)}.building{position:absolute;right:20px;bottom:39px;background:#fdfaf0;border:4px solid #b1c6d2;border-bottom:0;width:150px;height:104px;border-radius:10px 10px 0 0}.building:before{content:'SECOURS';display:block;text-align:center;font-weight:900;font-size:11px;letter-spacing:2px;color:#547387;padding:8px}.door{position:absolute;bottom:0;left:17px;right:17px;height:65px;background:repeating-linear-gradient(#c1d0d8 0 9px,#a8bbc6 9px 11px);border:3px solid #819aa8;border-bottom:0;transform-origin:top;transition:transform .7s}.vehicle{position:absolute;left:45px;bottom:21px;font-size:69px;line-height:1.2;transform:scaleX(-1);transition:left 1.3s ease-in-out}.pump{position:absolute;bottom:34px;left:15px;font-size:34px}.rescue-object{position:absolute;right:34px;bottom:40px;font-size:38px;opacity:0;transition:opacity .5s}.helped{position:absolute;right:13px;top:12px;font-size:28px;opacity:0}.stage.depart .door{transform:scaleY(.05)}.stage.depart .vehicle{left:185px}.stage.rescued .building,.stage.rescued .pump{opacity:0}.stage.rescued .rescue-object,.stage.rescued .helped{opacity:1}.stage.rescued .vehicle{left:95px}.speech{text-align:center;min-height:58px;display:flex;flex-direction:column;justify-content:center;gap:3px}.speech strong{font-size:23px;letter-spacing:-.5px}.translation{font-size:14px;color:#547387;min-height:21px}.replays{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.replay{border:1px solid #c7dae6;background:#f1f7fb;color:#234b67;min-height:49px;border-radius:13px;font-weight:750;font-size:14px}.pump-panel{margin-top:12px;background:#193b4e;border-radius:22px;padding:17px;color:white}.displays{display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:center}.label{font-size:11px;letter-spacing:1.5px;color:#b7d1df;font-weight:750;text-transform:uppercase}.number{font-size:56px;line-height:1.2;font-weight:850;font-variant-numeric:tabular-nums}.target{color:#b9e9cf}.unit{font-size:13px;color:#b7d1df}.meter{height:9px;border-radius:10px;background:#355669;margin:14px 0 0;overflow:hidden}.fill{height:100%;width:0;background:#93d3ef;border-radius:10px;transition:width .18s}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.adjust{min-height:70px;border:0;border-radius:16px;font-size:29px;font-weight:850;background:white;color:#234b67;box-shadow:0 3px 0 #cfdee7}.adjust.plus{background:#c8e9fa;box-shadow:0 3px 0 #9ac8df}.tens .adjust{min-height:48px;font-size:21px}.hint{min-height:32px;text-align:center;font-size:14px;font-weight:700;color:#37566c;margin:12px 0 6px}.primary{width:100%;min-height:64px;border:0;border-radius:17px;background:#26714f;box-shadow:0 4px 0 #175437;color:white;font-weight:850;font-size:23px}.secondary{display:block;margin:16px auto 0;background:transparent;border:0;color:#547387;min-height:44px;font-weight:700;font-size:14px}.footer{text-align:center;color:#547387;font-size:13px;margin-top:18px}dialog{border:0;border-radius:22px;max-width:390px;width:calc(100% - 28px);color:#183449;padding:24px;box-shadow:0 20px 70px #18344933}dialog::backdrop{background:#18344988}dialog h2{margin-top:0;font-size:23px}dialog label{display:block;margin:20px 0;font-weight:700}dialog select{display:block;width:100%;padding:12px;border:1px solid #b9cdd9;border-radius:12px;background:#f1f7fb;margin-top:8px}dialog input{width:22px;height:22px;vertical-align:middle;margin-right:10px}dialog p{font-size:14px;color:#547387}@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}@media(max-width:350px){.app{padding:8px 10px 20px}.speech strong{font-size:21px}.stage{height:130px}.number{font-size:48px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="top"><a href="jeux-enfants.html">‹ Les jeux</a><button class="settings" id="settings" aria-label="Réglages pour les parents">⚙️ Parents</button></header>
+<section id="home">
+<p class="eyebrow">Écoute · touche · à la rescousse</p><h1>Le garage des secours 🐾</h1><p class="intro">Choisis ton équipier !</p>
+<div class="choices" id="choices"></div><p class="footer">L’anglais à écouter. Le français à portée de main.</p>
+</section>
+<section id="game" hidden aria-label="La pompe du garage">
+<div class="card">
+<div class="crew"><span class="badge" id="badge"></span><div><span id="crewName"></span><small>Le garage des secours</small></div></div>
+<div class="stage" id="stage" aria-hidden="true"><div class="building"><div class="door"></div></div><span class="pump">⛽</span><span class="vehicle" id="vehicle"></span><span class="rescue-object" id="rescueObject">🐈</span><span class="helped">💚</span></div>
+<div class="speech"><strong id="english" lang="en"></strong><span class="translation" id="translation"></span></div>
+<div class="replays"><button class="replay" id="repeatEn">🔊 Encore en anglais</button><button class="replay" id="repeatFr">🇫🇷 En français</button></div>
+</div>
+<div id="pumpArea">
+<div class="pump-panel"><div class="displays"><div><div class="label">Dans le réservoir</div><div class="number" id="current">0</div><div class="unit">litres</div></div><div><div class="label" id="targetLabel">Objectif</div><div class="number target" id="target">5</div><div class="unit" id="targetUnit">litres</div></div></div><div class="meter"><div class="fill" id="fill"></div></div></div>
+<div class="controls tens" id="tens" hidden><button class="adjust" data-delta="-10" aria-label="Enlever dix litres">−10</button><button class="adjust plus" data-delta="10" aria-label="Ajouter dix litres">+10</button></div>
+<div class="controls"><button class="adjust" data-delta="-1" aria-label="Enlever un litre">−1</button><button class="adjust plus" data-delta="1" aria-label="Ajouter un litre">+1</button></div>
+</div>
+<p class="hint" id="hint" role="status"></p>
+<button class="primary" id="go">🚦 GO !</button><button class="primary" id="next" hidden>Prochain véhicule →</button>
+<button class="secondary" id="choose">🐾 Changer d’équipier</button>
+</section>
+</main>
+<dialog id="parentDialog" aria-labelledby="parentTitle"><h2 id="parentTitle">Le coin des parents</h2><label>Les nombres<select id="range"><option value="5">De 1 à 5</option><option value="10">De 1 à 10</option><option value="20">De 1 à 20</option><option value="100">De 1 à 100</option></select></label><label><input type="checkbox" id="effects">Petits sons de la pompe</label><label><input type="checkbox" id="explore">Mode exploration libre</label><p>Il écoute et touche. Les deux boutons de langue répètent toujours la phrase du moment. Aucun micro n’est utilisé.</p><button class="primary" id="save">C’est prêt !</button></dialog>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const CREW=[
+ {name:'Chase',role:'La voiture de police',emoji:'🚓',color:'#3069b3',pale:'#e0edff',en:'Police car.',fr:'La voiture de police.'},
+ {name:'Marcus',role:'Le camion de pompiers',emoji:'🚒',color:'#be4941',pale:'#ffebe7',en:'Fire truck.',fr:'Le camion de pompiers.'},
+ {name:'Ruben',role:'Le camion de chantier',emoji:'🚜',color:'#b98120',pale:'#fff2ce',en:'Yellow truck.',fr:'Le camion jaune.'}
+];
+const MISSIONS=[{emoji:'🐈',en:'The kitten is safe. Thank you!',fr:'Le chaton est en sécurité. Merci !'},{emoji:'🐇',en:'The bunny is safe. Thank you!',fr:'Le lapin est en sécurité. Merci !'},{emoji:'🐢',en:'The turtle is safe. Thank you!',fr:'La tortue est en sécurité. Merci !'}];
+let settings={max:5,effects:false,explore:false};
+try{const s=JSON.parse(localStorage.getItem('rescue-garage-v1'));if(s){if([5,10,20,100].includes(s.max))settings.max=s.max;settings.effects=s.effects===true;settings.explore=s.explore===true;}}catch{}
+let crew=CREW[0],current=0,target=1,phase='home',line={en:'',fr:''},translated=false,roundIndex=0,timers=[],audio=null,voices=[];
+function refreshVoices(){if('speechSynthesis' in window)voices=speechSynthesis.getVoices();}
+if('speechSynthesis' in window){refreshVoices();speechSynthesis.addEventListener('voiceschanged',refreshVoices);}
+function speak(lang){if(!('speechSynthesis' in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(line[lang]);u.lang=lang==='en'?'en-US':'fr-FR';u.rate=.82;const candidates=voices.filter(v=>v.lang.toLowerCase().startsWith(lang));u.voice=candidates.find(v=>v.localService)||candidates[0]||null;speechSynthesis.speak(u);}catch{}}
+function setLine(en,fr,autoplay=true){line={en,fr};$('english').textContent=en;$('translation').textContent=translated?fr:'';if(autoplay)speak('en');}
+function cancelTimers(){timers.forEach(clearTimeout);timers=[];}
+function later(fn,ms){timers.push(setTimeout(fn,ms));}
+function tone(f=440){if(!settings.effects)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;audio=audio||new C();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.045,t);g.gain.exponentialRampToValueAtTime(.001,t+.12);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+.13);}catch{}}
+function requestLine(){return{en:`${target} ${target===1?'litre':'litres'}, please!`,fr:`${target} ${target===1?'litre':'litres'}, s’il te plaît !`};}
+function render(){
+ $('current').textContent=current;$('target').textContent=settings.explore?'∞':target;$('targetLabel').textContent=settings.explore?'À toi de jouer':'Objectif';$('targetUnit').textContent=settings.explore?'librement':'litres';
+ $('fill').style.width=`${Math.min(100,current/(settings.explore?settings.max:target)*100)}%`;
+ $('fill').style.background=current===target&&!settings.explore?'#b9e9cf':'#93d3ef';
+ $('tens').hidden=settings.max<20;
+ document.querySelectorAll('[data-delta]').forEach(b=>{const n=current+Number(b.dataset.delta);b.disabled=phase!=='pumping'||n<0||n>settings.max+10;});
+ $('go').disabled=phase!=='pumping';
+}
+function newRound(){
+ cancelTimers();phase='pumping';current=0;translated=false;target=1+Math.floor(Math.random()*settings.max);
+ $('home').hidden=true;$('game').hidden=false;$('stage').className='stage';$('pumpArea').hidden=false;$('go').hidden=false;$('next').hidden=true;$('hint').textContent='';
+ $('badge').textContent='🐶';$('badge').style.setProperty('--color',crew.color);$('badge').style.setProperty('--pale',crew.pale);$('crewName').textContent=crew.name;$('vehicle').textContent=crew.emoji;
+ const mission=MISSIONS[roundIndex%MISSIONS.length];$('rescueObject').textContent=mission.emoji;
+ const req=requestLine();setLine(settings.explore?'Fill it up!':req.en,settings.explore?'Remplis le réservoir !':req.fr);render();
+}
+function pump(delta){if(phase!=='pumping')return;const n=current+delta;if(n<0||n>settings.max+10)return;current=n;tone(delta>0?550:350);$('hint').textContent='';const req=requestLine();setLine(settings.explore?'Fill it up!':req.en,settings.explore?'Remplis le réservoir !':req.fr,false);render();}
+function depart(){
+ if(phase!=='pumping')return;
+ if(!settings.explore&&current!==target){const difference=Math.abs(target-current);const unit=difference===1?'litre':'litres';const low=current<target;
+ $('hint').textContent=low?`Encore ${difference} ${unit} · touche +`:`${difference} ${unit} en trop · touche −`;
+ setLine(low?`${difference} more ${unit}, please!`:`Take away ${difference} ${unit}, please!`,low?`Ajoute encore ${difference} ${unit}, s’il te plaît !`:`Enlève ${difference} ${unit}, s’il te plaît !`);return;}
+ phase='departing';$('hint').textContent='';$('pumpArea').hidden=true;setLine('Ready! Go!','C’est prêt ! En route !');$('stage').classList.add('depart');render();
+ later(()=>{const mission=MISSIONS[roundIndex%MISSIONS.length];phase='rescued';$('stage').classList.add('rescued');setLine(mission.en,mission.fr);$('go').hidden=true;$('next').hidden=false;$('hint').textContent='Mission accomplie 💚';roundIndex++;},1800);
+}
+CREW.forEach(c=>{const b=document.createElement('button');b.className='choice';b.style.setProperty('--color',c.color);b.style.setProperty('--pale',c.pale);b.innerHTML=`<span class="portrait" aria-hidden="true">🐶</span><span><strong>${c.name}</strong><small>${c.role}</small></span><span class="truck" aria-hidden="true">${c.emoji}</span>`;b.onclick=()=>{crew=c;newRound();};$('choices').appendChild(b);});
+document.querySelectorAll('[data-delta]').forEach(b=>b.onclick=()=>pump(Number(b.dataset.delta)));
+$('repeatEn').onclick=()=>speak('en');$('repeatFr').onclick=()=>{translated=true;$('translation').textContent=line.fr;speak('fr');};$('go').onclick=depart;$('next').onclick=newRound;
+$('choose').onclick=()=>{cancelTimers();phase='home';if('speechSynthesis' in window)speechSynthesis.cancel();$('game').hidden=true;$('home').hidden=false;};
+$('settings').onclick=()=>{if('speechSynthesis' in window)speechSynthesis.cancel();$('range').value=String(settings.max);$('effects').checked=settings.effects;$('explore').checked=settings.explore;$('parentDialog').showModal();};
+$('save').onclick=()=>{settings={max:Number($('range').value),effects:$('effects').checked,explore:$('explore').checked};try{localStorage.setItem('rescue-garage-v1',JSON.stringify(settings));}catch{}$('parentDialog').close();if(phase!=='home')newRound();};
+window.addEventListener('pagehide',()=>{cancelTimers();if('speechSynthesis' in window)speechSynthesis.cancel();});
+</script>
+</body>
+</html>
