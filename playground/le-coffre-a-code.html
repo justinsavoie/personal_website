@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le coffre à code</title>
+<style>
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body{
+  margin:0; font-family:system-ui; min-height:100vh;
+  background:linear-gradient(180deg,#bae6fd 0%,#38bdf8 55%,#0369a1 100%);
+  display:flex; justify-content:center; touch-action:manipulation; color:#0c4a6e;
+}
+.app{ width:100%; max-width:430px; padding:12px; display:flex; flex-direction:column; gap:10px; }
+.top{ display:flex; justify-content:space-between; font-weight:900; font-size:16px; color:#082f49; }
+.hidden{ display:none !important; }
+
+/* parrot */
+.parrot{ display:flex; align-items:center; gap:8px; }
+.parrot .bird{ font-size:44px; line-height:1; }
+.bubble{ flex:1; background:white; border-radius:16px; padding:10px 12px; font-weight:800; font-size:17px; min-height:48px; display:flex; align-items:center; box-shadow:0 3px 10px rgba(0,0,0,.15); }
+
+/* chest */
+.chest{ position:relative; align-self:center; width:270px; margin-top:4px; }
+.lid{ height:70px; background:linear-gradient(180deg,#b45309,#92400e); border-radius:90px 90px 8px 8px / 70px 70px 8px 8px; border:4px solid #451a03; border-bottom:none; transform-origin:left bottom; transition:transform .7s cubic-bezier(.3,1.4,.5,1); position:relative; }
+.lid::after{ content:""; position:absolute; left:0; right:0; bottom:10px; height:8px; background:#fbbf24; }
+.box{ background:linear-gradient(180deg,#a16207,#78350f); border:4px solid #451a03; border-radius:6px 6px 16px 16px; padding:12px 8px 14px; position:relative; text-align:center; }
+.box::before,.box::after{ content:""; position:absolute; top:0; bottom:0; width:12px; background:#fbbf24; opacity:.85; }
+.box::before{ left:18px; } .box::after{ right:18px; }
+.screen{ position:relative; z-index:1; background:#052e16; color:#4ade80; border-radius:12px; border:3px solid #fbbf24; font-family:ui-monospace,Menlo,monospace; font-weight:900; font-size:56px; letter-spacing:6px; padding:4px 0; text-shadow:0 0 10px #4ade80; }
+.lock{ position:absolute; left:50%; top:-26px; transform:translateX(-50%); font-size:36px; z-index:3; }
+.chest.open .lid{ transform:rotate(-70deg); }
+.chest.shake{ animation:shake .45s; }
+@keyframes shake{ 0%,100%{transform:translateX(0)} 20%{transform:translateX(-10px)} 40%{transform:translateX(10px)} 60%{transform:translateX(-7px)} 80%{transform:translateX(7px)} }
+.loot{ position:absolute; left:50%; top:20px; transform:translate(-50%,0) scale(0); font-size:64px; z-index:4; transition:transform .8s cubic-bezier(.3,1.5,.5,1); pointer-events:none; }
+.chest.open .loot{ transform:translate(-50%,-70px) scale(1); }
+.coin{ position:fixed; top:-40px; font-size:28px; z-index:50; pointer-events:none; animation:fall 1.8s linear forwards; }
+@keyframes fall{ to{ transform:translateY(110vh) rotate(360deg); } }
+
+/* wheels */
+.wheels{ display:flex; justify-content:center; gap:10px; }
+.wheel{ background:white; border-radius:18px; padding:6px; width:88px; display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow:0 4px 12px rgba(0,0,0,.18); border:4px solid var(--c); }
+.wheel.bad{ background:#fef9c3; border-color:#eab308; }
+.wheel button{ width:100%; height:46px; border:none; border-radius:12px; background:var(--c); color:white; font-size:24px; font-weight:900; cursor:pointer; }
+.wheel button:active{ transform:scale(.94); }
+.digit{ font-size:52px; font-weight:900; line-height:1.1; color:var(--c); }
+.wlabel{ font-size:13px; font-weight:900; color:var(--c); }
+.w-c{ --c:#2563eb; } .w-d{ --c:#dc2626; } .w-u{ --c:#16a34a; }
+
+/* choices */
+.choices{ display:flex; gap:10px; justify-content:center; }
+.choice{ flex:1; border:5px solid #fbbf24; background:white; border-radius:18px; height:92px; font-size:40px; font-weight:900; color:#78350f; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-shadow:0 4px 12px rgba(0,0,0,.18); }
+.choice small{ font-size:15px; }
+.choice.sel{ background:#fde68a; border-color:#d97706; transform:translateY(-4px); }
+
+/* buttons */
+.row{ display:flex; gap:10px; }
+.big{ flex:1; border:none; border-radius:18px; font-size:20px; font-weight:900; padding:16px 8px; cursor:pointer; box-shadow:0 5px 0 rgba(0,0,0,.25); color:white; }
+.big:active{ transform:translateY(3px); box-shadow:0 2px 0 rgba(0,0,0,.25); }
+.listen{ background:#7c3aed; }
+.go{ background:#16a34a; flex:1.4; }
+.go.next{ background:#f59e0b; }
+
+/* chips + vitrine */
+.chips{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+.chip{ border:none; border-radius:999px; padding:8px 12px; font-weight:800; font-size:14px; background:rgba(255,255,255,.55); color:#082f49; cursor:pointer; }
+.chip.on{ background:white; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+.vitrine{ background:rgba(255,255,255,.5); border-radius:16px; padding:8px; text-align:center; }
+.vitrine h3{ margin:0 0 4px; font-size:14px; }
+.vitrine .items{ display:flex; flex-wrap:wrap; justify-content:center; gap:2px; }
+.vitrine span{ font-size:26px; width:38px; }
+.vitrine span.locked{ filter:grayscale(1) brightness(.4); opacity:.45; }
+
+/* home */
+.home{ text-align:center; display:flex; flex-direction:column; gap:14px; align-items:center; padding-top:40px; }
+.home .big-emoji{ font-size:90px; }
+.home h1{ margin:0; font-size:34px; color:#082f49; }
+.home p{ margin:0; font-weight:700; font-size:18px; }
+.home .big{ flex:none; width:80%; background:#f59e0b; font-size:26px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div id="home" class="home">
+    <div class="big-emoji">🏴‍☠️</div>
+    <h1>Le coffre à code</h1>
+    <p>Aide le perroquet à ouvrir les coffres au trésor !</p>
+    <button class="big" id="start">⚓ Jouer</button>
+  </div>
+
+  <div id="game" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
+    <div class="top"><span>🪙 <span id="coins">0</span></span><span>🏆 <span id="opened">0</span> coffres</span><span id="lvlTop">Niveau 1</span></div>
+
+    <div class="parrot"><div class="bird">🦜</div><div class="bubble" id="msg"></div></div>
+
+    <div class="chest" id="chest">
+      <div class="lock" id="lock">🔒</div>
+      <div class="loot" id="loot">💎</div>
+      <div class="lid"></div>
+      <div class="box"><div class="screen" id="screen">000</div></div>
+    </div>
+
+    <div class="wheels" id="wheels">
+      <div class="wheel w-c" data-i="0"><button data-d="1" aria-label="plus">▲</button><div class="digit">0</div><button data-d="-1" aria-label="moins">▼</button><div class="wlabel">centaines</div></div>
+      <div class="wheel w-d" data-i="1"><button data-d="1" aria-label="plus">▲</button><div class="digit">0</div><button data-d="-1" aria-label="moins">▼</button><div class="wlabel">dizaines</div></div>
+      <div class="wheel w-u" data-i="2"><button data-d="1" aria-label="plus">▲</button><div class="digit">0</div><button data-d="-1" aria-label="moins">▼</button><div class="wlabel">unités</div></div>
+    </div>
+
+    <div class="choices hidden" id="choices"></div>
+
+    <div class="row">
+      <button class="big listen" id="listen">🔊 Écouter</button>
+      <button class="big go" id="go">🔑 Ouvrir</button>
+    </div>
+
+    <div class="chips" id="levels">
+      <button class="chip" data-l="1">⭐ Facile</button>
+      <button class="chip" data-l="2">⭐⭐ Moyen</button>
+      <button class="chip" data-l="3">⭐⭐⭐ Pièges</button>
+    </div>
+    <div class="vitrine"><h3>Mes trésors</h3><div class="items" id="vitrine"></div></div>
+  </div>
+</div>
+
+<script>
+/* ---------- nombres en français ---------- */
+const U = ["zéro","un","deux","trois","quatre","cinq","six","sept","huit","neuf","dix","onze","douze","treize","quatorze","quinze","seize"];
+const T = ["","","vingt","trente","quarante","cinquante","soixante"];
+function sous100(n){
+  if(n < 17) return U[n];
+  if(n < 20) return "dix-" + U[n-10];
+  const t = Math.floor(n/10), u = n % 10;
+  if(n < 70){
+    if(u === 0) return T[t];
+    if(u === 1) return T[t] + " et un";
+    return T[t] + "-" + U[u];
+  }
+  if(n < 80){
+    if(u === 1) return "soixante et onze";
+    return "soixante-" + sous100(10+u);
+  }
+  if(n === 80) return "quatre-vingts";
+  return "quatre-vingt-" + sous100(n-80);
+}
+function enFrancais(n){
+  if(n === 0) return "zéro";
+  if(n >= 1000) return "mille";
+  const h = Math.floor(n/100), r = n % 100;
+  if(h === 0) return sous100(r);
+  let p = h === 1 ? "cent" : U[h] + " cent";
+  if(r === 0) return h > 1 ? p + "s" : p;
+  return p + " " + sous100(r);
+}
+
+/* ---------- état ---------- */
+const TREASURES = ["💎","👑","🏺","🗝️","📜","🦜","⚓","🧭","🔱","🏆","🪙","🗺️"];
+let level = 1, coins = 0, opened = 0, got = [];
+let target = 0, mode = 1, digits = [0,0,0], attempts = 0, selected = -1, options = [];
+let phase = "home";   // home | play | done
+let lock = false, roundNo = 0, levelWins = 0;
+
+const $ = id => document.getElementById(id);
+try{
+  const s = JSON.parse(localStorage.getItem("coffre-a-code-v1") || "{}");
+  coins = s.coins|0; opened = s.opened|0; got = Array.isArray(s.got) ? s.got : []; level = s.level || 1;
+}catch(e){}
+function save(){ try{ localStorage.setItem("coffre-a-code-v1", JSON.stringify({coins,opened,got,level})); }catch(e){} }
+
+/* ---------- son et voix ---------- */
+let audioCtx = null, voices = [];
+function ctx(){ if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+function tone(f, d = .15, type = "sine", delay = 0, vol = .15){
+  try{
+    const c = ctx(), o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.value = f; o.connect(g); g.connect(c.destination);
+    const t = c.currentTime + delay;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.start(t); o.stop(t + d);
+  }catch(e){}
+}
+function fanfare(){ [523,659,784,1047,784,1047,1319].forEach((f,i) => tone(f,.22,"triangle",i*.13)); }
+function tick(){ tone(660,.06,"square",0,.08); }
+function oops(){ tone(300,.18,"sine",0,.12); tone(260,.22,"sine",.16,.12); }
+if("speechSynthesis" in window){
+  const load = () => { voices = speechSynthesis.getVoices(); };
+  load(); speechSynthesis.onvoiceschanged = load;
+}
+function speak(text){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "fr-FR"; u.rate = .85;
+  const v = voices.find(v => v.lang === "fr-FR") || voices.find(v => v.lang.startsWith("fr"));
+  if(v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+function say(text, alsoSpeak){ $("msg").textContent = text; if(alsoSpeak) speak(alsoSpeak === true ? text : alsoSpeak); }
+
+/* ---------- génération des codes ---------- */
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+function makeTarget(){
+  let n;
+  do{
+    const h = rnd(1,9);
+    if(level === 1){
+      n = h*100 + (Math.random() < .5 ? 0 : rnd(1,9)*10);
+    }else if(level === 2){
+      n = h*100 + rnd(0,6)*10 + rnd(0,9);
+    }else{
+      n = h*100 + rnd(7,9)*10 + rnd(0,9);
+      if(Math.random() < .2) n = h*100 + rnd(0,19)*1; // quelques « seize », « dix-sept »
+    }
+  }while(n === target);
+  return n;
+}
+function makeOptions(n){
+  const h = Math.floor(n/100), t = Math.floor(n/10)%10, u = n%10;
+  const cand = [n+10, n-10, n+100, n-100, n+1, n-1, h*100+u*10+t, u*100+t*10+h];
+  if(t >= 6 && t <= 9) cand.push(h*100 + (t===6?7:t===7?6:t===8?9:8)*10 + u);
+  const ok = [...new Set(cand)].filter(x => x >= 1 && x <= 999 && x !== n);
+  const out = [n];
+  while(out.length < 3 && ok.length){ out.push(ok.splice(rnd(0,ok.length-1),1)[0]); }
+  while(out.length < 3){ const x = rnd(100,999); if(!out.includes(x)) out.push(x); }
+  return out.sort(() => Math.random() - .5);
+}
+
+/* ---------- affichage ---------- */
+const dStr = () => "" + digits[0] + digits[1] + digits[2];
+function renderWheels(bad = []){
+  document.querySelectorAll(".wheel").forEach((w,i) => {
+    w.querySelector(".digit").textContent = digits[i];
+    w.classList.toggle("bad", bad.includes(i));
+  });
+  if(mode === 1) $("screen").textContent = dStr();
+}
+function renderVitrine(){
+  $("vitrine").innerHTML = TREASURES.map((t,i) => `<span class="${got.includes(i) ? "" : "locked"}">${t}</span>`).join("");
+}
+function renderTop(){
+  $("coins").textContent = coins; $("opened").textContent = opened;
+  $("lvlTop").textContent = "Niveau " + level;
+  document.querySelectorAll("#levels .chip").forEach(c => c.classList.toggle("on", +c.dataset.l === level));
+}
+
+/* ---------- manche ---------- */
+function newRound(){
+  lock = false; attempts = 0; selected = -1; phase = "play";
+  speechSynthesis && speechSynthesis.cancel();
+  mode = roundNo % 2 === 0 ? 1 : 2; roundNo++;
+  target = makeTarget();
+  $("chest").classList.remove("open","shake");
+  $("lock").textContent = "🔒";
+  $("go").textContent = "🔑 Ouvrir"; $("go").classList.remove("next");
+  if(mode === 1){
+    digits = [0,0,0];
+    $("wheels").classList.remove("hidden"); $("choices").classList.add("hidden");
+    $("listen").classList.remove("hidden");
+    renderWheels();
+    say("Écoute le code, puis tourne les roues !");
+    setTimeout(() => speak(enFrancais(target)), 350);
+  }else{
+    options = makeOptions(target);
+    $("wheels").classList.add("hidden"); $("choices").classList.remove("hidden");
+    $("screen").textContent = target;
+    $("choices").innerHTML = options.map((n,i) => `<button class="choice" data-i="${i}">🔊<small>${["A","B","C"][i]}</small></button>`).join("");
+    say("Touche les haut-parleurs. Lequel dit ce code ?");
+    setTimeout(() => speak("Lequel de ces trois dit le code ?"), 350);
+  }
+  renderTop();
+}
+
+function check(){
+  if(lock) return;
+  let right;
+  if(mode === 1) right = (+dStr() === target);
+  else{
+    if(selected < 0){ say("Choisis un haut-parleur d'abord !", true); return; }
+    right = options[selected] === target;
+  }
+  if(right) win(); else wrong();
+}
+
+function wrong(){
+  attempts++;
+  oops();
+  const ch = $("chest"); ch.classList.remove("shake"); void ch.offsetWidth; ch.classList.add("shake");
+  if(mode === 1){
+    const tgt = String(target).padStart(3,"0").split("").map(Number);
+    const bad = [0,1,2].filter(i => tgt[i] !== digits[i]);
+    if(attempts >= 2){
+      renderWheels(bad);
+      if(attempts >= 4){
+        const i = bad[0], nm = ["centaines","dizaines","unités"][i];
+        say(`Regarde les ${nm} : le chiffre est ${tgt[i]}.`, `Regarde les ${nm}. Le chiffre est ${tgt[i]}.`);
+      }else say("Les roues jaunes ne sont pas bonnes.", "Les roues jaunes ne sont pas bonnes.");
+    }else say("Presque ! Essaie encore.", "Presque ! Essaie encore.");
+  }else{
+    if(attempts >= 2){
+      document.querySelectorAll(".choice").forEach((b,i) => { if(options[i] !== target && i === selected) { b.style.opacity = .35; } });
+      say("Écoute bien les autres !", "Écoute bien les autres !");
+    }else say("Presque ! Écoute encore.", "Presque ! Écoute encore.");
+  }
+}
+
+function win(){
+  lock = true; phase = "done";
+  opened++; coins += attempts === 0 ? 10 : 5; levelWins++;
+  const free = TREASURES.map((t,i) => i).filter(i => !got.includes(i));
+  const idx = free.length ? free[rnd(0, free.length-1)] : rnd(0, TREASURES.length-1);
+  if(!got.includes(idx)) got.push(idx);
+  $("loot").textContent = TREASURES[idx];
+  $("screen").textContent = target;
+  $("lock").textContent = "🔓";
+  $("chest").classList.add("open");
+  fanfare(); rain();
+  say("Bravo ! " + target + " !", "Bravo ! " + enFrancais(target) + " !");
+  renderVitrine(); renderTop(); save();
+  setTimeout(() => {
+    lock = false;
+    $("go").textContent = "➡️ Coffre suivant"; $("go").classList.add("next");
+    if(levelWins >= 3 && level < 3){
+      level++; levelWins = 0; save(); renderTop();
+      say("Niveau suivant ! Tu es un as !", "Niveau suivant ! Tu es un as !");
+    }
+  }, 1800);
+}
+function rain(){
+  for(let i = 0; i < 16; i++){
+    const c = document.createElement("div");
+    c.className = "coin"; c.textContent = ["🪙","💎","⭐"][i%3];
+    c.style.left = rnd(2,92) + "vw"; c.style.animationDelay = (Math.random()*.7) + "s";
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2800);
+  }
+}
+
+/* ---------- événements ---------- */
+$("start").onclick = () => {
+  ctx().resume();
+  $("home").classList.add("hidden"); $("game").classList.remove("hidden");
+  renderVitrine(); renderTop(); newRound();
+};
+document.querySelectorAll(".wheel").forEach(w => {
+  w.querySelectorAll("button").forEach(b => b.onclick = () => {
+    if(lock || phase !== "play" || mode !== 1) return;
+    const i = +w.dataset.i, d = +b.dataset.d;
+    digits[i] = (digits[i] + d + 10) % 10;
+    tick(); renderWheels();
+  });
+});
+$("choices").onclick = e => {
+  const b = e.target.closest(".choice"); if(!b || lock || phase !== "play") return;
+  selected = +b.dataset.i;
+  document.querySelectorAll(".choice").forEach((x,i) => { x.classList.toggle("sel", i === selected); x.style.opacity = ""; });
+  speak(enFrancais(options[selected]));
+};
+$("listen").onclick = () => { if(mode === 1 && phase !== "home") speak(enFrancais(target)); else speak("Lequel de ces trois dit le code ?"); };
+$("go").onclick = () => { if(phase === "done" && !lock) newRound(); else check(); };
+document.querySelectorAll("#levels .chip").forEach(c => c.onclick = () => {
+  level = +c.dataset.l; levelWins = 0; save(); renderTop(); newRound();
+});
+window.addEventListener("pagehide", () => { if("speechSynthesis" in window) speechSynthesis.cancel(); });
+</script>
+</body>
+</html>
