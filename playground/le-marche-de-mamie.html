@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Le marché de Mamie — Additions dans les centaines</title>
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #fef3c7 0%, #ecfccb 100%);
+  display: flex;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+}
+.app {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  padding: 12px 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.top-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.nav-link {
+  color: #166534; text-decoration: none; font-weight: 800; font-size: 15px;
+  background: white; padding: 8px 14px; border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.score {
+  font-size: 20px; font-weight: 900; color: #b45309; background: white;
+  padding: 6px 14px; border-radius: 999px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.levels { display: flex; gap: 6px; }
+.level {
+  flex: 1; border: 3px solid transparent; background: white; color: #166534;
+  font-weight: 800; font-size: 13px; padding: 8px 2px; border-radius: 14px; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.level.on { border-color: #16a34a; background: #f0fdf4; }
+
+.mamie {
+  background: white; border-radius: 22px; padding: 10px 12px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+.mamie .face { font-size: 54px; line-height: 1; }
+.mamie .bubble { flex: 1; font-size: 18px; font-weight: 800; color: #78350f; }
+.q-btn {
+  border: none; background: #f59e0b; color: white; font-weight: 800; font-size: 22px;
+  width: 52px; height: 52px; border-radius: 50%; cursor: pointer;
+  box-shadow: 0 3px 8px rgba(245,158,11,0.35);
+}
+.q-btn:active { transform: scale(0.94); }
+
+.shelf { display: flex; flex-direction: column; gap: 8px; }
+.item {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 68px;
+  border: 3px solid #bbf7d0; background: white; border-radius: 18px; padding: 6px 14px;
+  cursor: pointer; font-family: inherit; box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+  transition: transform 0.15s;
+}
+.item:active { transform: scale(0.97); }
+.item .emo { font-size: 40px; line-height: 1; }
+.item .name { flex: 1; text-align: left; font-size: 18px; font-weight: 700; color: #334155; }
+.item .price {
+  font-size: 26px; font-weight: 900; color: #b45309; background: #fffbeb;
+  padding: 4px 12px; border-radius: 12px;
+}
+.item.in { opacity: 0.4; border-color: #22c55e; background: #f0fdf4; }
+.item.in .name::after { content: "  ✓"; color: #16a34a; font-weight: 900; }
+
+.basket {
+  background: white; border-radius: 22px; padding: 10px 12px 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+.basket-head { display: flex; align-items: center; gap: 8px; min-height: 44px; flex-wrap: wrap; }
+.basket-head .bk { font-size: 34px; }
+.basket-head .in-items { font-size: 30px; letter-spacing: 2px; }
+.basket.bounce { animation: bounce 0.7s ease; }
+@keyframes bounce {
+  0%,100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-12px) scale(1.04); }
+  60% { transform: translateY(0) scale(0.98); }
+}
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+.col { background: #f8fafc; border-radius: 14px; padding: 6px 6px 8px; min-height: 84px; }
+.col .lab { font-size: 12px; font-weight: 800; text-align: center; color: #475569; margin-bottom: 4px; }
+.col .bl { display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; justify-content: center; }
+.col.h { --c: #3b82f6; }
+.col.t { --c: #f97316; }
+.col.u { --c: #16a34a; }
+.col.h .lab { color: #1d4ed8; } .col.t .lab { color: #c2410c; } .col.u .lab { color: #15803d; }
+.flat  { width: 22px; height: 22px; border-radius: 4px; background: var(--c); }
+.stick { width: 8px;  height: 22px; border-radius: 3px; background: var(--c); }
+.dot   { width: 8px;  height: 8px;  border-radius: 2px; background: var(--c); }
+.col.hint { animation: pulse 0.9s infinite; outline: 3px solid var(--c); }
+@keyframes pulse { 50% { transform: scale(1.05); } }
+
+.msg { text-align: center; font-weight: 800; font-size: 17px; color: #14532d; min-height: 24px; }
+
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tile {
+  border: 3px solid #fcd34d; background: white; border-radius: 20px; height: 84px;
+  font-size: 30px; font-weight: 900; color: #334155; cursor: pointer;
+  box-shadow: 0 5px 12px rgba(0,0,0,0.08);
+  transition: transform 0.15s, opacity 0.2s;
+}
+.tile:active { transform: scale(0.95); }
+.tile small { font-size: 18px; color: #b45309; }
+.tiles.locked .tile { opacity: 0.35; }
+.tile.correct { border-color: #22c55e; background: #f0fdf4; color: #15803d; animation: pop 0.45s ease; }
+.tile.off { opacity: 0.3; border-color: #fdba74; }
+.tile.wobble { animation: wobble 0.45s ease; }
+@keyframes pop { 0% { transform: scale(0.6); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes wobble {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-9px) rotate(-3deg); }
+  50% { transform: translateX(9px) rotate(3deg); }
+  75% { transform: translateX(-5px); }
+}
+.next {
+  display: none; border: none; background: #22c55e; color: white; font-weight: 900; font-size: 26px;
+  padding: 20px; border-radius: 22px; cursor: pointer; box-shadow: 0 6px 14px rgba(34,197,94,0.35);
+}
+.next:active { transform: scale(0.97); }
+.done .tiles { display: none; }
+.done .next { display: block; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="top-bar">
+    <a class="nav-link" href="jeux-enfants.html">← Jeux</a>
+    <div class="score" id="score">⭐ 0</div>
+  </div>
+
+  <div class="levels" id="levels">
+    <button class="level on" data-level="1">1 · Centaines</button>
+    <button class="level" data-level="2">2 · Facile</button>
+    <button class="level" data-level="3">3 · Retenue</button>
+    <button class="level" data-level="4">4 · Trois !</button>
+  </div>
+
+  <div class="mamie">
+    <div class="face">👵</div>
+    <div class="bubble" id="bubble">Mamie veut :</div>
+    <button class="q-btn" id="listen" aria-label="Écouter Mamie">🔊</button>
+  </div>
+
+  <div class="shelf" id="shelf"></div>
+
+  <div class="basket" id="basket">
+    <div class="basket-head"><span class="bk">🧺</span><span class="in-items" id="inItems"></span></div>
+    <div class="cols" id="cols">
+      <div class="col h" id="colH"><div class="lab">Centaines</div><div class="bl"></div></div>
+      <div class="col t" id="colT"><div class="lab">Dizaines</div><div class="bl"></div></div>
+      <div class="col u" id="colU"><div class="lab">Unités</div><div class="bl"></div></div>
+    </div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="tiles locked" id="tiles"></div>
+  <button class="next" id="next">Un autre panier ➜</button>
+</div>
+
+<script>
+const FOOD = [
+  ['🏍️', 'une moto'], ['🚲', 'un vélo'], ['🛴', 'une trottinette'], ['📺', 'une télé'],
+  ['🎸', 'une guitare'], ['🎮', 'une console'], ['📱', 'un téléphone'], ['⌚', 'une montre'],
+  ['🎧', 'des écouteurs'], ['🛋️', 'un sofa'], ['🥁', 'une batterie'], ['⛺', 'une tente'],
+  ['🎹', 'un piano'], ['🛶', 'un canot'], ['💻', 'un ordinateur'], ['📷', 'une caméra'],
+  ['⛸️', 'des patins'], ['🧸', 'un gros toutou']
+];
+
+// ---------- nombres en français ----------
+const FR_ONES = ['zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix',
+  'onze','douze','treize','quatorze','quinze','seize'];
+const FR_TENS = ['','','vingt','trente','quarante','cinquante','soixante'];
+function frBelow100(n) {
+  if (n < 17) return FR_ONES[n];
+  if (n < 20) return 'dix-' + FR_ONES[n - 10];
+  if (n < 70) {
+    const t = Math.floor(n / 10), u = n % 10;
+    return FR_TENS[t] + (u === 1 ? ' et un' : u ? '-' + FR_ONES[u] : '');
+  }
+  if (n < 80) return 'soixante' + (n === 71 ? ' et onze' : '-' + frBelow100(n - 60));
+  if (n === 80) return 'quatre-vingts';
+  return 'quatre-vingt-' + frBelow100(n - 80);
+}
+function frNum(n) {
+  const h = Math.floor(n / 100), r = n % 100;
+  let s = '';
+  if (h) s = (h > 1 ? FR_ONES[h] + ' ' : '') + 'cent' + (h > 1 && r === 0 ? 's' : '');
+  if (r) s += (s ? ' ' : '') + frBelow100(r);
+  return s;
+}
+
+const $ = id => document.getElementById(id);
+const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = rand(0, i); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+const digit = (n, p) => Math.floor(n / p) % 10;
+
+let level = 1, round = null, inBasket = new Set(), wrong = 0, lock = false, stars = 0, lastKey = '';
+
+// ---------- sons ----------
+let ac = null;
+function beep(freq, dur, type, delay) {
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const t = ac.currentTime + (delay || 0);
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + dur);
+  } catch (e) {}
+}
+const sndPop = () => beep(520, 0.1, 'sine');
+const sndOk = () => { beep(660, 0.12); beep(880, 0.18, 'sine', 0.1); };
+const sndNo = () => beep(220, 0.2, 'triangle');
+const sndWin = () => [523, 659, 784, 1047].forEach((f, i) => beep(f, 0.2, 'sine', i * 0.12));
+
+// ---------- voix ----------
+let voice = null;
+function loadVoices() {
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices();
+  voice = vs.find(v => v.lang === 'fr-CA') || vs.find(v => v.lang === 'fr-FR') ||
+          vs.find(v => v.lang && v.lang.startsWith('fr')) || null;
+}
+if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'fr-FR'; if (voice) u.voice = voice; u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+function sayList() {
+  const parts = round.items.map(it => it.label + ' à ' + frNum(it.price) + ' dollars');
+  speak('Mamie veut ' + parts.join(', et ') + '.');
+}
+
+// ---------- génération ----------
+function genPrices(n) {
+  for (;;) {
+    const ps = [];
+    for (let i = 0; i < n; i++) ps.push(level === 1 ? rand(1, 4) * 100 : rand(100, 490));
+    const sum = ps.reduce((a, b) => a + b, 0);
+    if (sum > 999) continue;
+    if (new Set(ps).size < ps.length) continue;
+    const us = ps.reduce((a, p) => a + digit(p, 1), 0);
+    const ts = ps.reduce((a, p) => a + digit(p, 10), 0);
+    const carry = us >= 10 || ts >= 10;
+    if (level <= 2 && carry) continue;
+    if (level >= 3 && !carry) continue;
+    return ps;
+  }
+}
+function makeChoices(ps) {
+  const ans = ps.reduce((a, b) => a + b, 0);
+  const us = ps.reduce((a, p) => a + digit(p, 1), 0);
+  const ts = ps.reduce((a, p) => a + digit(p, 10), 0);
+  const cu = Math.floor(us / 10), ct = Math.floor((ts + cu) / 10);
+  const ok = x => x >= 100 && x <= 999 && x !== ans;
+  const forgot = [];
+  if (cu) forgot.push(ans - 10);       // oublier la retenue des unités
+  if (ct) forgot.push(ans - 100);      // oublier la retenue des dizaines
+  const first = forgot.filter(ok).slice(0, 1);
+  const rest = shuffle([ans + 10, ans - 10, ans + 100, ans - 100, ans + 20, ans - 20]
+    .filter(x => ok(x) && !first.includes(x)));
+  return shuffle([ans, ...first, ...rest].slice(0, 3));
+}
+function genRound() {
+  for (;;) {
+    const n = level === 4 ? 3 : 2;
+    const ps = genPrices(n);
+    const foods = shuffle(FOOD.slice()).slice(0, n);
+    const key = ps.join(',');
+    if (key === lastKey) continue;
+    lastKey = key;
+    return {
+      items: foods.map((f, i) => ({ emo: f[0], label: f[1], price: ps[i] })),
+      ans: ps.reduce((a, b) => a + b, 0),
+      choices: makeChoices(ps)
+    };
+  }
+}
+
+// ---------- affichage ----------
+const nameOf = label => label.replace(/^(une |un |du |des |de la |de l’)/, '');
+function renderShelf() {
+  $('shelf').innerHTML = round.items.map((it, i) =>
+    '<button class="item" data-i="' + i + '"><span class="emo">' + it.emo + '</span>' +
+    '<span class="name">' + nameOf(it.label) + '</span>' +
+    '<span class="price">' + it.price + ' $</span></button>').join('');
+}
+function renderBasket() {
+  const got = round.items.filter((_, i) => inBasket.has(i));
+  $('inItems').textContent = got.map(it => it.emo).join(' ');
+  const sum = p => got.reduce((a, it) => a + digit(it.price, p), 0);
+  const fill = (id, n, cls) => { $(id).querySelector('.bl').innerHTML = ('<i class="' + cls + '"></i>').repeat(n); };
+  fill('colH', sum(100), 'flat');
+  fill('colT', sum(10), 'stick');
+  fill('colU', sum(1), 'dot');
+}
+function allIn() { return inBasket.size === round.items.length; }
+function renderTiles() {
+  $('tiles').innerHTML = round.choices
+    .map(n => '<button class="tile" data-n="' + n + '">' + n + ' <small>$</small></button>').join('');
+  $('tiles').classList.add('locked');
+}
+
+// ---------- déroulement ----------
+function newRound() {
+  round = genRound(); inBasket = new Set(); wrong = 0; lock = false;
+  $('app').classList.remove('done');
+  document.querySelectorAll('.col').forEach(c => c.classList.remove('hint'));
+  $('msg').textContent = 'Mets tout dans le panier !';
+  renderShelf(); renderBasket(); renderTiles();
+  sayList();
+}
+function onItem(el) {
+  if (lock) return;
+  const i = Number(el.dataset.i);
+  if (inBasket.has(i)) return;
+  inBasket.add(i);
+  const it = round.items[i];
+  el.classList.add('in');
+  sndPop(); speak(it.label + ', ' + frNum(it.price) + ' dollars');
+  renderBasket();
+  if (allIn()) {
+    $('tiles').classList.remove('locked');
+    $('msg').textContent = 'Ça fait combien en tout ?';
+  } else {
+    const left = round.items.length - inBasket.size;
+    $('msg').textContent = left === 1 ? 'Encore 1 chose !' : 'Encore ' + left + ' choses !';
+  }
+}
+function onTile(el) {
+  if (lock || el.classList.contains('off') || el.classList.contains('correct')) return;
+  if (!allIn()) {
+    sndNo();
+    $('msg').textContent = 'D’abord, mets tout dans le panier !';
+    return;
+  }
+  const n = Number(el.dataset.n);
+  if (n === round.ans) {
+    lock = true;
+    el.classList.add('correct');
+    document.querySelectorAll('.col').forEach(c => c.classList.remove('hint'));
+    sndOk(); speak('Ça fait ' + frNum(round.ans) + ' dollars !');
+    setTimeout(finish, 1300);
+  } else {
+    wrong++;
+    el.classList.add('off', 'wobble');
+    sndNo();
+    $('msg').textContent = 'Essaie encore !';
+    if (wrong >= 2) {
+      $('msg').textContent = 'Compte les unités d’abord !';
+      $('colU').classList.add('hint');
+    }
+  }
+}
+function finish() {
+  stars++; $('score').textContent = '⭐ ' + stars;
+  $('app').classList.add('done');
+  $('basket').classList.remove('bounce'); void $('basket').offsetWidth; $('basket').classList.add('bounce');
+  $('msg').textContent = 'Bravo ! ' + round.ans + ' $ 🎉';
+  sndWin();
+}
+
+// ---------- événements ----------
+$('shelf').addEventListener('click', e => {
+  const el = e.target.closest ? e.target.closest('.item') : null;
+  if (el) onItem(el);
+});
+$('tiles').addEventListener('click', e => {
+  const el = e.target.closest ? e.target.closest('.tile') : null;
+  if (el) onTile(el);
+});
+$('listen').addEventListener('click', () => { if (round) sayList(); });
+$('next').addEventListener('click', newRound);
+$('levels').addEventListener('click', e => {
+  const b = e.target.closest ? e.target.closest('.level') : null;
+  if (!b) return;
+  level = Number(b.dataset.level);
+  document.querySelectorAll('.level').forEach(x => x.classList.toggle('on', x === b));
+  newRound();
+});
+
+newRound();
+</script>
+</body>
+</html>
