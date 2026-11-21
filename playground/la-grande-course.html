@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La grande course</title>
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui, -apple-system, sans-serif;
+  min-height:100vh;
+  background:linear-gradient(180deg, #fef3c7 0%, #fffbeb 60%, #e2e8f0 100%);
+  color:#0f172a;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  touch-action:manipulation;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.app{
+  width:100%;
+  max-width:430px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.top{
+  display:flex; justify-content:space-between; align-items:center;
+  font-weight:900; font-size:16px; color:#92400e;
+  background:white; padding:8px 12px; border-radius:14px;
+  box-shadow:0 3px 8px rgba(15,23,42,0.08);
+}
+.level-btn{
+  border:2px solid #fcd34d; background:#fffbeb; color:#b45309;
+  font-weight:900; font-size:14px; padding:4px 10px; border-radius:10px; cursor:pointer;
+}
+.level-btn:active{ transform:scale(0.96); }
+
+.wallet{
+  display:flex; justify-content:center; align-items:center; gap:8px;
+  background:#dcfce7; border:3px solid #22c55e; border-radius:16px;
+  padding:8px; font-size:24px; font-weight:900; color:#166534;
+  transition:transform 0.2s;
+}
+.wallet.bump{ transform:scale(1.07); }
+
+.card{
+  background:white; border-radius:18px; padding:10px;
+  box-shadow:0 6px 18px rgba(15,23,42,0.10);
+  display:flex; flex-direction:column; gap:8px;
+}
+
+/* Road */
+.road-wrap{ position:relative; }
+.road{
+  display:flex; position:relative;
+  background:#475569; border-radius:12px; height:84px;
+  overflow:hidden;
+}
+.cell{
+  flex:1; display:flex; align-items:flex-end; justify-content:center;
+  border-right:2px dashed #fde68a; font-size:30px; padding-bottom:4px;
+}
+.cell:last-child{ border-right:none; }
+.cell .lbl{ font-size:26px; line-height:1; white-space:nowrap; }
+.car{
+  position:absolute; top:6px; font-size:34px; line-height:1;
+  display:flex; justify-content:center;
+  transition:left 0.4s ease-in-out;
+  z-index:2;
+}
+.car span{ display:inline-block; }
+.car.right span{ transform:scaleX(-1); }
+.car.shake{ animation:shake 0.4s; }
+@keyframes shake{
+  0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-5px); } 75%{ transform:translateX(5px); }
+}
+.road-hint{ text-align:center; font-size:15px; font-weight:800; color:#334155; min-height:20px; }
+
+.tank{
+  display:flex; align-items:center; gap:6px; font-weight:900; font-size:14px; color:#334155;
+}
+.slots{ display:flex; gap:3px; flex:1; }
+.slot{
+  flex:1; height:18px; border-radius:4px; background:#e2e8f0; border:1px solid #cbd5e1;
+  transition:background 0.2s;
+}
+.slot.on{ background:#f59e0b; border-color:#d97706; }
+.slot.need{ border:2px solid #ef4444; }
+
+/* Shopping list */
+.list{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-weight:800; }
+.list .title{ font-size:15px; color:#475569; }
+.chip{
+  background:#f1f5f9; border-radius:10px; padding:4px 8px; font-size:17px;
+  border:2px solid transparent;
+}
+.chip.got{ background:#dcfce7; border-color:#22c55e; }
+
+/* Panels */
+.stores{ display:flex; gap:8px; }
+.store-btn{
+  flex:1; border:3px solid #cbd5e1; background:#f8fafc; border-radius:16px;
+  padding:10px 6px; font-size:16px; font-weight:800; color:#0f172a; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.store-btn .big{ font-size:40px; }
+.store-btn:active{ transform:scale(0.97); }
+
+.pump{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.pump-price{ font-size:17px; font-weight:800; color:#475569; }
+.pump-row{ display:flex; align-items:center; gap:14px; }
+.round-btn{
+  width:64px; height:64px; border-radius:50%; border:none;
+  font-size:34px; font-weight:900; color:white; cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.2);
+}
+.round-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,0.2); }
+.minus{ background:#94a3b8; }
+.plus{ background:#f59e0b; }
+.pump-count{ font-size:34px; font-weight:900; min-width:90px; text-align:center; }
+.pump-total{
+  font-size:22px; font-weight:900; background:#0f172a; color:#fde047;
+  padding:6px 14px; border-radius:10px; font-variant-numeric:tabular-nums;
+}
+.pump-left{ font-size:15px; font-weight:800; color:#166534; min-height:18px; }
+
+.shelf{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+.item{
+  border:3px solid #e2e8f0; background:#f8fafc; border-radius:14px;
+  padding:6px 2px; cursor:pointer; display:flex; flex-direction:column; align-items:center;
+  font-weight:900; font-size:16px; color:#0f172a; position:relative;
+}
+.item .e{ font-size:36px; line-height:1.1; }
+.item.in{ border-color:#22c55e; background:#dcfce7; transform:scale(0.96); }
+.item .tag{ position:absolute; top:2px; right:4px; font-size:14px; }
+.basket{ text-align:center; font-size:19px; font-weight:900; color:#1e293b; }
+
+.msg{
+  min-height:48px; text-align:center; font-size:18px; font-weight:800; color:#1e293b;
+  display:flex; align-items:center; justify-content:center; padding:0 4px;
+}
+.msg.good{ color:#15803d; }
+.msg.oops{ color:#b45309; }
+
+.bottom{ display:flex; gap:8px; }
+.main-btn{
+  flex:1; border:none; border-radius:16px; padding:16px 10px;
+  font-size:21px; font-weight:900; color:white; background:#16a34a; cursor:pointer;
+  box-shadow:0 5px 0 #166534;
+}
+.main-btn:active{ transform:translateY(3px); box-shadow:0 2px 0 #166534; }
+.main-btn.retry{ background:#f59e0b; box-shadow:0 5px 0 #b45309; }
+.main-btn:disabled{ opacity:0.45; }
+.speak-btn{
+  width:64px; border:none; border-radius:16px; background:#3b82f6; color:white;
+  font-size:26px; cursor:pointer; box-shadow:0 5px 0 #1d4ed8;
+}
+.speak-btn:active{ transform:translateY(3px); box-shadow:0 2px 0 #1d4ed8; }
+.hidden{ display:none !important; }
+
+.help-btn{
+  border:2px solid #bfdbfe; background:#eff6ff; color:#1d4ed8; border-radius:10px;
+  font-size:14px; font-weight:800; padding:3px 8px; cursor:pointer;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <span>⭐ <span id="stars">0</span></span>
+    <span>🍫 <span id="treats">0</span></span>
+    <button class="level-btn" id="levelBtn">🚗 Niveau <span id="level">1</span></button>
+  </div>
+
+  <div class="wallet" id="wallet">👛 <span id="walletAmt">0 $</span></div>
+
+  <div class="card">
+    <div class="road-wrap">
+      <div class="road" id="road"></div>
+      <div class="car right" id="car"><span>🚗</span></div>
+    </div>
+    <div class="road-hint" id="roadHint"></div>
+    <div class="tank">⛽ <div class="slots" id="slots"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="list" id="list"></div>
+  </div>
+
+  <div class="card" id="panel"></div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="bottom">
+    <button class="speak-btn" id="speakBtn">🔊</button>
+    <button class="main-btn" id="mainBtn">Go</button>
+  </div>
+</div>
+
+<script>
+// ---------- Data ----------
+const GROCERIES = [
+  { e:"🥛", n:"le lait" },      { e:"🍞", n:"le pain" },
+  { e:"🍌", n:"les bananes" },  { e:"🧀", n:"le fromage" },
+  { e:"🥚", n:"les œufs" },     { e:"🍎", n:"les pommes" },
+  { e:"🥕", n:"les carottes" }, { e:"🧈", n:"le beurre" },
+  { e:"🍝", n:"les pâtes" },    { e:"🥣", n:"les céréales" },
+];
+const TREATS = [
+  { e:"🍫", n:"un chocolat" }, { e:"🍭", n:"un suçon" },
+  { e:"🍦", n:"une crème glacée" }, { e:"🍪", n:"un biscuit" },
+];
+const MAX_TANK = 12;
+const GAS_PRICE = 100; // 1 $ le litre, every level
+
+const LEVELS = [
+  // Level 1: whole dollars, 2 items, the hint says how many litres are needed
+  { items:2, priceMin:1, priceMax:3, priceStep:100, dMin:2, dMax:4, showNeed:true,  showLeft:true },
+  // Level 2: half dollars, 3 items
+  { items:3, priceMin:2, priceMax:7, priceStep:50,  dMin:2, dMax:5, showNeed:false, showLeft:false },
+  // Level 3: quarters, 3 items, choose between a near (expensive) and far (cheap) store
+  { items:3, priceMin:4, priceMax:12, priceStep:25, dMin:2, dMax:2, showNeed:false, showLeft:false, choose:true },
+];
+
+// ---------- State ----------
+let level = 1, stars = 0, treatsWon = 0;
+let round = null;
+let phase = "gas"; // choose | gas | drive | shop | done | fail
+let wallet = 0, tank = 0, gasBuy = 0, pos = 0;
+let store = null;  // chosen store object
+let basket = new Set();
+let lock = false;
+let lastSpoken = "";
+
+const $ = id => document.getElementById(id);
+
+// ---------- Helpers ----------
+function randInt(a, b){ return a + Math.floor(Math.random() * (b - a + 1)); }
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function sum(arr){ return arr.reduce((s, x) => s + x, 0); }
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+function fmt(c){
+  if(c > 0 && c < 100) return `${c} ¢`;
+  const d = Math.floor(c / 100), r = c % 100;
+  if(r === 0) return `${d} $`;
+  return `${d},${String(r).padStart(2, "0")} $`;
+}
+function sayMoney(c){
+  const d = Math.floor(c / 100), r = c % 100;
+  if(d === 0 && r === 0) return "zéro dollar";
+  const dPart = d ? `${d} ${d > 1 ? "dollars" : "dollar"}` : "";
+  const cPart = r ? `${r} ${r > 1 ? "sous" : "sou"}` : "";
+  return [dPart, cPart].filter(Boolean).join(" et ");
+}
+function litres(n){ return `${n} ${n > 1 ? "litres" : "litre"}`; }
+
+// ---------- Speech & sound ----------
+let voices = [];
+function loadVoices(){ try{ voices = speechSynthesis.getVoices(); }catch(e){} }
+if(typeof speechSynthesis !== "undefined"){
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+function speak(text){
+  lastSpoken = text;
+  if(typeof speechSynthesis === "undefined") return;
+  try{
+    speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    const fr = voices.find(v => v.lang && v.lang.startsWith("fr"));
+    if(fr) utter.voice = fr;
+    utter.lang = "fr-FR";
+    utter.rate = 0.92;
+    speechSynthesis.speak(utter);
+  }catch(e){}
+}
+
+let audioCtx = null;
+function tone(freq, dur = 0.12, type = "sine", vol = 0.15, delay = 0){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = audioCtx.currentTime + delay;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }catch(e){}
+}
+const sfx = {
+  tap(){ tone(660, 0.07, "triangle", 0.12); },
+  pump(){ tone(320, 0.08, "square", 0.06); },
+  cash(){ tone(1046, 0.1, "triangle", 0.15); tone(1568, 0.18, "triangle", 0.15, 0.1); },
+  vroom(){ tone(110, 0.25, "sawtooth", 0.05); },
+  oops(){ tone(330, 0.15, "triangle", 0.12); tone(262, 0.22, "triangle", 0.12, 0.15); },
+  win(){ [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.16, "triangle", 0.15, i * 0.12)); },
+};
+
+// ---------- Round generation ----------
+function makeStore(emoji, name, d, items, prices){
+  return { emoji, name, d, items, prices, listTotal: sum(prices) };
+}
+
+function newRound(){
+  const cfg = LEVELS[level - 1];
+  const items = shuffle(GROCERIES).slice(0, cfg.items);
+  const treatPick = shuffle(TREATS).slice(0, 2);
+  let stores, slack, treatPrices;
+
+  if(!cfg.choose){
+    const d = randInt(cfg.dMin, cfg.dMax);
+    const prices = items.map(() => randInt(cfg.priceMin, cfg.priceMax) * cfg.priceStep);
+    stores = [makeStore("🛒", "l'épicerie", d, items, prices)];
+    slack = cfg.priceStep === 100 ? randInt(1, 2) * 100 : randInt(2, 4) * 50;
+    treatPrices = [slack, slack + (cfg.priceStep === 100 ? 100 : 50)];
+  } else {
+    // Near store: 2 cases away (4 L round trip). Far store: 4 cases (8 L). Far costs 4 $ more in gas.
+    // Make sure one choice is clearly better, by 1 $ to 3 $.
+    let near, far, diff;
+    do{
+      const farPrices = items.map(() => randInt(cfg.priceMin, cfg.priceMax) * cfg.priceStep);
+      const nearPrices = farPrices.map(p => p + randInt(1, 4) * 50);
+      near = makeStore("🏪", "l'épicerie proche", 2, items, nearPrices);
+      far  = makeStore("🛒", "l'épicerie loin", 4, items, farPrices);
+      diff = Math.abs((near.listTotal + 4 * GAS_PRICE) - (far.listTotal + 8 * GAS_PRICE));
+    } while(diff < 100 || diff > 300);
+    stores = [near, far];
+    slack = diff;
+    treatPrices = [diff, diff + 100];
+  }
+
+  const treats = treatPick.map((t, i) => ({ ...t, price: treatPrices[i] }));
+  // Budget: enough for the best plan (exact gas + list) plus the cheap treat.
+  const best = Math.min(...stores.map(s => s.listTotal + 2 * s.d * GAS_PRICE));
+  const budget = cfg.choose
+    ? Math.max(...stores.map(s => s.listTotal + 2 * s.d * GAS_PRICE))  // worse plan leaves 0
+    : best + slack;
+
+  round = { stores, treats, budget };
+  startRound();
+}
+
+// Reset the current round to its beginning (used for new rounds and retries).
+function startRound(){
+  wallet = round.budget;
+  tank = 0; gasBuy = 0; pos = 0;
+  basket = new Set();
+  store = round.stores.length === 1 ? round.stores[0] : null;
+  phase = store ? "gas" : "choose";
+  lock = false;
+  render();
+  speakIntro();
+}
+
+function speakIntro(){
+  if(phase === "choose"){
+    speak("Quelle épicerie choisis-tu ? Celle qui est proche, ou celle qui est loin ? N'oublie pas l'essence !");
+    setMsg("Choisis ton épicerie 🏪 ou 🛒");
+  } else if(phase === "gas"){
+    const need = 2 * store.d;
+    if(LEVELS[level - 1].showNeed){
+      speak(`Mets de l'essence pour aller à l'épicerie et revenir à la maison. Il faut ${litres(need)}.`);
+    } else {
+      speak("Mets de l'essence pour aller à l'épicerie et revenir à la maison. Une case de route, c'est un litre.");
+    }
+    setMsg("⛽ Mets de l'essence, puis pars !");
+  }
+}
+
+// ---------- Rendering ----------
+function setMsg(text, kind = ""){
+  const m = $("msg");
+  m.textContent = text;
+  m.className = "msg" + (kind ? " " + kind : "");
+}
+
+function render(){
+  const cfg = LEVELS[level - 1];
+  $("stars").textContent = stars;
+  $("treats").textContent = treatsWon;
+  $("level").textContent = level;
+  $("walletAmt").textContent = fmt(wallet);
+
+  renderRoad();
+  renderTank();
+  renderList();
+  renderPanel();
+  renderButton();
+}
+
+function roadLength(){
+  // When choosing, show the longest road so both stores are visible.
+  return store ? store.d : Math.max(...round.stores.map(s => s.d));
+}
+
+function renderRoad(){
+  const road = $("road");
+  const d = roadLength();
+  road.innerHTML = "";
+  for(let i = 0; i <= d; i++){
+    const c = document.createElement("div");
+    c.className = "cell";
+    let label = "";
+    if(i === 0) label = "🏠⛽";
+    const here = round.stores.filter(s => s.d === i && (!store || s === store));
+    if(here.length) label = here[0].emoji;
+    c.innerHTML = `<span class="lbl">${label}</span>`;
+    road.appendChild(c);
+  }
+  placeCar();
+
+  const cfg = LEVELS[level - 1];
+  let hint = "";
+  if(phase === "choose"){
+    hint = "Chaque case = 1 litre ⛽, à l'aller et au retour";
+  } else if(phase === "gas"){
+    hint = cfg.showNeed
+      ? `Aller ${store.d} + retour ${store.d} = ${2 * store.d} litres`
+      : "Chaque case = 1 litre ⛽ — aller ET retour !";
+  } else if(phase === "shop"){
+    hint = `${store.emoji} Tu es à l'épicerie !`;
+  }
+  $("roadHint").innerHTML = hint;
+}
+
+function placeCar(){
+  const d = roadLength();
+  const car = $("car");
+  const w = 100 / (d + 1);
+  car.style.width = w + "%";
+  car.style.left = (pos * w) + "%";
+}
+
+function renderTank(){
+  const slots = $("slots");
+  slots.innerHTML = "";
+  const shown = phase === "gas" ? gasBuy : tank;
+  for(let i = 0; i < MAX_TANK; i++){
+    const s = document.createElement("div");
+    s.className = "slot" + (i < shown ? " on" : "");
+    slots.appendChild(s);
+  }
+}
+
+function renderList(){
+  const list = $("list");
+  if(!store){
+    list.innerHTML = `<span class="title">📝 Liste :</span>` +
+      round.stores[0].items.map(it => `<span class="chip">${it.e}</span>`).join("");
+    return;
+  }
+  list.innerHTML = `<span class="title">📝 Liste :</span>` +
+    store.items.map((it, i) =>
+      `<span class="chip${basket.has("g" + i) ? " got" : ""}">${it.e} ${fmt(store.prices[i])}</span>`
+    ).join("");
+}
+
+function renderPanel(){
+  const panel = $("panel");
+  const cfg = LEVELS[level - 1];
+  panel.classList.remove("hidden");
+  panel.innerHTML = "";
+
+  if(phase === "choose"){
+    const wrap = document.createElement("div");
+    wrap.className = "stores";
+    round.stores.forEach(s => {
+      const b = document.createElement("button");
+      b.className = "store-btn";
+      b.innerHTML = `<span class="big">${s.emoji}</span>
+        <span>${s.d === 2 ? "Proche" : "Loin"}</span>
+        <span>⛽ ${2 * s.d} litres</span>
+        <span>📝 ${fmt(s.listTotal)}</span>`;
+      b.onclick = () => chooseStore(s);
+      wrap.appendChild(b);
+    });
+    panel.appendChild(wrap);
+    return;
+  }
+
+  if(phase === "gas"){
+    const cost = gasBuy * GAS_PRICE;
+    let left = "";
+    if(cfg.showLeft) left = cost <= wallet ? `Il te restera ${fmt(wallet - cost)}` : "";
+    panel.innerHTML = `
+      <div class="pump">
+        <div class="pump-price">⛽ ${fmt(GAS_PRICE)} le litre</div>
+        <div class="pump-row">
+          <button class="round-btn minus" id="minusBtn">−</button>
+          <div class="pump-count">${gasBuy} L</div>
+          <button class="round-btn plus" id="plusBtn">+</button>
+        </div>
+        <div class="pump-total">${fmt(cost)}</div>
+        <div class="pump-left">${left}</div>
+      </div>`;
+    $("minusBtn").onclick = () => changeGas(-1);
+    $("plusBtn").onclick = () => changeGas(1);
+    return;
+  }
+
+  if(phase === "shop"){
+    const shelf = document.createElement("div");
+    shelf.className = "shelf";
+    shelfItems().forEach(it => {
+      const b = document.createElement("button");
+      b.className = "item" + (basket.has(it.key) ? " in" : "");
+      b.innerHTML = `${it.treat ? "" : '<span class="tag">📝</span>'}<span class="e">${it.e}</span><span>${fmt(it.price)}</span>`;
+      b.onclick = () => toggleItem(it.key);
+      shelf.appendChild(b);
+    });
+    panel.appendChild(shelf);
+    const bk = document.createElement("div");
+    bk.className = "basket";
+    bk.textContent = `🧺 Panier : ${fmt(basketTotal())}`;
+    panel.appendChild(bk);
+    return;
+  }
+
+  panel.classList.add("hidden");
+}
+
+function renderButton(){
+  const btn = $("mainBtn");
+  btn.classList.remove("hidden", "retry");
+  btn.disabled = false;
+  if(phase === "choose" || phase === "drive"){
+    btn.classList.add("hidden");
+  } else if(phase === "gas"){
+    btn.textContent = "Payer et partir 🚗";
+    btn.disabled = gasBuy === 0;
+  } else if(phase === "shop"){
+    btn.textContent = "Payer 🧾";
+  } else if(phase === "done"){
+    btn.textContent = "Nouvelle course ➡️";
+  } else if(phase === "fail"){
+    btn.textContent = "🔁 Réessayer";
+    btn.classList.add("retry");
+  }
+}
+
+// ---------- Shop helpers ----------
+function shelfItems(){
+  const g = store.items.map((it, i) => ({ key:"g" + i, e:it.e, n:it.n, price:store.prices[i], treat:false }));
+  const t = round.treats.map((it, i) => ({ key:"t" + i, e:it.e, n:it.n, price:it.price, treat:true }));
+  return g.concat(t);
+}
+function basketTotal(){
+  return sum(shelfItems().filter(it => basket.has(it.key)).map(it => it.price));
+}
+
+// ---------- Actions ----------
+function chooseStore(s){
+  if(lock) return;
+  sfx.tap();
+  store = s;
+  phase = "gas";
+  render();
+  speakIntro();
+}
+
+function changeGas(delta){
+  if(lock || phase !== "gas") return;
+  const next = gasBuy + delta;
+  if(next < 0) return;
+  if(next > MAX_TANK){ setMsg("Le réservoir est plein !", "oops"); return; }
+  if(next * GAS_PRICE > wallet){
+    setMsg("Tu n'as pas assez d'argent pour plus d'essence.", "oops");
+    sfx.oops();
+    return;
+  }
+  gasBuy = next;
+  sfx.pump();
+  setMsg(`⛽ ${litres(gasBuy)} = ${fmt(gasBuy * GAS_PRICE)}`);
+  render();
+}
+
+function toggleItem(key){
+  if(lock || phase !== "shop") return;
+  if(basket.has(key)) basket.delete(key); else basket.add(key);
+  sfx.tap();
+  const it = shelfItems().find(x => x.key === key);
+  setMsg(`🧺 Panier : ${fmt(basketTotal())}`);
+  if(basket.has(key)) speak(`${it.n}, ${sayMoney(it.price)}`);
+  render();
+}
+
+async function payGas(){
+  wallet -= gasBuy * GAS_PRICE;
+  tank = gasBuy;
+  sfx.cash();
+  bumpWallet();
+  speak(`Tu paies ${sayMoney(gasBuy * GAS_PRICE)}. En route !`);
+  phase = "drive";
+  render();
+  await drive(store.d, "shop");
+}
+
+// Drive one step at a time toward `target`; each step uses 1 litre.
+async function drive(target, then){
+  lock = true;
+  const car = $("car");
+  const dir = target > pos ? 1 : -1;
+  car.classList.toggle("right", dir > 0);
+  await sleep(500);
+  while(pos !== target){
+    if(tank === 0){
+      await panne();
+      return;
+    }
+    tank--;
+    pos += dir;
+    sfx.vroom();
+    placeCar();
+    renderTank();
+    await sleep(520);
+  }
+  lock = false;
+  if(then === "shop") arriveShop();
+  else arriveHome();
+}
+
+async function panne(){
+  const car = $("car");
+  car.classList.add("shake");
+  sfx.oops();
+  setMsg("Panne d'essence ! 🛻 La dépanneuse arrive.", "oops");
+  speak("Oh non, panne d'essence ! La dépanneuse arrive.");
+  await sleep(900);
+  car.classList.remove("shake");
+  car.querySelector("span").textContent = "🛻";
+  car.classList.remove("right");
+  await sleep(400);
+  pos = 0;
+  placeCar();
+  await sleep(700);
+  car.querySelector("span").textContent = "🚗";
+  phase = "fail";
+  lock = false;
+  render();
+  setMsg(`Il faut ${litres(2 * store.d)} : ${store.d} pour aller et ${store.d} pour revenir.`, "oops");
+  speak(`Il faut de l'essence pour aller, et aussi pour revenir. ${litres(2 * store.d)} en tout. On réessaie !`);
+}
+
+function arriveShop(){
+  phase = "shop";
+  render();
+  if(store.listTotal > wallet){
+    phase = "fail";
+    render();
+    $("panel").classList.add("hidden");
+    const miss = store.listTotal - wallet;
+    setMsg(`Oh non ! Il manque ${fmt(miss)} pour la liste. Trop d'essence ?`, "oops");
+    speak(`Oh non ! Il manque ${sayMoney(miss)} pour acheter la liste. Tu as peut-être mis trop d'essence. On réessaie !`);
+    sfx.oops();
+    return;
+  }
+  setMsg("Prends tout ce qui est sur la liste 📝");
+  speak("Tu es à l'épicerie ! Prends tout ce qui est sur la liste. S'il te reste de l'argent, tu peux prendre une gâterie.");
+}
+
+async function payShop(){
+  const missing = store.items.filter((it, i) => !basket.has("g" + i));
+  if(missing.length){
+    setMsg(`Il manque encore : ${missing.map(m => m.e).join(" ")}`, "oops");
+    speak(`Il manque encore ${missing.map(m => m.n).join(" et ")}.`);
+    sfx.oops();
+    return;
+  }
+  const total = basketTotal();
+  if(total > wallet){
+    const over = total - wallet;
+    setMsg(`C'est trop ! Il manque ${fmt(over)}. Enlève quelque chose.`, "oops");
+    speak(`C'est trop cher ! Il manque ${sayMoney(over)}. Enlève quelque chose.`);
+    sfx.oops();
+    return;
+  }
+  wallet -= total;
+  round.bought = round.treats.filter((t, i) => basket.has("t" + i)).length;
+  sfx.cash();
+  bumpWallet();
+  speak(`Tu paies ${sayMoney(total)}. On rentre à la maison !`);
+  setMsg("🏠 On rentre à la maison !");
+  phase = "drive";
+  render();
+  await drive(0, "home");
+}
+
+function arriveHome(){
+  phase = "done";
+  stars++;
+  treatsWon += round.bought;
+  sfx.win();
+  render();
+  let line = `Bravo ! Tu as tout rapporté ! Il te reste ${fmt(wallet)}.`;
+  let spoken = `Bravo ! Tu as rapporté toutes les courses ! Il te reste ${sayMoney(wallet)}.`;
+  if(round.bought){
+    line = `Bravo ! Courses + gâterie ! 🎉 Il te reste ${fmt(wallet)}.`;
+    spoken = `Bravo ! Tu as les courses et une gâterie ! Il te reste ${sayMoney(wallet)}.`;
+  } else if(tank > 0){
+    line += ` Il restait ${litres(tank)} dans le réservoir.`;
+    spoken += ` Il restait ${litres(tank)} d'essence. Avec juste assez d'essence, tu aurais pu acheter une gâterie !`;
+  } else if(wallet >= Math.min(...round.treats.map(t => t.price))){
+    spoken += " Tu aurais pu acheter une gâterie !";
+  }
+  setMsg(line, "good");
+  speak(spoken);
+}
+
+function bumpWallet(){
+  const w = $("wallet");
+  w.classList.add("bump");
+  setTimeout(() => w.classList.remove("bump"), 220);
+}
+
+$("mainBtn").onclick = () => {
+  if(lock) return;
+  if(phase === "gas" && gasBuy > 0) payGas();
+  else if(phase === "shop") payShop();
+  else if(phase === "done") newRound();
+  else if(phase === "fail") startRound();
+};
+$("speakBtn").onclick = () => { if(lastSpoken) speak(lastSpoken); };
+$("levelBtn").onclick = () => {
+  if(lock) return;
+  level = level % LEVELS.length + 1;
+  sfx.tap();
+  newRound();
+};
+
+newRound();
+</script>
+</body>
+</html>
