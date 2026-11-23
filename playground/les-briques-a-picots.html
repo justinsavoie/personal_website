@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les briques à picots</title>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:system-ui;
+  min-height:100vh;
+  background:linear-gradient(180deg, #fef9c3 0%, #fde68a 100%);
+  background-attachment:fixed;
+  touch-action:manipulation;
+}
+
+.app{
+  width:100%;
+  max-width:430px;
+  min-height:100vh;
+  margin:0 auto;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:12px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  font-size:16px;
+  color:#713f12;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.18);
+}
+
+.prompt{
+  text-align:center;
+  font-size:21px;
+  font-weight:900;
+  color:#713f12;
+  min-height:30px;
+}
+
+/* The board. In "compte" it is exactly the brick; in "construis" it is a
+   6 x 8 baseplate of ghost studs and the brick is the coloured rectangle. */
+.board{
+  display:grid;
+  grid-template-columns:repeat(var(--cols), 1fr);
+  gap:0;
+  margin:0 auto;
+  width:min(100%, calc(var(--cols) * 48px));
+  padding:8px;
+  border-radius:12px;
+  transition:transform 0.25s ease;
+}
+
+.board.plate{
+  background:#f1f5f9;
+  border:2px dashed #cbd5e1;
+}
+
+.board.shake{ animation:shake 0.4s; }
+.board.pop{ animation:pop 0.5s; }
+
+@keyframes shake{
+  0%,100%{ transform:translateX(0); }
+  25%{ transform:translateX(-6px); }
+  75%{ transform:translateX(6px); }
+}
+
+@keyframes pop{
+  0%{ transform:scale(1); }
+  40%{ transform:scale(1.07); }
+  100%{ transform:scale(1); }
+}
+
+.cell{
+  aspect-ratio:1;
+  border:none;
+  padding:14%;
+  margin:0;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:none;
+  border-radius:0;
+}
+
+.cell:active{ transform:none; }
+
+/* Ghost stud on the empty baseplate. */
+.stud{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  border:2px dashed #cbd5e1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  font-weight:900;
+  color:#fff;
+}
+
+.cell.in{ background:var(--brick); }
+
+.cell.in .stud{
+  border:none;
+  background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.55), rgba(255,255,255,0) 55%), var(--brick);
+  box-shadow:0 3px 0 var(--brick-dark), inset 0 -2px 0 rgba(0,0,0,0.12);
+}
+
+/* A stud the child has tapped while counting. */
+.cell.in .stud.counted{
+  background:#fff;
+  color:var(--brick-dark);
+  box-shadow:0 3px 0 var(--brick-dark);
+}
+
+.cell.tl{ border-top-left-radius:8px; }
+.cell.tr{ border-top-right-radius:8px; }
+.cell.bl{ border-bottom-left-radius:8px; }
+.cell.br{ border-bottom-right-radius:8px; }
+
+.tally{
+  text-align:center;
+  font-size:22px;
+  font-weight:900;
+  color:#94a3b8;
+  min-height:30px;
+  transition:color 0.2s ease;
+}
+
+.tally.match{ color:#15803d; }
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.hidden{ display:none !important; }
+
+button{
+  border:none;
+  border-radius:14px;
+  background:#222;
+  color:white;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,0.16);
+}
+
+button:active{ transform:scale(0.96); }
+
+.choice{
+  min-height:60px;
+  font-size:26px;
+  background:#fff;
+  color:#111;
+  border:3px solid #ca8a04;
+}
+
+.choice:disabled{ opacity:0.35; }
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.control{ min-height:54px; font-size:18px; }
+
+/* While a round runs there is no Suivant button; 🔊 takes the whole row. */
+.controls.solo{ grid-template-columns:1fr; }
+
+.wide{
+  width:100%;
+  min-height:56px;
+  font-size:19px;
+}
+
+.ready{ background:#15803d; }
+.another{ background:#ca8a04; }
+
+.good{ background:#16a34a !important; color:white !important; border-color:#16a34a !important; }
+.bad{ background:#dc2626 !important; color:white !important; border-color:#dc2626 !important; }
+
+.message{
+  min-height:44px;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+  color:#713f12;
+}
+
+.found{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:6px;
+  min-height:0;
+}
+
+.found span{
+  background:#fef3c7;
+  color:#713f12;
+  border-radius:10px;
+  padding:4px 10px;
+  font-weight:900;
+  font-size:15px;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>🧱 <span id="hits">0</span></div>
+    <div>⭐ <span id="stars">0</span></div>
+    <div>🔥 Série: <span id="streak">0</span></div>
+    <div>Niveau <span id="level">1</span></div>
+  </div>
+
+  <div class="card">
+    <div class="prompt" id="prompt">Les briques à picots</div>
+
+    <div class="board" id="board"></div>
+    <div class="tally" id="tally"></div>
+    <div class="found" id="found"></div>
+
+    <div class="grid hidden" id="grid"></div>
+    <div class="message" id="message">Appuie sur Jouer pour commencer !</div>
+
+    <button class="wide ready hidden" id="ready">C'est prêt !</button>
+    <button class="wide another hidden" id="another">⭐ Une autre façon ?</button>
+
+    <div class="controls" id="controls">
+      <button class="control" id="start">Jouer</button>
+      <button class="control" id="repeat">🔊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Baseplate size for building. 8 columns still gives ~40px studs on a 360px phone.
+const PLATE_ROWS = 6;
+const PLATE_COLS = 8;
+const PER_LEVEL = 5;
+const MAX_LEVEL = 4;
+
+const COLORS = [
+  ["#ef4444", "#b91c1c"],
+  ["#3b82f6", "#1d4ed8"],
+  ["#eab308", "#a16207"],
+  ["#22c55e", "#15803d"],
+  ["#f97316", "#c2410c"],
+  ["#a855f7", "#7e22ce"],
+];
+
+let hits = 0;
+let stars = 0;
+let streak = 0;
+let level = 1;
+let round = null;
+let lock = false;
+let started = false;
+let voices = [];
+let audioCtx = null;
+
+const hitsEl = document.getElementById("hits");
+const starsEl = document.getElementById("stars");
+const streakEl = document.getElementById("streak");
+const levelEl = document.getElementById("level");
+const promptEl = document.getElementById("prompt");
+const boardEl = document.getElementById("board");
+const tallyEl = document.getElementById("tally");
+const foundEl = document.getElementById("found");
+const gridEl = document.getElementById("grid");
+const messageEl = document.getElementById("message");
+const readyBtn = document.getElementById("ready");
+const anotherBtn = document.getElementById("another");
+const startBtn = document.getElementById("start");
+const controlsEl = document.getElementById("controls");
+
+function showStart(visible){
+  startBtn.classList.toggle("hidden", !visible);
+  controlsEl.classList.toggle("solo", !visible);
+}
+
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function speak(text){
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const frVoice = voices.find(v => v.lang.startsWith("fr"));
+  if(frVoice) utter.voice = frVoice;
+  utter.lang = "fr-FR";
+  utter.rate = 0.9;
+  speechSynthesis.speak(utter);
+}
+
+function shuffle(items){
+  const a = [...items];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(items){ return items[Math.floor(Math.random() * items.length)]; }
+
+function getAudioContext(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(freqs, type, duration){
+  try{
+    const ctx = getAudioContext();
+    if(ctx.state === "suspended") ctx.resume();
+    freqs.forEach((f, i) => {
+      setTimeout(() => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        const t = ctx.currentTime;
+        osc.frequency.setValueAtTime(f, t);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + duration + 0.05);
+      }, i * 90);
+    });
+  }catch(e){}
+}
+
+function sfxGood(){ playSound([523.25, 659.25, 783.99], "sine", 0.25); }
+function sfxStar(){ playSound([659.25, 783.99, 987.77, 1318.5], "triangle", 0.25); }
+function sfxBad(){ playSound([200], "sawtooth", 0.3); }
+function sfxClick(){ playSound([440 + Math.random() * 80], "square", 0.06); }
+
+// ---------- French helpers ----------
+
+function rangees(n){ return `${n} rangée${n > 1 ? "s" : ""}`; }
+function picots(n){ return `${n} picot${n > 1 ? "s" : ""}`; }
+function shapeText(r, c){ return `${rangees(r)} de ${c}`; }
+
+// ---------- Shapes ----------
+
+// Every brick r x c with r*c = n that fits on the baseplate. A brick and the
+// same brick turned a quarter turn (3x4 and 4x3) are one shape, keyed by the
+// sorted pair, so turning a brick never counts as a new answer.
+function shapeKey(r, c){ return r <= c ? `${r}x${c}` : `${c}x${r}`; }
+
+function shapesFor(n){
+  const keys = new Set();
+  for(let r = 1; r <= PLATE_ROWS; r++){
+    if(n % r === 0 && n / r <= PLATE_COLS) keys.add(shapeKey(r, n / r));
+  }
+  return keys;
+}
+
+function levelFor(h){ return Math.min(MAX_LEVEL, Math.floor(h / PER_LEVEL) + 1); }
+
+// Levels:
+// 1  count small bricks, "2 rangées de 4" written under the brick
+// 2  count bigger bricks, the hint appears only after a wrong answer
+// 3  build a brick with n picots (n up to 12)
+// 4  build up to 24, with a bigger counting brick now and then
+function makeRound(lvl){
+  const [brick, brickDark] = pick(COLORS);
+
+  if(lvl === 1 || lvl === 2 || (lvl === 4 && Math.random() < 0.3)){
+    let rows, cols;
+    if(lvl === 1){ rows = randInt(1, 2); cols = randInt(2, 4); }
+    else if(lvl === 2){ rows = randInt(2, 4); cols = randInt(3, 6); }
+    else { rows = randInt(3, 5); cols = randInt(4, 8); }
+    const answer = rows * cols;
+    return {
+      mode: "count", rows, cols, answer, brick, brickDark,
+      choices: buildChoices(answer, rows, cols),
+      showHint: lvl === 1,
+    };
+  }
+
+  const pool = [];
+  const [lo, hi] = lvl === 3 ? [4, 12] : [12, 24];
+  for(let n = lo; n <= hi; n++){
+    const k = shapesFor(n).size;
+    if(k === 0) continue;
+    // Numbers with several shapes are the point of the game: weight them up.
+    for(let i = 0; i < (k > 1 ? 3 : 1); i++) pool.push(n);
+  }
+  const target = pick(pool);
+  return {
+    mode: "build", target, brick, brickDark,
+    rows: 0, cols: 0,
+    shapes: shapesFor(target),
+    found: new Map(),
+  };
+}
+
+function buildChoices(answer, rows, cols){
+  const wrong = new Set();
+  // rows + cols is the classic mix-up (counting the edges instead of the studs).
+  if(rows + cols !== answer && rows > 1) wrong.add(rows + cols);
+  const near = shuffle([answer + cols, answer - cols, answer + rows, answer - rows, answer + 1, answer - 1]);
+  for(const v of near){
+    if(wrong.size >= 3) break;
+    if(v !== answer && v > 0) wrong.add(v);
+  }
+  while(wrong.size < 3){
+    const v = randInt(1, answer + 8);
+    if(v !== answer) wrong.add(v);
+  }
+  return shuffle([answer, ...[...wrong].slice(0, 3)]);
+}
+
+// ---------- Rendering ----------
+
+function renderBoard(){
+  const plate = round.mode === "build";
+  const R = plate ? PLATE_ROWS : round.rows;
+  const C = plate ? PLATE_COLS : round.cols;
+  const br = round.rows;
+  const bc = round.cols;
+
+  boardEl.style.setProperty("--cols", C);
+  boardEl.style.setProperty("--brick", round.brick);
+  boardEl.style.setProperty("--brick-dark", round.brickDark);
+  boardEl.classList.toggle("plate", plate);
+  boardEl.innerHTML = "";
+
+  for(let r = 0; r < R; r++){
+    for(let c = 0; c < C; c++){
+      const cell = document.createElement("button");
+      cell.className = "cell";
+      const inBrick = r < br && c < bc;
+      if(inBrick){
+        cell.classList.add("in");
+        if(r === 0 && c === 0) cell.classList.add("tl");
+        if(r === 0 && c === bc - 1) cell.classList.add("tr");
+        if(r === br - 1 && c === 0) cell.classList.add("bl");
+        if(r === br - 1 && c === bc - 1) cell.classList.add("br");
+      }
+      const stud = document.createElement("div");
+      stud.className = "stud";
+      if(round.mode === "count"){
+        const order = countOrder(r, c);
+        if(order){
+          stud.classList.add("counted");
+          stud.textContent = order;
+        }
+      }
+      cell.appendChild(stud);
+      cell.onclick = () => tapCell(r, c);
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+// Counted studs are numbered in the order they were tapped, like counting
+// with a finger. Stored as an ordered list of "r,c".
+function countOrder(r, c){
+  const i = round.countList.indexOf(`${r},${c}`);
+  return i === -1 ? 0 : i + 1;
+}
+
+function renderTally(){
+  tallyEl.classList.remove("match");
+  if(round.mode === "count"){
+    const n = round.countList.length;
+    if(round.showHint) tallyEl.textContent = shapeText(round.rows, round.cols);
+    else tallyEl.textContent = n ? `J'ai compté ${n}` : "";
+    return;
+  }
+  const { rows, cols, target } = round;
+  if(!rows){ tallyEl.textContent = ""; return; }
+  tallyEl.textContent = `${rows} × ${cols} = ${picots(rows * cols)}`;
+  tallyEl.classList.toggle("match", rows * cols === target);
+}
+
+function renderFound(){
+  foundEl.innerHTML = "";
+  if(round.mode !== "build") return;
+  for(const label of round.found.values()){
+    const span = document.createElement("span");
+    span.textContent = label;
+    foundEl.appendChild(span);
+  }
+}
+
+function renderChoices(){
+  gridEl.innerHTML = "";
+  round.choices.forEach(value => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = value;
+    btn.onclick = () => choose(value, btn);
+    gridEl.appendChild(btn);
+  });
+}
+
+function promptText(){
+  if(round.mode === "count") return "Combien de picots ?";
+  return `Construis une brique de ${round.target} picots.`;
+}
+
+function spokenPrompt(){
+  if(round.mode === "count"){
+    return round.showHint
+      ? `Combien de picots ? ${shapeText(round.rows, round.cols)}.`
+      : "Combien de picots sur la brique ?";
+  }
+  if(round.found.size) return `Trouve une autre brique de ${round.target} picots.`;
+  return `Construis une brique de ${round.target} picots.`;
+}
+
+// ---------- Round flow ----------
+
+function newRound(){
+  lock = false;
+  level = levelFor(hits);
+  levelEl.textContent = level;
+  round = makeRound(level);
+  round.countList = [];
+
+  promptEl.textContent = promptText();
+  const counting = round.mode === "count";
+  gridEl.classList.toggle("hidden", !counting);
+  readyBtn.classList.toggle("hidden", counting);
+  anotherBtn.classList.add("hidden");
+  startBtn.textContent = "Suivant ➜";
+  showStart(false);
+
+  if(counting){
+    renderChoices();
+    messageEl.textContent = "Touche les picots pour les compter.";
+  } else {
+    messageEl.textContent = "Touche la plaque pour faire ta brique.";
+  }
+
+  renderBoard();
+  renderTally();
+  renderFound();
+  setTimeout(() => speak(spokenPrompt()), 300);
+}
+
+// Exploration: never judged. In "compte" a tap numbers a stud (tap again to
+// take it back); in "construis" a tap moves the brick's bottom-right corner.
+function tapCell(r, c){
+  if(lock || !round) return;
+
+  if(round.mode === "count"){
+    const key = `${r},${c}`;
+    const i = round.countList.indexOf(key);
+    if(i === -1){
+      round.countList.push(key);
+      sfxClick();
+      speak(String(round.countList.length));
+    } else {
+      round.countList.splice(i, 1);
+    }
+    renderBoard();
+    renderTally();
+    return;
+  }
+
+  round.rows = r + 1;
+  round.cols = c + 1;
+  sfxClick();
+  messageEl.textContent = "";
+  renderBoard();
+  renderTally();
+}
+
+function bumpStreak(){
+  streak++;
+  streakEl.textContent = streak;
+}
+
+function resetStreak(){
+  streak = 0;
+  streakEl.textContent = streak;
+}
+
+function choose(value, btn){
+  if(lock || !round || round.mode !== "count") return;
+
+  if(value === round.answer){
+    lock = true;
+    btn.classList.add("good");
+    [...gridEl.children].forEach(b => { if(b !== btn) b.disabled = true; });
+    hits++;
+    hitsEl.textContent = hits;
+    bumpStreak();
+    sfxGood();
+    round.showHint = true;
+    renderTally();
+    tallyEl.textContent = `${round.rows} × ${round.cols} = ${picots(round.answer)}`;
+    tallyEl.classList.add("match");
+    boardEl.classList.add("pop");
+    setTimeout(() => boardEl.classList.remove("pop"), 500);
+    const line = `Bravo ! ${shapeText(round.rows, round.cols)}, ça fait ${round.answer}.`;
+    messageEl.textContent = line;
+    speak(line);
+    setTimeout(newRound, 2300);
+  } else {
+    // The wrong number just greys out; the brick and the counting stay put.
+    btn.classList.add("bad");
+    btn.disabled = true;
+    resetStreak();
+    sfxBad();
+    round.showHint = true;
+    renderTally();
+    messageEl.textContent = `Pas tout à fait. Regarde : ${shapeText(round.rows, round.cols)}.`;
+    speak(`Essaie encore. ${shapeText(round.rows, round.cols)}.`);
+  }
+}
+
+// The single judged moment in "construis".
+function submitBrick(){
+  if(lock || !round || round.mode !== "build") return;
+  const { rows, cols, target } = round;
+
+  if(!rows){
+    messageEl.textContent = "Touche la plaque pour faire ta brique.";
+    speak("Touche la plaque pour faire ta brique.");
+    return;
+  }
+
+  const n = rows * cols;
+  if(n !== target){
+    boardEl.classList.add("shake");
+    setTimeout(() => boardEl.classList.remove("shake"), 400);
+    resetStreak();
+    sfxBad();
+    const hint = n < target ? "Il en faut plus." : "C'est trop.";
+    messageEl.textContent = `Ta brique a ${picots(n)}. ${hint} Il faut ${target}.`;
+    speak(`Ta brique a ${picots(n)}. ${hint}`);
+    return;
+  }
+
+  const key = shapeKey(rows, cols);
+  if(round.found.has(key)){
+    // Same brick, maybe turned. Not wrong, just not new.
+    messageEl.textContent = "Tu l'as déjà trouvée ! Si on la tourne, c'est la même brique. Essaie une autre forme.";
+    speak("Tu l'as déjà trouvée. Essaie une autre forme.");
+    return;
+  }
+
+  const first = round.found.size === 0;
+  round.found.set(key, `${rows} × ${cols}`);
+  boardEl.classList.add("pop");
+  setTimeout(() => boardEl.classList.remove("pop"), 500);
+  tallyEl.classList.add("match");
+  renderFound();
+
+  if(first){
+    hits++;
+    hitsEl.textContent = hits;
+    bumpStreak();
+    sfxGood();
+  } else {
+    stars++;
+    starsEl.textContent = stars;
+    sfxStar();
+  }
+
+  const remaining = round.shapes.size - round.found.size;
+  const line = `${first ? "Bravo !" : "Une autre façon, super ! ⭐"} ${shapeText(rows, cols)}, ça fait ${target}.`;
+  messageEl.textContent = remaining > 0
+    ? `${line} Il existe une autre brique de ${target} !`
+    : (round.shapes.size > 1 ? `${line} Tu les as toutes trouvées !` : line);
+  speak(line.replace(" ⭐", ""));
+
+  readyBtn.classList.add("hidden");
+  showStart(true);
+  lock = true;
+  anotherBtn.classList.toggle("hidden", remaining === 0);
+}
+
+// Clear the plate and look for a different shape of the same number.
+function tryAnother(){
+  if(!round || round.mode !== "build") return;
+  lock = false;
+  round.rows = 0;
+  round.cols = 0;
+  anotherBtn.classList.add("hidden");
+  showStart(false);
+  readyBtn.classList.remove("hidden");
+  messageEl.textContent = `Fais une brique de ${round.target} picots d'une autre forme.`;
+  renderBoard();
+  renderTally();
+  speak(spokenPrompt());
+}
+
+function unlockAudio(){
+  try{ getAudioContext().resume(); }catch(e){}
+  speechSynthesis.resume();
+}
+
+startBtn.onclick = () => {
+  unlockAudio();
+  if(!started){
+    started = true;
+    hits = 0; stars = 0; streak = 0;
+    hitsEl.textContent = 0; starsEl.textContent = 0; streakEl.textContent = 0;
+  }
+  newRound();
+};
+
+readyBtn.onclick = () => { unlockAudio(); submitBrick(); };
+anotherBtn.onclick = () => { unlockAudio(); tryAnother(); };
+
+document.getElementById("repeat").onclick = () => {
+  speechSynthesis.resume();
+  if(round) speak(spokenPrompt());
+};
+
+// A demo brick on the title screen.
+round = { mode: "count", rows: 2, cols: 4, brick: "#ef4444", brickDark: "#b91c1c", countList: [], showHint: true };
+lock = true;
+renderBoard();
+round = null;
+lock = false;
+</script>
+</body>
+</html>
