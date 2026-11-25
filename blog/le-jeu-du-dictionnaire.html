@@ -199,15 +199,6 @@
             margin: 20px 0;
         }
         
-        /* Footer */
-        footer {
-            margin-top: 80px;
-            padding-top: 40px;
-            border-top: 1px solid #eee;
-            font-size: 14px;
-            color: #666;
-        }
-        
         /* Responsive */
         @media (max-width: 600px) {
             body {
@@ -306,10 +297,6 @@
 <p>Each round, the game picks a random word. You submit a definition. The system combines the true definition, yours, and a few sampled fakes, shuffles them, and triggers voting. You choose manually; the AI players rely on embeddings.</p>
 <p>To decide, the game averages the word vectors in each definition and computes cosine similarity with the real one. AIs select the highest-similarity option (no self-votes, slight randomness). Scoring: +2 for a correct guess, +1 per vote your fake attracts. It runs entirely in the browser ; a small semantic bluff duel.</p>
 </article>
-    
-    <footer>
-        <p>© 2025 Justin Savoie</p>
-    </footer>
     
     <script>
         // Navigation for index page

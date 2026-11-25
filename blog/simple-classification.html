@@ -199,15 +199,6 @@
             margin: 20px 0;
         }
         
-        /* Footer */
-        footer {
-            margin-top: 80px;
-            padding-top: 40px;
-            border-top: 1px solid #eee;
-            font-size: 14px;
-            color: #666;
-        }
-        
         /* Responsive */
         @media (max-width: 600px) {
             body {
@@ -324,10 +315,6 @@
 <p>It works reasonably well, but it’s not perfect. The main issue is that I don’t have a gold standard to compare my results to—no definitive reference to tell me whether the classifications are actually “correct.” One way to validate might be to use a stronger language model as a kind of judge: send it some of the outputs and see how it evaluates them. But the best method would still be to compare to a real gold-standard dataset, which I don’t have at the moment.</p>
 <p>One last thought: I’ve done similar experiments at work on related topics, and they were much harder. Here, things go more smoothly because the categories are relatively clear. But when the topic itself is fuzzy—even for humans—it gets tricky fast. Imagine asking people why they’re dissatisfied with how democracy works (I haven’t tested that question exactly, but you get the idea). The answers go in every direction: metaphors, personal stories, vague references to parties or politicians. It’s hard to know how many categories there should even be. Is general cynicism its own class? What about cynicism directed at the current government, or at a specific politician? Sure, you can ask a powerful LLM to generate categories, but this kind of task is fundamentally hard and very context-specific. That’s about all I’ve got for now: doing this stuff well is harder than I initially thought.</p>
 </article>
-    
-    <footer>
-        <p>© 2025 Justin Savoie</p>
-    </footer>
     
     <script>
         // Navigation for index page
